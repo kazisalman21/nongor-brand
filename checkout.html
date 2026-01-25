@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - নোঙর</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            deep: '#2F3E46',
+                            light: '#84A98C',
+                            sand: '#F4F1DE',
+                            terracotta: '#E07A5F' // Accent color
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        bengali: ['Hind Siliguri', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body
+    class="bg-[#F9F7F2] font-sans text-brand-deep min-h-screen flex flex-col selection:bg-brand-terracotta selection:text-white">
+
+    <!-- Navbar (Simplified) -->
+    <nav class="bg-white/95 backdrop-blur-md shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <img src="./assets/logo.jpeg" alt="Nongor" class="h-12 rounded-lg shadow-sm">
+                <div class="flex flex-col justify-center">
+                    <span
+                        class="text-2xl font-bold tracking-widest font-serif uppercase leading-none text-brand-deep group-hover:text-brand-terracotta transition-colors">নোঙর</span>
+                    <span class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-80 mt-1 text-gray-500">The
+                        Clothing Brand</span>
+                </div>
+            </a>
+            <a href="index.html" class="text-sm font-bold text-gray-500 hover:text-brand-deep">Back to Shop</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-2xl mx-auto w-full px-4 md:px-6 py-8 md:py-12">
+
+        <div
+            class="bg-white rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50 p-6 md:p-10 lg:p-12 ring-1 ring-black/[0.03]">
+
+            <!-- Header -->
+            <div class="text-center mb-10">
+                <p class="text-xs uppercase tracking-[0.3em] text-brand-terracotta font-bold mb-2">Final Step</p>
+                <h1 class="text-3xl md:text-4xl font-serif font-bold text-brand-deep">Secure Checkout</h1>
+                <div class="w-16 h-1 bg-gradient-to-r from-brand-terracotta to-brand-light mx-auto mt-4 rounded-full">
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div
+                class="bg-gradient-to-br from-[#f8f6f0] to-white p-6 md:p-8 rounded-2xl border border-gray-100 mb-10 shadow-inner">
+                <h3 class="font-serif font-bold text-brand-deep text-xl mb-6 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-terracotta/10 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-brand-terracotta" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                        </svg>
+                    </div>
+                    Order Summary
+                </h3>
+
+                <!-- Cart Items List -->
+                <div id="checkout-items-container" class="space-y-4 mb-4 border-b border-brand-deep/10 pb-4">
+                    <!-- Items injected via JS -->
+                    <p class="text-sm text-gray-500 text-center py-4">Loading items...</p>
+                </div>
+
+                <!-- Totals -->
+                <div class="flex justify-between items-center text-sm mb-2">
+                    <span class="text-gray-600">Subtotal</span>
+                    <span id="checkout-subtotal" class="font-bold text-gray-800">৳0</span>
+                </div>
+                <div class="flex justify-between items-center text-sm mb-2">
+                    <span class="text-gray-600">Delivery</span>
+                    <span id="checkout-delivery" class="font-bold text-gray-800">৳70</span>
+                </div>
+                <div
+                    class="flex justify-between items-center text-xl font-bold border-t border-brand-deep/10 pt-3 mt-2">
+                    <span class="text-brand-deep">Total</span>
+                    <span id="checkout-total" class="text-brand-terracotta">৳0</span>
+                </div>
+            </div>
+
+            <!-- Checkout Form -->
+            <form id="checkout-form" onsubmit="event.preventDefault(); confirmOrderFromPage();" class="space-y-6">
+
+                <!-- Customer Info -->
+                <div class="space-y-4">
+                    <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wider">Delivery Information</h3>
+
+                    <div>
+                        <input type="text" id="cust-name" required placeholder="আপনার নাম (Full Name)"
+                            class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition-all bg-white focus:shadow-lg focus:-translate-y-0.5 placeholder-gray-400 shadow-sm">
+                    </div>
+
+                    <div>
+                        <input type="tel" id="cust-phone" required placeholder="মোবাইল নম্বর (017...)"
+                            oninput="validatePhoneRealtime(this)"
+                            class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition-all bg-white focus:shadow-lg focus:-translate-y-0.5 placeholder-gray-400 shadow-sm font-mono text-lg">
+                        <p id="phone-feedback"
+                            class="text-xs font-bengali ml-1 mt-1 h-4 text-red-500 font-bold transition-all"></p>
+                    </div>
+
+                    <!-- Delivery Area -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Delivery
+                            Area</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="shipping_zone" value="inside" class="peer sr-only" checked
+                                    onchange="updateShipping(70)">
+                                <div
+                                    class="p-4 border border-gray-200 rounded-xl peer-checked:border-brand-terracotta peer-checked:bg-brand-terracotta/5 hover:border-brand-terracotta/50 transition text-center shadow-sm">
+                                    <span
+                                        class="block text-sm font-bold text-gray-700 peer-checked:text-brand-terracotta">Inside
+                                        Dhaka</span>
+                                    <span class="block text-xs text-gray-400 mt-1">৳70</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="shipping_zone" value="outside" class="peer sr-only"
+                                    onchange="updateShipping(130)">
+                                <div
+                                    class="p-4 border border-gray-200 rounded-xl peer-checked:border-brand-terracotta peer-checked:bg-brand-terracotta/5 hover:border-brand-terracotta/50 transition text-center shadow-sm">
+                                    <span
+                                        class="block text-sm font-bold text-gray-700 peer-checked:text-brand-terracotta transition-colors">Outside
+                                        Dhaka</span>
+                                    <span class="block text-xs text-gray-400 mt-1">৳130</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <textarea id="cust-address" required
+                            placeholder="আপনার সম্পূর্ণ ঠিকানা (Full Address, Thana, District)" rows="3"
+                            class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition-all bg-white focus:shadow-lg focus:-translate-y-0.5 placeholder-gray-400 shadow-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wider mb-4">Select Payment Method</h3>
+                    <div class="grid grid-cols-2 gap-4" id="payment-options">
+                        <!-- COD -->
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="payment_method" value="COD" class="peer sr-only" checked>
+                            <div
+                                class="p-6 border-2 border-gray-100 rounded-2xl peer-checked:border-brand-terracotta peer-checked:bg-brand-terracotta/5 hover:border-gray-200 transition-all flex flex-col items-center justify-center h-full group-hover:shadow-lg group-hover:-translate-y-0.5 duration-300">
+                                <svg class="w-10 h-10 text-gray-400 peer-checked:text-brand-terracotta mb-2 transition-colors"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
+                                    </path>
+                                </svg>
+                                <span
+                                    class="text-xs font-bold text-gray-500 peer-checked:text-brand-terracotta uppercase tracking-wider transition-colors">Cash
+                                    on Delivery</span>
+                            </div>
+                        </label>
+                        <!-- bKash -->
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="payment_method" value="Bkash" class="peer sr-only">
+                            <div
+                                class="p-6 border-2 border-gray-100 rounded-2xl peer-checked:border-pink-500 peer-checked:bg-pink-50/30 hover:border-gray-200 transition-all flex flex-col items-center justify-center h-full group-hover:shadow-lg group-hover:-translate-y-0.5 duration-300 relative overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-tr from-pink-500/0 to-pink-500/0 peer-checked:from-pink-500/5 peer-checked:to-transparent transition-all">
+                                </div>
+                                <img src="./assets/bkash_logo.png" alt="bKash"
+                                    class="h-12 object-contain relative z-10 transition-transform duration-300 group-hover:scale-110">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-8">
+                    <button type="submit" id="btn-confirm-order"
+                        class="w-full bg-gradient-to-r from-brand-deep to-brand-deep/90 text-white py-5 rounded-2xl font-bold text-lg hover:from-brand-terracotta hover:to-brand-terracotta/90 transition-all duration-300 shadow-2xl hover:shadow-brand-terracotta/30 transform hover:-translate-y-1 active:scale-[0.98] flex justify-center items-center gap-3 tracking-wide ring-2 ring-brand-deep/10">
+                        <span class="font-bengali">অর্ডার নিশ্চিত করুন</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div class="flex items-center justify-center gap-2 mt-4 text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                        <p class="text-xs">Safe & Secure Checkout</p>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+    <!-- Success Message (Overlay) -->
+    <div id="order-success"
+        class="fixed inset-0 z-50 bg-gradient-to-br from-white via-white to-brand-light/20 hidden flex-col items-center justify-center p-8 animate-fade-in">
+
+        <div
+            class="w-28 h-28 bg-gradient-to-br from-green-400 to-emerald-500 text-white rounded-full flex items-center justify-center mb-8 shadow-2xl shadow-green-500/30 animate-bounce">
+            <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+
+        <h2 class="text-4xl font-serif font-bold text-brand-deep mb-3">Thank You!</h2>
+        <p class="text-gray-500 mb-10 text-center max-w-sm leading-relaxed">Your order has been placed successfully. We
+            will contact you shortly.</p>
+
+        <div
+            class="bg-white p-8 rounded-2xl border border-gray-100 shadow-lg mb-10 w-full max-w-xs text-center ring-1 ring-gray-100">
+            <p class="text-xs uppercase text-gray-400 tracking-[0.2em] mb-3">Order ID</p>
+            <p id="success-order-id" class="text-3xl font-mono font-bold text-brand-deep select-all tracking-wider">
+                #NG-XXXX</p>
+        </div>
+
+        <a href="index.html"
+            class="bg-brand-deep text-white px-10 py-4 rounded-full font-bold shadow-xl hover:bg-brand-terracotta transition-all duration-300 hover:shadow-2xl">Continue
+            Shopping</a>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Init Checkout Page
+        document.addEventListener('DOMContentLoaded', () => {
+            initCheckout();
+        });
+    </script>
+</body>
+
+</html>

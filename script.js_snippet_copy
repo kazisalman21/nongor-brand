@@ -1,0 +1,23 @@
+
+// --- Copy Order ID Logic ---
+window.copyOrderId = () => {
+    const orderId = document.getElementById('success-order-id').innerText;
+    navigator.clipboard.writeText(orderId).then(() => {
+        // Visual Feedback
+        const copyIcon = document.getElementById('copy-icon');
+        const checkIcon = document.getElementById('check-icon');
+        
+        copyIcon.classList.add('hidden');
+        checkIcon.classList.remove('hidden');
+        
+        showToast("Order ID Copied! 📋");
+
+        // Reset icon after 2 seconds
+        setTimeout(() => {
+            copyIcon.classList.remove('hidden');
+            checkIcon.classList.add('hidden');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+};

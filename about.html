@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমাদের গল্প | নোঙর</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            terracotta: '#E07A5F',
+                            sand: '#F2CC8F',
+                            deep: '#3D405B',
+                            light: '#F4F1DE',
+                            dark: '#2d2f36'
+                        }
+                    },
+                    fontFamily: {
+                        bengali: ['"Hind Siliguri"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for premium feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #F4F1DE;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #E07A5F;
+            border-radius: 4px;
+        }
+
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .text-shadow-lg {
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes subtle-zoom {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.15);
+            }
+        }
+
+        @keyframes fade-in-up {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer-flow {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(100%);
+                opacity: 0.5;
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-brand-light text-brand-deep font-sans antialiased overflow-x-hidden">
+
+    <!-- Cinematic Loading Overlay -->
+    <div id="app-loading-overlay"
+        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
+
+        <!-- Central Content -->
+        <div class="relative flex flex-col items-center">
+
+            <!-- Logo with Slow Zoom -->
+            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
+                <!-- Inline style for custom subtle animation to ensure smoothness -->
+                <img src="./assets/logo.jpeg" alt="Nongor" class="w-24 h-24 object-cover"
+                    style="animation: subtle-zoom 20s infinite alternate">
+            </div>
+
+            <!-- Brand Name -->
+            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-[0.5em] font-light"
+                style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
+
+            <!-- Minimal Progress Line -->
+            <div class="w-32 h-[2px] bg-brand-deep/50 mt-8 overflow-hidden rounded-full relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-terracotta to-transparent w-full h-full"
+                    style="animation: shimmer-flow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav id="navbar"
+        class="fixed w-full z-50 transition-all duration-500 bg-brand-deep md:bg-transparent py-6 px-6 md:px-12 flex justify-between items-center text-brand-light border-b border-transparent">
+
+        <!-- Brand Logo & Name -->
+        <a href="index.html" class="flex items-center gap-3 group">
+            <img src="./assets/logo.jpeg" alt="Nongor"
+                class="h-12 rounded-lg md:mix-blend-multiply shadow-sm group-hover:scale-105 transition-transform duration-500">
+            <div class="flex flex-col justify-center">
+                <span
+                    class="text-2xl font-bold tracking-widest font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
+                <span class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-80 mt-1">The Clothing
+                    Brand</span>
+            </div>
+        </a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide">
+            <a href="index.html"
+                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Home</a>
+            <a href="#"
+                class="relative text-brand-terracotta font-bold transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-full after:h-px after:bg-brand-terracotta after:transition-all">Story</a>
+            <a href="index.html#collection"
+                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Collection</a>
+            <button onclick="openTrackingModal()"
+                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Track
+                Order</button>
+            <a href="#contact"
+                class="bg-white/10 px-5 py-2 rounded-full hover:bg-brand-terracotta hover:text-white transition-all duration-300 backdrop-blur-sm border border-white/20">Contact
+                Us</a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden text-2xl z-50 relative">
+            &#9776;
+        </button>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu"
+            class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
+            <a href="index.html" class="text-2xl text-brand-light hover:text-brand-terracotta font-serif"
+                onclick="toggleMobileMenu()">Home</a>
+            <a href="#" class="text-2xl text-brand-terracotta font-bold font-serif"
+                onclick="toggleMobileMenu()">Story</a>
+            <a href="index.html#collection" class="text-2xl text-brand-light hover:text-brand-terracotta font-serif"
+                onclick="toggleMobileMenu()">Collection</a>
+            <button onclick="toggleMobileMenu(); openTrackingModal()"
+                class="text-2xl text-brand-light hover:text-brand-terracotta font-serif">Track Order</button>
+            <a href="#contact" class="text-2xl text-brand-light hover:text-brand-terracotta font-serif"
+                onclick="toggleMobileMenu()">Contact Us</a>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="relative h-[60vh] flex items-center justify-center overflow-hidden w-full">
+        <div class="absolute inset-0 z-0">
+            <img src="./assets/about-bg.png" alt="Background" class="w-full h-full object-cover blur-sm"
+                onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#3D405B'">
+            <div class="absolute inset-0 bg-black/40"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in-up">
+            <!-- <span class="text-brand-terracotta font-serif text-xl tracking-widest uppercase mb-4 block">About Us</span> -->
+            <h1
+                class="text-5xl md:text-7xl font-bengali font-bold text-brand-light mb-6 leading-tight drop-shadow-xl text-shadow">
+                আমাদের গল্প
+            </h1>
+            <div class="w-32 h-1.5 bg-brand-terracotta mx-auto rounded-full shadow-lg"></div>
+        </div>
+    </header>
+
+    <!-- Story Section -->
+    <section id="about" class="py-20 px-6 bg-brand-light">
+        <div class="max-w-6xl mx-auto px-4">
+            <!-- Title -->
+            <div class="text-center mb-16">
+                <!-- <span class="text-brand-terracotta font-bengali text-lg md:text-xl block mb-2">আমাদের গল্প</span> -->
+                <h2 class="text-3xl md:text-5xl font-bengali font-bold text-brand-deep mb-4 leading-tight">ঐতিহ্যের
+                    টানে, শেকড়ের সন্ধানে—নোঙ্গর</h2>
+                <div class="w-24 h-1 bg-brand-terracotta mx-auto rounded-full"></div>
+            </div>
+
+            <!-- Narrative Text -->
+            <div
+                class="max-w-4xl mx-auto text-center font-bengali text-brand-deep/80 leading-loose space-y-6 text-lg mb-20 animate-fade-in-up">
+                <p>
+                    যান্ত্রিক শহরের ভিড়ে আমরা প্রতিনিয়ত নতুনের পেছনে ছুটছি, কিন্তু দিনশেষে আমাদের মন পড়ে থাকে সেই চেনা
+                    মাটিতে—আমাদের শেকড়ে। ঠিক যেমন উত্তাল সাগরে ভাসতে থাকা তরী দিনশেষে খুঁজে নেয় তার নিরাপদ আশ্রয়, তার
+                    'নোঙ্গর'।
+                </p>
+                <p>
+                    'নোঙ্গর' আমাদের কাছে কেবল একটি পোশাকের ব্র্যান্ড নয়, এটি একটি আবেগের নাম। আমাদের স্বপ্ন—বাঙালির
+                    হাজার বছরের হারিয়ে যাওয়া তাঁত আর হস্তশিল্পের সেই আভিজাত্যকে নতুন প্রজন্মের কাছে তুলে ধরা। আমাদের
+                    প্রতিটি পোশাকে মিশে আছে কারিগরদের নিপুণ হাতের স্পর্শ আর দেশীয় সংস্কৃতির ঘ্রাণ।
+                </p>
+                <p class="font-bold text-brand-terracotta text-xl">
+                    আমাদের স্লোগান—'ভালোবাসা আর ঐতিহ্যে বোনা'—কেবল কথার কথা নয়, এটি আমাদের প্রতিটি সুতোয় গাঁথা এক
+                    প্রতিশ্রুতি। আমরা চাই, আমাদের পোশাকে আপনি খুঁজে পান আভিজাত্য, আরাম এবং আপন আলয়ের সেই মায়া। আমাদের এই
+                    স্বপ্নের যাত্রায় পাশে থাকার জন্য আপনাকে ধন্যবাদ।
+                </p>
+            </div>
+
+            <!-- Feature Columns -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center font-bengali">
+                <!-- Card 1 -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border border-brand-light/50 group hover:-translate-y-2 duration-300">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition duration-300">👋</div>
+                    <h3 class="text-xl font-bold text-brand-deep mb-2">হস্তশিল্প</h3>
+                    <p class="text-gray-600 text-sm">দক্ষ কারিগরদের নিপুণ ছোঁয়ায়।</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border border-brand-light/50 group hover:-translate-y-2 duration-300">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition duration-300">🌿</div>
+                    <h3 class="text-xl font-bold text-brand-deep mb-2">পরিবেশবান্ধব</h3>
+                    <p class="text-gray-600 text-sm">প্রকৃতির প্রতি যত্নশীল।</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition border border-brand-light/50 group hover:-translate-y-2 duration-300">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition duration-300">⚓</div>
+                    <h3 class="text-xl font-bold text-brand-deep mb-2">কালজয়ী</h3>
+                    <p class="text-gray-600 text-sm">শাশ্বত সৌন্দর্যের প্রকাশ।</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tracking Modal -->
+    <div id="tracking-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeTrackingModal()"></div>
+        <div class="relative bg-white w-full max-w-md mx-auto my-20 rounded-xl shadow-2xl p-8 animate-fade-in-up m-4">
+            <button onclick="closeTrackingModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <h3 class="text-2xl font-serif font-bold text-brand-deep mb-6 text-center">Track Your Parcel</h3>
+
+            <input type="text" id="track-id-input" placeholder="Enter Order ID (e.g., #NG-1234)"
+                class="w-full p-3 mb-4 border rounded-lg text-center font-mono focus:outline-brand-terracotta uppercase">
+
+            <button onclick="trackOrder()" id="btn-track-submit"
+                class="w-full bg-brand-deep text-white py-3 rounded-lg font-bold hover:bg-brand-terracotta transition mb-6 flex justify-center items-center gap-2">
+                <span>TRACK NOW</span>
+            </button>
+
+            <!-- Tracking Result Container -->
+            <div id="track-result" class="hidden border-t border-dashed border-gray-300 pt-6">
+                <div class="bg-gray-50 rounded-lg p-4 mb-4 text-left">
+                    <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Order ID</p>
+                    <p id="track-id-display" class="font-mono font-bold text-brand-deep text-lg">#NG-XXXX</p>
+                </div>
+
+                <div class="flex items-start gap-4 mb-4 text-left">
+                    <div class="mt-1">
+                        <div class="w-3 h-3 rounded-full bg-brand-terracotta animate-pulse"></div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-1">Current Status</p>
+                        <div id="track-status-container" class="font-bengali"></div>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-4 border border-green-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-green-800 uppercase tracking-widest mb-1">Estimated Delivery</p>
+                        <p id="track-delivery-date" class="font-bold text-green-700">Checking...</p>
+                    </div>
+                    <span class="text-2xl">🚚</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-6">
+
+            <!-- Top Section: Links & Brand -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <!-- Brand -->
+                <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <img src="./assets/logo.jpeg" alt="Nongor" class="h-14 rounded-lg mix-blend-multiply opacity-90">
+                    <div>
+                        <h4 class="text-3xl font-serif font-bold tracking-wider text-brand-deep leading-none">নোঙর
+                        </h4>
+                        <p class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-60 mt-1">The Clothing
+                            Brand</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <div
+                    class="flex flex-wrap justify-center gap-6 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    <a href="#" class="text-brand-terracotta font-bold transition">About Us</a>
+                    <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
+                    <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
+                    <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-10">
+
+            <!-- Middle Section: Socials -->
+            <div class="flex justify-center gap-6 mb-10">
+                <a href="https://www.facebook.com/profile.php?id=61582283911710" target="_blank"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                </a>
+                <a href="#"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                </a>
+                <a href="https://m.me/857107060814707" target="_blank"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.03 2 11C2 13.66 3.34 16.05 5.5 17.65V22L9.64 19.74C10.4 19.91 11.19 20 12 20C17.52 20 22 15.97 22 11C22 6.03 17.52 2 12 2ZM13.19 14.88L10.79 12.33L6.11 14.88L11.21 9.46L13.61 12.01L18.29 9.46L13.19 14.88Z" />
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Bottom Section: Payment Methods & Copyright -->
+            <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <p>&copy; 2025 নোঙর Brand. All Rights Reserved. Made in Bangladesh.</p>
+
+                <div
+                    class="flex items-center gap-3 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300">
+                    <!-- Simple CSS Payment Icons for visual preview -->
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold italic text-blue-800">VISA</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-red-600">MasterCard</span>
+                    <span class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-pink-600">bKash</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-orange-600">Nagad</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Standard script import -->
+    <script src="./script.js" defer></script>
+</body>
+
+</html>
