@@ -43,10 +43,76 @@
         ::-webkit-scrollbar-thumb {
             background: #d1d5db;
             border-radius: 4px;
+            transition: background 0.3s;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
+            background: #7e3af2;
+        }
+
+        /* Selection Color */
+        ::selection {
+            background: rgba(126, 58, 242, 0.3);
+            color: #1a1c23;
+        }
+
+        /* Premium Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(126, 58, 242, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 10px rgba(126, 58, 242, 0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .animate-slide-in-up {
+            animation: slideInUp 0.4s ease-out forwards;
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         /* Smooth Fade Transition Class */
@@ -63,6 +129,44 @@
         .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
+        }
+
+        /* Premium Button Effects */
+        .btn-primary {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(126, 58, 242, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Card Hover Effects */
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Focus States */
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(126, 58, 242, 0.2);
+            border-color: #7e3af2;
+        }
+
+        /* Table Row Animation */
+        .table-row-enter {
+            animation: slideInUp 0.3s ease-out forwards;
         }
     </style>
 </head>
@@ -113,7 +217,7 @@
                     <div id="login-error" class="text-red-500 text-sm font-medium h-5 text-center"></div>
 
                     <button type="submit"
-                        class="w-full bg-brand-accent hover:bg-purple-700 text-white py-3.5 rounded-lg font-bold shadow-lg shadow-purple-200 hover:shadow-purple-300 transition-all transform active:scale-[0.98]">
+                        class="btn-primary w-full bg-brand-accent hover:bg-purple-700 text-white py-3.5 rounded-lg font-bold shadow-lg shadow-purple-200 hover:shadow-purple-300 transition-all">
                         Sign In
                     </button>
                 </form>
