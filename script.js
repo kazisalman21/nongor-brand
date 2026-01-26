@@ -210,6 +210,7 @@ async function initProducts() {
                 name: p.name,
                 price: parseFloat(p.price),
                 image: p.image,
+                images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
                 description: p.description,
                 is_featured: p.is_featured,
                 category: {
