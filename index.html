@@ -271,8 +271,8 @@
 
             <!-- Image Side -->
             <div class="w-full md:w-1/2 flex flex-col p-6 bg-gray-50/50">
-                <div class="w-full aspect-[3/4] md:h-96 bg-gray-100 relative group cursor-pointer overflow-hidden rounded-2xl shadow-sm border border-gray-100"
-                    onclick="openLightbox()">
+                <div
+                    class="w-full aspect-[3/4] md:h-96 bg-gray-100 relative group overflow-hidden rounded-2xl shadow-sm border border-gray-100">
                     <img id="modal-image" src="" alt="Product"
                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
@@ -281,13 +281,13 @@
                         class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 pointer-events-none">
                     </div>
                     <!-- Zoom Indicator (Centered) -->
-                    <div
-                        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 p-3 rounded-full opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg pointer-events-none text-brand-deep">
+                    <button onclick="openLightbox()"
+                        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 p-3 rounded-full opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg cursor-pointer text-brand-deep hover:bg-white hover:scale-110 z-20">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
                         </svg>
-                    </div>
+                    </button>
                 </div>
                 <!-- Gallery Thumbnails -->
                 <div id="modal-gallery" class="flex justify-center gap-3 mt-4 px-2 overflow-x-auto py-2 no-scrollbar">
