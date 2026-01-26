@@ -1,3 +1,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Premium Custom Utilities */
+@layer utilities {
+
+    /* Hide scrollbar but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Premium Glow Effects */
+    .glow-terracotta {
+        box-shadow: 0 0 20px rgba(224, 122, 95, 0.4);
+    }
+
+    .glow-deep {
+        box-shadow: 0 0 20px rgba(61, 64, 91, 0.4);
+    }
+
+    /* Glassmorphism */
+    .glass {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-dark {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Smooth Image Load */
+    .img-loading {
+        background: linear-gradient(110deg, #f3f4f6 8%, #fafafa 18%, #f3f4f6 33%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Premium Text Gradient */
+    .text-gradient {
+        background: linear-gradient(135deg, #E07A5F 0%, #3D405B 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Premium Button Press Effect */
+    .btn-press:active {
+        transform: scale(0.97);
+    }
+
+    /* Smooth Underline Animation */
+    .hover-underline {
+        position: relative;
+    }
+
+    .hover-underline::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: currentColor;
+        transition: width 0.3s ease;
+    }
+
+    .hover-underline:hover::after {
+        width: 100%;
+    }
+}

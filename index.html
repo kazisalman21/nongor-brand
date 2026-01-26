@@ -274,7 +274,8 @@
                 <div
                     class="w-full aspect-[3/4] md:h-96 bg-gray-100 relative group overflow-hidden rounded-2xl shadow-sm border border-gray-100">
                     <img id="modal-image" src="" alt="Product"
-                        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        class="w-full h-full object-cover transition-all duration-300 ease-out group-hover:scale-105"
+                        style="opacity: 1; transform: scale(1);"
                         onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
                     <!-- Hover Overlay -->
                     <div
@@ -327,11 +328,11 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="addToCart()"
-                            class="w-full bg-brand-light text-brand-deep py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition shadow-md border border-gray-200">
+                            class="w-full bg-brand-light text-brand-deep py-4 rounded-xl font-bold text-lg hover:bg-gray-200 hover:scale-[1.02] transition-all duration-300 shadow-md border border-gray-200 active:scale-95">
                             Add to Cart
                         </button>
                         <button onclick="showCheckout()"
-                            class="w-full bg-brand-deep text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-terracotta transition shadow-lg hover:shadow-xl transform active:scale-95">
+                            class="w-full bg-brand-deep text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-terracotta hover:shadow-[0_8px_30px_rgba(224,122,95,0.4)] hover:scale-[1.02] transition-all duration-300 shadow-lg active:scale-95">
                             Order Now
                         </button>
                     </div>
@@ -663,7 +664,7 @@
     </div>
 
     <!-- Standard script import, no module needed for simple setup -->
-    <script src="./script.js?v=slideshow" defer></script>
+    <script src="./script.js?v=premium2" defer></script>
 </body>
 
 </html>

@@ -341,9 +341,9 @@ function renderProducts(products) {
                         <span class="text-xs text-gray-400 font-medium">মূল্য</span>
                         <span class="text-2xl font-bold text-brand-deep">৳${product.price.toLocaleString('bn-BD')}</span>
                     </div>
-                    <button onclick="openModal(${product.id})" class="flex-1 bg-brand-deep text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-deep/20 hover:bg-brand-terracotta hover:shadow-brand-terracotta/30 hover:scale-[1.02] active:scale-95 transition-all duration-300 font-bengali flex items-center justify-center gap-2">
+                    <button onclick="openModal(${product.id})" class="flex-1 bg-brand-deep text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-deep/20 hover:bg-brand-terracotta hover:shadow-[0_8px_30px_rgba(224,122,95,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 font-bengali flex items-center justify-center gap-2">
                         <span>অর্ডার করুন</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
                     </button>
