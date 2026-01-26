@@ -43,33 +43,39 @@ const API_URL = '/api';
 // --- Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Sticky Navbar Logic
+    // Sticky Navbar Logic with Throttle for Smooth Performance
     const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
+    let ticking = false;
+
+    const updateNavbar = () => {
         const isMobile = window.innerWidth < 768;
 
         if (window.scrollY > 50) {
             if (!isMobile) {
-                // Desktop: Turn White
                 navbar.classList.remove('bg-transparent', 'text-brand-light');
                 navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep');
             } else {
-                // Mobile: Keep Dark, just add shadow/padding
                 navbar.classList.add('shadow-md', 'py-3');
                 navbar.classList.remove('py-6');
             }
         } else {
             if (!isMobile) {
-                // Desktop: Transparent
                 navbar.classList.add('bg-transparent', 'text-brand-light');
                 navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep');
             } else {
-                // Mobile: Remove shadow/padding
                 navbar.classList.remove('shadow-md', 'py-3');
                 navbar.classList.add('py-6');
             }
         }
-    });
+        ticking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(updateNavbar);
+            ticking = true;
+        }
+    }, { passive: true });
 
     // Load data
     initCategories();
@@ -309,7 +315,9 @@ function renderProducts(products) {
             <div class="relative h-80 bg-gray-100 overflow-hidden">
                 <!-- Main Image -->
                 <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" alt="${product.name}"  
-                     class="product-main-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out relative z-0"
+                     class="product-main-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out will-animate relative z-0"
+                     loading="lazy"
+                     decoding="async"
                      onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
                 
                 <!-- Overlay Gradient (z-20 to stay on top) -->
