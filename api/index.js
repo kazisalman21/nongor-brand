@@ -4,10 +4,10 @@ const { Client } = require('pg');
 module.exports = async (req, res) => {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-password');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-password, x-admin-user, x-admin-pass, x-admin-secret');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 
-    // --- AUTH HELPER ---
+    // --- AUTH HELPERS ---
     const users = {
         'admin': process.env.ADMIN_PASSWORD || 'nongor@2025',
         'manager': 'nongor@1234'
@@ -16,11 +16,23 @@ module.exports = async (req, res) => {
     const isAuthenticated = (req) => {
         const user = req.headers['x-admin-user'];
         const pass = req.headers['x-admin-pass'];
-        // Legacy fallback
         const legacyPass = req.headers['x-admin-password'];
 
         if (legacyPass && (legacyPass === process.env.ADMIN_PASSWORD || legacyPass === 'nongor1234')) return true;
         if (user && users[user] && users[user] === pass) return true;
+        return false;
+    };
+
+    // Admin secret check for product management (also accepts admin passwords)
+    const isAdminSecretValid = (req) => {
+        const secret = req.headers['x-admin-secret'];
+        const adminSecret = process.env.ADMIN_SECRET || 'nongor_secret_2025';
+
+        // Check admin secret OR any admin password
+        if (secret === adminSecret) return true;
+        if (secret === (process.env.ADMIN_PASSWORD || 'nongor@2025')) return true;
+        if (secret === 'nongor@1234') return true; // Manager password
+
         return false;
     };
 
@@ -56,6 +68,42 @@ module.exports = async (req, res) => {
             });
             await client.connect();
 
+            // --- GET PRODUCTS (Public) ---
+            if (query.action === 'getProducts') {
+                // Ensure products table exists
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS products (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        price DECIMAL(10,2) NOT NULL,
+                        image TEXT,
+                        description TEXT,
+                        category_slug VARCHAR(100),
+                        category_name VARCHAR(100),
+                        is_featured BOOLEAN DEFAULT false,
+                        is_active BOOLEAN DEFAULT true,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+
+                const result = await client.query('SELECT * FROM products WHERE is_active = true ORDER BY created_at DESC');
+                await client.end();
+                return res.status(200).json({ result: 'success', data: result.rows });
+            }
+
+            // --- GET ALL PRODUCTS (Admin, includes inactive) ---
+            if (query.action === 'getAllProducts') {
+                if (!isAuthenticated(req) && !isAdminSecretValid(req)) {
+                    await client.end();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+
+                const result = await client.query('SELECT * FROM products ORDER BY created_at DESC');
+                await client.end();
+                return res.status(200).json({ result: 'success', data: result.rows });
+            }
+
             // Tracking
             if (query.orderId) {
                 const result = await client.query('SELECT * FROM orders WHERE order_id = $1', [query.orderId]);
@@ -68,7 +116,7 @@ module.exports = async (req, res) => {
                 }
             }
 
-            // Admin
+            // Admin - Get All Orders
             if (query.action === 'getAllOrders') {
                 if (!isAuthenticated(req)) {
                     await client.end();
@@ -88,17 +136,7 @@ module.exports = async (req, res) => {
         if (method === 'POST') {
             const data = typeof body === 'string' ? JSON.parse(body) : body;
 
-            // Determine Initial Statuses
-            let initialDelivery = 'Pending';
-            let initialPayment = 'Unpaid';
-
-            if (data.paymentMethod === 'Bkash' || data.paymentMethod === 'Nagad' || data.paymentMethod === 'Bank') {
-                initialPayment = 'Verifying';
-            } else if (data.paymentMethod === 'COD') {
-                initialPayment = 'Due';
-            }
-
-            // Connect DB
+            // Connect DB if not connected
             if (!client) {
                 if (!process.env.NETLIFY_DATABASE_URL) {
                     throw new Error("Missing NETLIFY_DATABASE_URL");
@@ -110,8 +148,62 @@ module.exports = async (req, res) => {
                 await client.connect();
             }
 
-            // Ensure table
-            // Added payment_status, delivery_status
+            // --- ADD PRODUCT (Protected) ---
+            if (query.action === 'addProduct') {
+                if (!isAdminSecretValid(req)) {
+                    await client.end();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Invalid admin secret' });
+                }
+
+                // Ensure products table exists
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS products (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        price DECIMAL(10,2) NOT NULL,
+                        image TEXT,
+                        description TEXT,
+                        category_slug VARCHAR(100),
+                        category_name VARCHAR(100),
+                        is_featured BOOLEAN DEFAULT false,
+                        is_active BOOLEAN DEFAULT true,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                `);
+
+                const insertQuery = `
+                    INSERT INTO products (name, price, image, description, category_slug, category_name, is_featured)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    RETURNING *
+                `;
+                const values = [
+                    data.name,
+                    data.price,
+                    data.image || '',
+                    data.description || '',
+                    data.category_slug || '',
+                    data.category_name || '',
+                    data.is_featured || false
+                ];
+
+                const result = await client.query(insertQuery, values);
+                await client.end();
+                return res.status(200).json({ result: 'success', message: 'Product added', data: result.rows[0] });
+            }
+
+            // --- CREATE ORDER (Legacy, Public) ---
+            // Determine Initial Statuses
+            let initialDelivery = 'Pending';
+            let initialPayment = 'Unpaid';
+
+            if (data.paymentMethod === 'Bkash' || data.paymentMethod === 'Nagad' || data.paymentMethod === 'Bank') {
+                initialPayment = 'Verifying';
+            } else if (data.paymentMethod === 'COD') {
+                initialPayment = 'Due';
+            }
+
+            // Ensure orders table
             await client.query(`
                 CREATE TABLE IF NOT EXISTS orders (
                     order_id TEXT PRIMARY KEY,
@@ -133,23 +225,15 @@ module.exports = async (req, res) => {
                 );
             `);
 
-            // --- Auto-Migration for Old Tables ---
+            // Auto-Migration for Old Tables
             try {
                 await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_price NUMERIC;`);
                 await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS size TEXT;`);
                 await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS quantity INTEGER;`);
                 await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS sender_number TEXT;`);
                 await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS trx_id TEXT;`);
-
-                // New Columns
                 await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_status TEXT DEFAULT 'Pending';`);
                 await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'Unpaid';`);
-
-                // --- BACKFILL: Sync old 'status' to new columns if they are empty (simplistic check) ---
-                // We'll trust new columns will populate for new orders. For old ones, we can just leave them or basic map.
-                // Let's do a simple update for nulls to default.
-                // Not doing complex backfill here to keep it fast, unless requested.
-
             } catch (err) {
                 console.warn("Migration warning:", err.message);
             }
@@ -160,7 +244,6 @@ module.exports = async (req, res) => {
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             `;
 
-            // We still save 'status' as 'Pending' for backward campatibility if needed, or just map delivery status to it.
             const values = [
                 data.orderId,
                 data.customerName,
@@ -168,7 +251,7 @@ module.exports = async (req, res) => {
                 data.address,
                 data.productName,
                 data.totalPrice,
-                initialDelivery, // Mapping status to delivery status for legacy
+                initialDelivery,
                 initialDelivery,
                 initialPayment,
                 data.trxId || '',
@@ -189,9 +272,87 @@ module.exports = async (req, res) => {
         if (method === 'PUT') {
             const data = typeof body === 'string' ? JSON.parse(body) : body;
 
+            if (!client) {
+                if (!process.env.NETLIFY_DATABASE_URL) {
+                    throw new Error("Missing NETLIFY_DATABASE_URL");
+                }
+                client = new Client({
+                    connectionString: process.env.NETLIFY_DATABASE_URL,
+                    ssl: { rejectUnauthorized: false }
+                });
+                await client.connect();
+            }
+
+            // --- UPDATE PRODUCT (Protected) ---
+            if (query.action === 'updateProduct') {
+                if (!isAdminSecretValid(req)) {
+                    await client.end();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Invalid admin secret' });
+                }
+
+                const updateQuery = `
+                    UPDATE products 
+                    SET name = $1, price = $2, image = $3, description = $4, 
+                        category_slug = $5, category_name = $6, is_featured = $7, 
+                        is_active = $8, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $9
+                    RETURNING *
+                `;
+                const values = [
+                    data.name,
+                    data.price,
+                    data.image || '',
+                    data.description || '',
+                    data.category_slug || '',
+                    data.category_name || '',
+                    data.is_featured || false,
+                    data.is_active !== false,
+                    data.id
+                ];
+
+                const result = await client.query(updateQuery, values);
+                await client.end();
+
+                if (result.rows.length > 0) {
+                    return res.status(200).json({ result: 'success', message: 'Product updated', data: result.rows[0] });
+                } else {
+                    return res.status(404).json({ result: 'error', message: 'Product not found' });
+                }
+            }
+
+            // --- UPDATE ORDER STATUS (Legacy) ---
             if (!isAuthenticated(req)) {
                 await client.end();
                 return res.status(401).json({ error: 'Unauthorized' });
+            }
+
+            try {
+                await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_status TEXT DEFAULT 'Pending';`);
+                await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'Unpaid';`);
+            } catch (err) { }
+
+            if (data.type === 'delivery') {
+                await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3', [data.status, data.status, data.orderId]);
+            } else if (data.type === 'payment') {
+                await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2', [data.status, data.orderId]);
+            } else {
+                await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3', [data.status, data.status, data.orderId]);
+            }
+
+            await client.end();
+            return res.status(200).json({ result: 'success' });
+        }
+
+        // --- 4. DELETE REQUESTS ---
+        if (method === 'DELETE') {
+            // --- DELETE PRODUCT (Protected) ---
+            if (!isAdminSecretValid(req)) {
+                return res.status(403).json({ result: 'error', message: 'Forbidden: Invalid admin secret' });
+            }
+
+            const productId = query.id;
+            if (!productId) {
+                return res.status(400).json({ result: 'error', message: 'Product ID required' });
             }
 
             if (!client) {
@@ -205,24 +366,15 @@ module.exports = async (req, res) => {
                 await client.connect();
             }
 
-            // Ensure columns exist (Migration) in case it wasn't run by a POST yet
-            try {
-                await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_status TEXT DEFAULT 'Pending';`);
-                await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'Unpaid';`);
-            } catch (err) { }
-
-            // Handle Specific Updates
-            if (data.type === 'delivery') {
-                await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3', [data.status, data.status, data.orderId]);
-            } else if (data.type === 'payment') {
-                await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2', [data.status, data.orderId]);
-            } else {
-                // Fallback / Legacy
-                await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3', [data.status, data.status, data.orderId]);
-            }
-
+            // Soft delete by setting is_active to false
+            const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
             await client.end();
-            return res.status(200).json({ result: 'success' });
+
+            if (result.rows.length > 0) {
+                return res.status(200).json({ result: 'success', message: 'Product deleted' });
+            } else {
+                return res.status(404).json({ result: 'error', message: 'Product not found' });
+            }
         }
 
         if (client) await client.end();

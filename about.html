@@ -4,13 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="নোঙর ব্র্যান্ডের গল্প - বাংলার ঐতিহ্য ও হস্তশিল্পের প্রতি আমাদের ভালোবাসার যাত্রা। Learn about Nongor's journey celebrating Bangladeshi heritage.">
+    <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
     <title>আমাদের গল্প | নোঙর</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
         rel="stylesheet">
 
     <!-- Tailwind CSS -->
@@ -29,9 +32,10 @@
                         }
                     },
                     fontFamily: {
-                        bengali: ['"Hind Siliguri"', 'sans-serif'],
+                        bengali: ['"Noto Serif Bengali"', 'serif'],
+                        'bengali-display': ['"Tiro Bangla"', 'serif'],
                         serif: ['"Playfair Display"', 'serif'],
-                        sans: ['inter', 'sans-serif']
+                        sans: ['"Montserrat"', 'sans-serif']
                     }
                 }
             }
@@ -122,7 +126,7 @@
             </div>
 
             <!-- Brand Name -->
-            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-[0.5em] font-light"
+            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-wide font-light"
                 style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
 
             <!-- Minimal Progress Line -->
@@ -144,14 +148,14 @@
                 class="h-12 rounded-lg md:mix-blend-multiply shadow-sm group-hover:scale-105 transition-transform duration-500">
             <div class="flex flex-col justify-center">
                 <span
-                    class="text-2xl font-bold tracking-widest font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
+                    class="text-2xl font-bold tracking-wide font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
                 <span class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-80 mt-1">The Clothing
                     Brand</span>
             </div>
         </a>
 
         <!-- Desktop Menu -->
-        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide">
+        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide font-medium">
             <a href="index.html"
                 class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Home</a>
             <a href="#"
@@ -167,22 +171,24 @@
         </div>
 
         <!-- Mobile Menu Button -->
-        <button id="mobile-menu-btn" class="md:hidden text-2xl z-50 relative">
+        <button id="mobile-menu-btn" class="md:hidden text-2xl z-50 relative" aria-label="Open navigation menu">
             &#9776;
         </button>
 
         <!-- Mobile Menu Overlay -->
         <div id="mobile-menu"
             class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
-            <a href="index.html" class="text-2xl text-brand-light hover:text-brand-terracotta font-serif"
+            <a href="index.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
                 onclick="toggleMobileMenu()">Home</a>
-            <a href="#" class="text-2xl text-brand-terracotta font-bold font-serif"
+            <a href="#" class="text-xl text-brand-terracotta font-bold font-serif"
                 onclick="toggleMobileMenu()">Story</a>
-            <a href="index.html#collection" class="text-2xl text-brand-light hover:text-brand-terracotta font-serif"
+            <a href="index.html#collection"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
                 onclick="toggleMobileMenu()">Collection</a>
             <button onclick="toggleMobileMenu(); openTrackingModal()"
-                class="text-2xl text-brand-light hover:text-brand-terracotta font-serif">Track Order</button>
-            <a href="#contact" class="text-2xl text-brand-light hover:text-brand-terracotta font-serif"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium">Track
+                Order</button>
+            <a href="#contact" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
                 onclick="toggleMobileMenu()">Contact Us</a>
         </div>
     </nav>
@@ -198,7 +204,7 @@
         <div class="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in-up">
             <!-- <span class="text-brand-terracotta font-serif text-xl tracking-widest uppercase mb-4 block">About Us</span> -->
             <h1
-                class="text-5xl md:text-7xl font-bengali font-bold text-brand-light mb-6 leading-tight drop-shadow-xl text-shadow">
+                class="text-5xl md:text-7xl font-bengali-display font-bold text-brand-light mb-6 leading-tight drop-shadow-xl text-shadow">
                 আমাদের গল্প
             </h1>
             <div class="w-32 h-1.5 bg-brand-terracotta mx-auto rounded-full shadow-lg"></div>
@@ -211,7 +217,8 @@
             <!-- Title -->
             <div class="text-center mb-16">
                 <!-- <span class="text-brand-terracotta font-bengali text-lg md:text-xl block mb-2">আমাদের গল্প</span> -->
-                <h2 class="text-3xl md:text-5xl font-bengali font-bold text-brand-deep mb-4 leading-tight">ঐতিহ্যের
+                <h2 class="text-3xl md:text-5xl font-bengali-display font-bold text-brand-deep mb-4 leading-tight">
+                    ঐতিহ্যের
                     টানে, শেকড়ের সন্ধানে—নোঙ্গর</h2>
                 <div class="w-24 h-1 bg-brand-terracotta mx-auto rounded-full"></div>
             </div>
@@ -372,16 +379,16 @@
             <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
                 <p>&copy; 2025 নোঙর Brand. All Rights Reserved. Made in Bangladesh.</p>
 
-                <div
-                    class="flex items-center gap-3 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300">
+                <div class="flex items-center gap-3">
                     <!-- Simple CSS Payment Icons for visual preview -->
                     <span
-                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold italic text-blue-800">VISA</span>
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold italic text-blue-800 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">VISA</span>
                     <span
-                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-red-600">MasterCard</span>
-                    <span class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-pink-600">bKash</span>
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-red-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">MasterCard</span>
                     <span
-                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-orange-600">Nagad</span>
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-pink-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">bKash</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-orange-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">Nagad</span>
                 </div>
             </div>
         </div>

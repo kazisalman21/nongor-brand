@@ -29,7 +29,7 @@ A robust, serverless e-commerce solution built for the 'Nongor' brand. This proj
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/kazisalman21/nongor-brand.git
+    git clone https://github.com/your-username/nongor-ecommerce.git
     cd nongor-ecommerce
     ```
 

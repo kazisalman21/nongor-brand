@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Page not found - নোঙর">
+    <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
+    <title>404 - Page Not Found | নোঙর</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            terracotta: '#E07A5F',
+                            sand: '#F2CC8F',
+                            deep: '#3D405B',
+                            light: '#F4F1DE',
+                            dark: '#2d2f36'
+                        }
+                    },
+                    fontFamily: {
+                        bengali: ['"Noto Serif Bengali"', 'serif'],
+                        'bengali-display': ['"Tiro Bangla"', 'serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Montserrat"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body
+    class="bg-brand-light text-brand-deep font-sans antialiased min-h-screen flex flex-col items-center justify-center">
+
+    <div class="text-center px-6 max-w-lg">
+        <!-- 404 Illustration -->
+        <div class="mb-8">
+            <span class="text-9xl font-serif font-bold text-brand-terracotta/20">404</span>
+        </div>
+
+        <!-- Icon -->
+        <div class="w-20 h-20 mx-auto mb-6 bg-brand-terracotta/10 rounded-full flex items-center justify-center">
+            <svg class="w-10 h-10 text-brand-terracotta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+
+        <!-- Message -->
+        <h1 class="text-3xl md:text-4xl font-serif font-bold text-brand-deep mb-4">Page Not Found</h1>
+        <p class="text-gray-500 mb-8 font-bengali">দুঃখিত! আপনি যে পৃষ্ঠাটি খুঁজছেন তা পাওয়া যায়নি।</p>
+
+        <!-- Action Button -->
+        <a href="index.html"
+            class="inline-block bg-brand-deep text-white px-8 py-4 rounded-full font-bold hover:bg-brand-terracotta transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+            ← হোমে ফিরে যান
+        </a>
+    </div>
+
+    <!-- Footer Credit -->
+    <p class="absolute bottom-6 text-xs text-gray-400">© 2025 নোঙর Brand</p>
+
+</body>
+
+</html>

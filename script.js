@@ -1,13 +1,15 @@
 
 // --- Data ---
 const categoriesData = [
-    // { "id": 1, "name": "পাঞ্জাবি", "slug": "panjabi" },
-    // { "id": 2, "name": "শাড়ি", "slug": "saree" },
-    // { "id": 3, "name": "ফতুয়া", "slug": "fatua" },
-    { "id": 1, "name": "কুর্তি", "slug": "kurti" }
+    { "id": 1, "name": "পাঞ্জাবি", "slug": "panjabi" },
+    { "id": 2, "name": "কুর্তি", "slug": "kurti" },
+    { "id": 3, "name": "শাড়ি", "slug": "saree" },
+    { "id": 4, "name": "থ্রি পিস", "slug": "three-piece" },
+    { "id": 5, "name": "অন্যান্য", "slug": "other" }
 ];
 
-const productsData = [
+// Fallback products (used if API fails)
+const fallbackProducts = [
     {
         "id": 1,
         "name": "টিউলিপ",
@@ -15,7 +17,8 @@ const productsData = [
         "image": "tulip.jpg",
         "description": "আরামদায়ক কাপড়ে রঙিন টিউলিপ ফুলের নকশা।",
         "is_featured": true,
-        "category": { "name": "কুর্তি", "slug": "kurti" }
+        "category_slug": "kurti",
+        "category_name": "কুর্তি"
     },
     {
         "id": 2,
@@ -24,53 +27,10 @@ const productsData = [
         "image": "butterfly.jpg",
         "description": "কালো পোশাকে রঙিন প্রজাপতির ছোঁয়া।",
         "is_featured": true,
-        "category": { "name": "কুর্তি", "slug": "kurti" }
+        "category_slug": "kurti",
+        "category_name": "কুর্তি"
     },
-    // {
-    //     "id": 3,
-    //     "name": "ঐতিহ্যবাহী সাদা পাঞ্জাবি",
-    //     "price": 1850.00,
-    //     "image": "panjabi-1.jpg",
-    //     "description": "খাঁটি সুতির তৈরি ঐতিহ্যবাহী সাদা পাঞ্জাবি।",
-    //     "is_featured": true,
-    //     "category": { "name": "পাঞ্জাবি", "slug": "panjabi" }
-    // },
-    // {
-    //     "id": 4,
-    //     "name": "কালো জামদানি পাঞ্জাবি",
-    //     "price": 2500.00,
-    //     "image": "panjabi-2.jpg",
-    //     "description": "জামদানি কাজের সুন্দর কালো পাঞ্জাবি।",
-    //     "is_featured": true,
-    //     "category": { "name": "পাঞ্জাবি", "slug": "panjabi" }
-    // },
-    // {
-    //     "id": 5,
-    //     "name": "তাঁতের শাড়ি",
-    //     "price": 3200.00,
-    //     "image": "saree-1.jpg",
-    //     "description": "হাতে বোনা খাঁটি তাঁতের শাড়ি।",
-    //     "is_featured": true,
-    //     "category": { "name": "শাড়ি", "slug": "saree" }
-    // },
-    // {
-    //     "id": 6,
-    //     "name": "নীল ফতুয়া",
-    //     "price": 950.00,
-    //     "image": "fatua-1.jpg",
-    //     "description": "আরামদায়ক নীল রঙের ফতুয়া।",
-    //     "is_featured": false,
-    //     "category": { "name": "ফতুয়া", "slug": "fatua" }
-    // },
-    // {
-    //     "id": 7,
-    //     "name": "এমব্রয়ডারি কুর্তি",
-    //     "price": 1450.00,
-    //     "image": "kurti-1.jpg",
-    //     "description": "সুন্দর এমব্রয়ডারি কাজের কুর্তি।",
-    //     "is_featured": true,
-    //     "category": { "name": "কুর্তি", "slug": "kurti" }
-    // }
+
 ];
 
 let allProducts = [];
@@ -212,7 +172,7 @@ function initCategories() {
     if (!filterContainer) return;
 
     filterContainer.innerHTML = `
-        <button onclick="filterProducts('all')"
+        <button onclick="filterProducts('all', event)"
             class="category-btn active px-8 py-3 rounded-full bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/30 transform scale-105 transition-all duration-300 font-medium border border-transparent">
             সব
         </button>
@@ -227,9 +187,54 @@ function initCategories() {
     });
 }
 
-function initProducts() {
-    allProducts = productsData;
-    renderProducts(allProducts);
+async function initProducts() {
+    try {
+        // Show loading state
+        const grid = document.getElementById('products-grid');
+        if (grid) {
+            grid.innerHTML = `
+                <div class="col-span-full flex justify-center items-center py-20">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-terracotta"></div>
+                </div>
+            `;
+        }
+
+        // Fetch products from API
+        const response = await fetch(`${API_URL}?action=getProducts`);
+        const result = await response.json();
+
+        if (result.result === 'success' && result.data && result.data.length > 0) {
+            // Transform API data to match expected format
+            allProducts = result.data.map(p => ({
+                id: p.id,
+                name: p.name,
+                price: parseFloat(p.price),
+                image: p.image,
+                description: p.description,
+                is_featured: p.is_featured,
+                category: {
+                    name: p.category_name || 'অন্যান্য',
+                    slug: p.category_slug || 'other'
+                }
+            }));
+        } else {
+            console.warn('No products from API, using fallback data');
+            allProducts = fallbackProducts.map(p => ({
+                ...p,
+                category: { name: p.category_name, slug: p.category_slug }
+            }));
+        }
+
+        renderProducts(allProducts);
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        // Use fallback data on error
+        allProducts = fallbackProducts.map(p => ({
+            ...p,
+            category: { name: p.category_name, slug: p.category_slug }
+        }));
+        renderProducts(allProducts);
+    }
 }
 
 window.filterProducts = (category, event) => {
@@ -257,8 +262,36 @@ function renderProducts(products) {
 
     if (products.length === 0) {
         grid.innerHTML = `
-            <div class="text-center col-span-full font-bengali text-gray-500 py-12">
-                <p>এই ক্যাটেগরিতে কোনো পণ্য নেই।</p>
+            <div class="col-span-full flex flex-col items-center justify-center py-20 animate-fade-in-up">
+                <!-- Animated Icon -->
+                <div class="relative mb-8">
+                    <div class="w-32 h-32 rounded-full bg-gradient-to-br from-brand-terracotta/20 to-brand-deep/10 flex items-center justify-center animate-pulse">
+                        <svg class="w-16 h-16 text-brand-terracotta/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                    <!-- Floating particles -->
+                    <div class="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-brand-terracotta/30 animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="absolute -bottom-1 -left-3 w-3 h-3 rounded-full bg-brand-deep/20 animate-bounce" style="animation-delay: 0.3s"></div>
+                    <div class="absolute top-1/2 -right-4 w-2 h-2 rounded-full bg-brand-terracotta/40 animate-bounce" style="animation-delay: 0.5s"></div>
+                </div>
+                
+                <!-- Message -->
+                <h3 class="text-2xl font-bold text-gray-700 mb-3 font-bengali-display text-center">
+                    এই ক্যাটেগরিতে কোনো পণ্য নেই
+                </h3>
+                <p class="text-gray-500 font-bengali text-center max-w-md mb-6 leading-relaxed">
+                    আমরা শীঘ্রই নতুন পণ্য নিয়ে আসছি। অনুগ্রহ করে অপেক্ষা করুন! ✨
+                </p>
+                
+                <!-- Coming Soon Badge -->
+                <div class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-terracotta/10 to-brand-deep/10 rounded-full border border-brand-terracotta/20">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-terracotta opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-terracotta"></span>
+                    </span>
+                    <span class="text-sm font-semibold text-brand-deep font-bengali">শীঘ্রই আসছে</span>
+                </div>
             </div>
         `;
         return;
@@ -283,7 +316,7 @@ function renderProducts(products) {
                     <span class="inline-block px-3 py-1 bg-brand-light/30 text-brand-terracotta text-xs font-bold rounded-lg mb-2 font-bengali">
                         ${product.category.name}
                     </span>
-                    <h3 class="text-xl font-bold text-gray-900 leading-tight font-bengali group-hover:text-brand-terracotta transition-colors">
+                    <h3 class="text-xl font-bold text-gray-900 leading-tight font-bengali-display group-hover:text-brand-terracotta transition-colors">
                         ${product.name}
                     </h3>
                 </div>
@@ -368,6 +401,60 @@ window.closeModal = () => {
     document.getElementById('product-modal').classList.add('hidden');
     document.body.style.overflow = 'auto';
 };
+
+// --- Fullscreen Image Lightbox ---
+window.openLightbox = () => {
+    const modalImage = document.getElementById('modal-image');
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+
+    if (!modalImage || !lightbox || !lightboxImage) return;
+
+    // Set image source
+    lightboxImage.src = modalImage.src;
+    lightboxImage.alt = modalImage.alt;
+
+    // Show lightbox
+    lightbox.classList.remove('hidden');
+
+    // Reset and trigger animation
+    lightboxImage.style.animation = 'none';
+    lightboxImage.offsetHeight; // Trigger reflow
+    lightboxImage.style.animation = 'lightbox-zoom-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+
+    // Close on Escape key
+    document.addEventListener('keydown', handleLightboxEscape);
+};
+
+window.closeLightbox = () => {
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+
+    if (!lightbox) return;
+
+    // Animate out
+    lightboxImage.style.animation = 'lightbox-zoom-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+
+    setTimeout(() => {
+        lightbox.classList.add('hidden');
+        // Only restore scroll if modal is also closed
+        const modal = document.getElementById('product-modal');
+        if (modal && modal.classList.contains('hidden')) {
+            document.body.style.overflow = 'auto';
+        }
+    }, 300);
+
+    document.removeEventListener('keydown', handleLightboxEscape);
+};
+
+function handleLightboxEscape(e) {
+    if (e.key === 'Escape') {
+        closeLightbox();
+    }
+}
 
 window.updateQuantity = (change) => {
     const newQuantity = currentQuantity + change;
@@ -759,6 +846,7 @@ window.confirmOrderFromPage = async () => {
         if (result.result === 'success') {
             document.getElementById('success-order-id').textContent = orderData.orderId;
             document.getElementById('order-success').classList.replace('hidden', 'flex');
+            document.body.style.overflow = 'hidden'; // Lock Scroll
 
             // Clear Cart after successful order
             localStorage.removeItem('nongor_cart');
@@ -816,7 +904,7 @@ window.validatePhoneRealtime = (input) => {
     }
 };
 
-// --- Google Sheets Logic ---
+// --- Order Submission Logic ---
 
 window.confirmOrder = async () => {
     console.log("🔵 Confirm Order Clicked");
@@ -899,11 +987,9 @@ window.confirmOrder = async () => {
     confirmBtn.disabled = true;
 
     try {
-        console.log("📤 Sending data to Google Sheets...");
+        console.log("📤 Sending order data...");
 
-        // Standard fetch POST to Apps Script Web App
-        // We use text/plain content-type to avoid CORS preflight, and parse it in the Apps Script
-        // Send POST request to Netlify Function
+        // Send POST request to API
         const response = await fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify(orderData)
@@ -923,6 +1009,7 @@ window.confirmOrder = async () => {
             if (modalActions) modalActions.classList.add('hidden');
             if (orderSuccess) {
                 orderSuccess.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Lock Scroll
 
                 // Update success screen
                 const orderIdEl = document.getElementById('success-order-id');
@@ -1078,3 +1165,46 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof initCategories === 'function') initCategories();
     }
 });
+// Copy Order ID
+function copyOrderId() {
+    const orderId = document.getElementById('success-order-id').innerText;
+    if (!orderId) return;
+
+    // Remove fallback #NG-XXXX placeholder if copied
+    const textToCopy = orderId.includes('XXXX') ? '' : orderId;
+    if (!textToCopy) return;
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        // Show Toast
+        showToast('Order ID Copied!', 'green');
+
+        // Visual Feedback (Toggle Icons) - For Index Modal
+        const copyIcon = document.getElementById('copy-icon');
+        const checkIcon = document.getElementById('check-icon');
+        if (copyIcon && checkIcon) {
+            copyIcon.classList.add('hidden');
+            checkIcon.classList.remove('hidden');
+            setTimeout(() => {
+                copyIcon.classList.remove('hidden');
+                checkIcon.classList.add('hidden');
+            }, 2000);
+        }
+
+        // Visual Feedback (Toggle Icons) - For Checkout Page
+        const copyIconCk = document.getElementById('copy-icon-checkout');
+        const checkIconCk = document.getElementById('check-icon-checkout');
+        if (copyIconCk && checkIconCk) {
+            copyIconCk.classList.add('hidden');
+            checkIconCk.classList.remove('hidden');
+            setTimeout(() => {
+                copyIconCk.classList.remove('hidden');
+                checkIconCk.classList.add('hidden');
+            }, 2000);
+        }
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy', 'red');
+    });
+}
+
+
