@@ -442,8 +442,8 @@ window.openModal = (productId) => {
             const imgSrc = img && img.startsWith('http') ? img : `./assets/${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
             return `
                 <img src="${imgSrc}" alt="Thumbnail ${index + 1}" 
-                    onclick="changeMainImage('${imgSrc.replace(/'/g, "\\'")}')"
-                    class="w-12 h-12 object-cover rounded-lg border-2 cursor-pointer transition-all hover:scale-110 hover:shadow-lg ${index === 0 ? 'border-brand-terracotta shadow-md' : 'border-white/70'}"
+                    onclick="changeMainImage('${imgSrc.replace(/'/g, "\\'")}', this)"
+                    class="w-14 h-14 object-cover rounded-lg border-2 cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg ${index === 0 ? 'border-brand-terracotta shadow-md scale-105' : 'border-gray-200 opacity-70 hover:opacity-100'}"
                     onerror="this.style.display='none'">
             `;
         }).join('');
@@ -487,9 +487,31 @@ window.closeModal = () => {
     document.body.style.overflow = 'auto';
 };
 
-// Change Main Image in Modal
-window.changeMainImage = (src) => {
-    document.getElementById('modal-image').src = src;
+// Change Main Image in Modal with Fade & Active State
+window.changeMainImage = (src, thumbnail) => {
+    const mainImg = document.getElementById('modal-image');
+
+    // Smooth Fade Out
+    mainImg.style.opacity = '0';
+    mainImg.style.transform = 'scale(0.98)';
+
+    setTimeout(() => {
+        mainImg.src = src;
+        // Smooth Fade In
+        mainImg.style.opacity = '1';
+        mainImg.style.transform = 'scale(1)';
+    }, 200);
+
+    // Update Thumbnail Styles
+    if (thumbnail) {
+        document.querySelectorAll('#modal-gallery img').forEach(img => {
+            img.classList.remove('border-brand-terracotta', 'shadow-md', 'scale-105', 'opacity-100');
+            img.classList.add('border-gray-200', 'opacity-70');
+        });
+
+        thumbnail.classList.remove('border-gray-200', 'opacity-70');
+        thumbnail.classList.add('border-brand-terracotta', 'shadow-md', 'scale-105', 'opacity-100');
+    }
 };
 
 // --- Fullscreen Image Lightbox ---
