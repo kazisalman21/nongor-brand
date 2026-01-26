@@ -1131,13 +1131,16 @@
 
         // Upload multiple images to Cloudinary
         async function uploadMultipleToCloudinary(files) {
-            const urls = [];
-            for (let i = 0; i < files.length; i++) {
-                showToast(`Uploading image ${i + 1} of ${files.length}...`, 'blue');
-                const url = await uploadToCloudinary(files[i]);
-                urls.push(url);
+            showToast(`Uploading ${files.length} images...`, 'blue');
+
+            try {
+                const uploadPromises = Array.from(files).map(file => uploadToCloudinary(file));
+                const urls = await Promise.all(uploadPromises);
+                return urls;
+            } catch (error) {
+                console.error('Batch upload error:', error);
+                throw error;
             }
-            return urls;
         }
 
         // Handle Product Submit
