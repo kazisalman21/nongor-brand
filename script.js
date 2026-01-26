@@ -301,7 +301,7 @@ function renderProducts(products) {
         <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0" 
              style="animation-delay: ${index * 100}ms">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
-                <img src="./assets/${product.image}" alt="${product.name}" 
+                <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + product.image}" alt="${product.name}" 
                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
                      onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
                 
@@ -357,7 +357,7 @@ window.openModal = (productId) => {
     currentProductId = productId; // Store ID
 
     // Populate data
-    document.getElementById('modal-image').src = `./assets/${product.image}`;
+    document.getElementById('modal-image').src = product.image && product.image.startsWith('http') ? product.image : `./assets/${product.image}`;
     document.getElementById('modal-title').textContent = product.name;
     document.getElementById('modal-price').textContent = `৳${product.price}`;
     document.getElementById('modal-category').textContent = product.category.name;
