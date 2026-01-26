@@ -477,21 +477,23 @@
                 <!-- Image Upload (Multiple) -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Product Images (Multiple)</label>
-                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-brand-accent transition cursor-pointer"
-                        onclick="document.getElementById('product-image-input').click()">
+                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-brand-accent transition cursor-pointer relative"
+                        id="drop-zone" onclick="document.getElementById('product-image-input').click()"
+                        ondrop="handleDrop(event)" ondragover="handleDragOver(event)"
+                        ondragleave="handleDragLeave(event)">
                         <input type="file" id="product-image-input" accept="image/*" multiple class="hidden"
                             onchange="handleMultipleImagePreview(event)">
                         <div id="image-preview-container" class="hidden mb-3">
                             <div id="image-previews" class="flex flex-wrap gap-2 justify-center"></div>
                         </div>
-                        <div id="upload-placeholder">
+                        <div id="upload-placeholder" class="pointer-events-none">
                             <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                 </path>
                             </svg>
-                            <p class="text-sm text-gray-500">Click to upload images</p>
+                            <p class="text-sm text-gray-500">Click or Drag to upload images</p>
                             <p class="text-xs text-gray-400 mt-1">Select multiple images (PNG, JPG)</p>
                         </div>
                     </div>
@@ -991,10 +993,11 @@
             document.getElementById('product-modal-title').textContent = 'Add New Product';
             document.getElementById('product-form').reset();
             document.getElementById('product-id').value = '';
-            document.getElementById('product-images-urls').value = '[]';
-            document.getElementById('image-previews').innerHTML = '';
-            document.getElementById('image-preview-container').classList.add('hidden');
-            document.getElementById('upload-placeholder').classList.remove('hidden');
+
+            // Reset unified image state
+            productImages = [];
+            renderImagePreviews();
+
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
@@ -1023,7 +1026,14 @@
             if (images.length === 0 && product.image) {
                 images = [product.image];
             }
-            document.getElementById('product-images-urls').value = JSON.stringify(images);
+
+            // Populate unified image state
+            productImages = images.map(url => ({
+                type: 'url',
+                data: url,
+                preview: url.startsWith('http') ? url : `./assets/${url.replace(/^\.?\/?assets\//, '')}`
+            }));
+            renderImagePreviews();
 
             // Set category
             const categoryValue = `${product.category_slug}|${product.category_name}`;
@@ -1086,28 +1096,116 @@
             }
         }
 
-        // Handle Multiple Image Preview
-        function handleMultipleImagePreview(event) {
-            const files = event.target.files;
+        // Unified Image State
+        let productImages = []; // Array of objects: { type: 'url'|'file', data: string|File, preview: string }
+
+        // Render Image Previews with Reordering
+        function renderImagePreviews() {
+            const container = document.getElementById('image-previews');
+            container.innerHTML = '';
+
+            if (productImages.length === 0) {
+                document.getElementById('image-preview-container').classList.add('hidden');
+                document.getElementById('upload-placeholder').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('image-preview-container').classList.remove('hidden');
+            document.getElementById('upload-placeholder').classList.add('hidden');
+
+            productImages.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'relative group w-24 h-24';
+
+                div.innerHTML = `
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex flex-col justify-center items-center gap-1 z-10">
+                        <div class="flex gap-1">
+                            ${index > 0 ? `<button onclick="moveImage(${index}, -1)" class="p-1 bg-white/90 rounded hover:bg-white text-brand-deep" title="Move Left">←</button>` : ''}
+                            ${index < productImages.length - 1 ? `<button onclick="moveImage(${index}, 1)" class="p-1 bg-white/90 rounded hover:bg-white text-brand-deep" title="Move Right">→</button>` : ''}
+                        </div>
+                        <button onclick="removeImage(${index})" class="px-2 py-0.5 bg-red-500 text-white text-xs rounded hover:bg-red-600">Remove</button>
+                    </div>
+                    <img src="${item.preview}" class="w-full h-full object-cover rounded-lg border-2 ${index === 0 ? 'border-brand-terracotta ring-2 ring-brand-terracotta/30' : 'border-gray-200'}">
+                    ${index === 0 ? '<span class="absolute top-1 left-1 bg-brand-terracotta text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">MAIN</span>' : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Drag and Drop Handlers
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('drop-zone').classList.add('border-brand-accent', 'bg-purple-50');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-brand-accent', 'bg-purple-50');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('drop-zone').classList.remove('border-brand-accent', 'bg-purple-50');
+
+            const files = Array.from(event.dataTransfer.files);
             if (!files.length) return;
 
-            const previewsContainer = document.getElementById('image-previews');
-            previewsContainer.innerHTML = '';
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) return;
 
-            Array.from(files).forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'w-16 h-16 object-cover rounded-lg border-2 border-gray-200';
-                    img.alt = `Preview ${index + 1}`;
-                    previewsContainer.appendChild(img);
+                    productImages.push({
+                        type: 'file',
+                        data: file,
+                        preview: e.target.result
+                    });
+                    renderImagePreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Add New Images
+        function handleMultipleImagePreview(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    productImages.push({
+                        type: 'file',
+                        data: file,
+                        preview: e.target.result
+                    });
+                    renderImagePreviews();
                 };
                 reader.readAsDataURL(file);
             });
 
-            document.getElementById('image-preview-container').classList.remove('hidden');
-            document.getElementById('upload-placeholder').classList.add('hidden');
+            // Clear input so same files can be selected again
+            event.target.value = '';
+        }
+
+        // Move Image (Reorder)
+        window.moveImage = (index, direction) => {
+            const newIndex = index + direction;
+            if (newIndex >= 0 && newIndex < productImages.length) {
+                const temp = productImages[index];
+                productImages[index] = productImages[newIndex];
+                productImages[newIndex] = temp;
+                renderImagePreviews();
+            }
+        };
+
+        // Remove Image
+        window.removeImage = (index) => {
+            productImages.splice(index, 1);
+            renderImagePreviews();
         }
 
         // Upload to Cloudinary
@@ -1143,9 +1241,46 @@
             }
         }
 
+        // Process and Upload All Images
+        async function processImagesForSubmit() {
+            const finalUrls = [];
+            const filesToUpload = productImages.filter(img => img.type === 'file');
+
+            if (filesToUpload.length > 0) {
+                showToast(`Uploading ${filesToUpload.length} new images...`, 'blue');
+            }
+
+            // Create a map of promises for new files
+            const uploadMap = new Map();
+            filesToUpload.forEach(img => {
+                uploadMap.set(img, uploadToCloudinary(img.data));
+            });
+
+            // Wait for uploads
+            try {
+                // Construct final array preserving order
+                for (const img of productImages) {
+                    if (img.type === 'url') {
+                        finalUrls.push(img.data);
+                    } else {
+                        const url = await uploadMap.get(img);
+                        finalUrls.push(url);
+                    }
+                }
+                return finalUrls;
+            } catch (error) {
+                throw error;
+            }
+        }
+
         // Handle Product Submit
         async function handleProductSubmit(event) {
             event.preventDefault();
+
+            if (productImages.length === 0) {
+                showToast('Please add at least one product image', 'red');
+                return;
+            }
 
             const session = JSON.parse(sessionStorage.getItem('nongor_admin_session'));
             if (!session) return;
@@ -1160,16 +1295,14 @@
             spinner.classList.remove('hidden');
 
             try {
-                // Upload images to Cloudinary if new files selected
-                let imagesUrls = JSON.parse(document.getElementById('product-images-urls').value || '[]');
-                const imageFiles = document.getElementById('product-image-input').files;
+                // Upload/Process images
+                const imageUrls = await processImagesForSubmit();
+                const mainImage = imageUrls[0] || '';
 
-                if (imageFiles.length > 0) {
-                    imagesUrls = await uploadMultipleToCloudinary(imageFiles);
+                // Validate main image
+                if (!mainImage) {
+                    throw new Error("Failed to process images");
                 }
-
-                // First image is the main image for backward compatibility
-                const mainImage = imagesUrls.length > 0 ? imagesUrls[0] : '';
 
                 // Prepare product data
                 const categoryParts = document.getElementById('product-category').value.split('|');
@@ -1181,7 +1314,7 @@
                     category_name: categoryParts[1],
                     is_featured: document.getElementById('product-featured').checked,
                     image: mainImage,
-                    images: imagesUrls
+                    images: imageUrls
                 };
 
                 let url, method;
