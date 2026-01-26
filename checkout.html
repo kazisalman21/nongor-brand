@@ -7,36 +7,16 @@
     <meta name="description" content="নোঙর চেকআউট - আপনার অর্ডার সম্পন্ন করুন। Secure checkout for your Nongor order.">
     <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
     <title>Checkout - নোঙর</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS (Local Build) -->
+    <link href="./assets/styles.css" rel="stylesheet">
+    <!-- Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
         rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            deep: '#2F3E46',
-                            light: '#84A98C',
-                            sand: '#F4F1DE',
-                            terracotta: '#E07A5F' // Accent color
-                        }
-                    },
-                    fontFamily: {
-                        bengali: ['"Noto Serif Bengali"', 'serif'],
-                        'bengali-display': ['"Tiro Bangla"', 'serif'],
-                        serif: ['"Playfair Display"', 'serif'],
-                        sans: ['"Montserrat"', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 
 <body
-    class="bg-[#F9F7F2] font-sans text-brand-deep min-h-screen flex flex-col selection:bg-brand-terracotta selection:text-white">
+    class="bg-[#F9F7F2] font-sans text-brand-checkout-deep min-h-screen flex flex-col selection:bg-brand-terracotta selection:text-white">
 
     <!-- Navbar (Simplified) -->
     <nav class="bg-white/95 backdrop-blur-md shadow-md sticky top-0 z-50">
@@ -45,12 +25,12 @@
                 <img src="./assets/logo.jpeg" alt="Nongor" class="h-12 rounded-lg shadow-sm">
                 <div class="flex flex-col justify-center">
                     <span
-                        class="text-2xl font-bold tracking-wide font-serif uppercase leading-none text-brand-deep group-hover:text-brand-terracotta transition-colors">নোঙর</span>
+                        class="text-2xl font-bold tracking-wide font-serif uppercase leading-none text-brand-checkout-deep group-hover:text-brand-terracotta transition-colors">নোঙর</span>
                     <span class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-80 mt-1 text-gray-500">The
                         Clothing Brand</span>
                 </div>
             </a>
-            <a href="index.html" class="text-sm font-bold text-gray-500 hover:text-brand-deep">Back to Shop</a>
+            <a href="index.html" class="text-sm font-bold text-gray-500 hover:text-brand-checkout-deep">Back to Shop</a>
         </div>
     </nav>
 
@@ -63,7 +43,7 @@
             <!-- Header -->
             <div class="text-center mb-10">
                 <!-- <p class="text-xs uppercase tracking-[0.3em] text-brand-terracotta font-bold mb-2">Final Step</p> -->
-                <h1 class="text-3xl md:text-4xl font-serif font-bold text-brand-deep">Checkout</h1>
+                <h1 class="text-3xl md:text-4xl font-serif font-bold text-brand-checkout-deep">Checkout</h1>
                 <div class="w-16 h-1 bg-gradient-to-r from-brand-terracotta to-brand-light mx-auto mt-4 rounded-full">
                 </div>
             </div>
@@ -71,7 +51,7 @@
             <!-- Order Summary -->
             <div
                 class="bg-gradient-to-br from-[#f8f6f0] to-white p-6 md:p-8 rounded-2xl border border-gray-100 mb-10 shadow-inner">
-                <h3 class="font-serif font-bold text-brand-deep text-xl mb-6 flex items-center gap-3">
+                <h3 class="font-serif font-bold text-brand-checkout-deep text-xl mb-6 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-brand-terracotta/10 flex items-center justify-center">
                         <svg class="w-5 h-5 text-brand-terracotta" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -99,7 +79,7 @@
                 </div>
                 <div
                     class="flex justify-between items-center text-xl font-bold border-t border-brand-deep/10 pt-3 mt-2">
-                    <span class="text-brand-deep">Total</span>
+                    <span class="text-brand-checkout-deep">Total</span>
                     <span id="checkout-total" class="text-brand-terracotta">৳0</span>
                 </div>
             </div>
@@ -223,7 +203,7 @@
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[200] hidden transition-all duration-300">
         <div
-            class="bg-brand-deep text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-bengali border border-brand-sand">
+            class="bg-brand-checkout-deep text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-bengali border border-brand-sand">
             <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -243,7 +223,7 @@
             </svg>
         </div>
 
-        <h2 class="text-4xl font-serif font-bold text-brand-deep mb-3">Thank You!</h2>
+        <h2 class="text-4xl font-serif font-bold text-brand-checkout-deep mb-3">Thank You!</h2>
         <p class="text-gray-500 mb-10 text-center max-w-sm leading-relaxed">Your order has been placed successfully. We
             will contact you shortly.</p>
 
@@ -251,7 +231,8 @@
             class="bg-white p-8 rounded-2xl border border-gray-100 shadow-lg mb-10 w-full max-w-xs text-center ring-1 ring-gray-100">
             <p class="text-xs uppercase text-gray-400 tracking-[0.2em] mb-3">Order ID</p>
             <div class="flex items-center gap-3 justify-center">
-                <p id="success-order-id" class="text-3xl font-mono font-bold text-brand-deep select-all tracking-wider">
+                <p id="success-order-id"
+                    class="text-3xl font-mono font-bold text-brand-checkout-deep select-all tracking-wider">
                     #NG-XXXX</p>
                 <button onclick="copyOrderId()" title="Copy Order ID"
                     class="text-gray-400 hover:text-brand-terracotta transition p-2 rounded-md hover:bg-gray-100 ring-offset-2 focus:ring-2 ring-brand-terracotta outline-none">
@@ -269,7 +250,7 @@
         </div>
 
         <a href="index.html"
-            class="bg-brand-deep text-white px-10 py-4 rounded-full font-bold shadow-xl hover:bg-brand-terracotta transition-all duration-300 hover:shadow-2xl">Continue
+            class="bg-brand-checkout-deep text-white px-10 py-4 rounded-full font-bold shadow-xl hover:bg-brand-terracotta transition-all duration-300 hover:shadow-2xl">Continue
             Shopping</a>
     </div>
 
