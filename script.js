@@ -301,27 +301,16 @@ function renderProducts(products) {
     }
 
     grid.innerHTML = products.map((product, index) => {
-        // Prepare Hover Image Logic
-        let hoverImgHTML = '';
-        if (product.images && product.images.length > 1) {
-            const img2 = product.images[1];
-            const hoverSrc = img2 && img2.startsWith('http') ? img2 : './assets/' + (img2 || 'logo.jpeg').replace(/^\.?\/?assets\//, '');
-            hoverImgHTML = `<img src="${hoverSrc}" alt="${product.name} Hover" 
-                class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out z-10"
-                onerror="this.style.display='none'">`;
-        }
-
         return `
-        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0" 
-             style="animation-delay: ${index * 100}ms">
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0 relative" 
+             style="animation-delay: ${index * 100}ms"
+             onmouseenter="startCardSlideshow(${product.id}, this)"
+             onmouseleave="stopCardSlideshow(${product.id}, this)">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
                 <!-- Main Image -->
                 <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" alt="${product.name}"  
-                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out relative z-0"
+                     class="product-main-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out relative z-0"
                      onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
-                
-                <!-- Hover Image (Swap) -->
-                ${hoverImgHTML}
                 
                 <!-- Overlay Gradient (z-20 to stay on top) -->
                 <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none"></div>
@@ -373,6 +362,55 @@ let selectedSize = 'M';
 let currentProductId = null; // Added tracking
 const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
 
+// --- Card Slideshow Logic ---
+window.startCardSlideshow = (productId, card) => {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product || !product.images || product.images.length <= 1) return;
+
+    const img = card.querySelector('.product-main-image');
+    if (!img) return;
+
+    // If already running, don't restart
+    if (card.dataset.slideshowInterval) return;
+
+    let idx = 0;
+    // Immediate swap on hover? No, wait 1s. Or maybe 800ms.
+    // User said "move like loop".
+    // Let's do 1200ms interval.
+
+    // Store original src to reset later
+    if (!card.dataset.originalSrc) {
+        card.dataset.originalSrc = img.src;
+    }
+
+    const interval = setInterval(() => {
+        idx = (idx + 1) % product.images.length;
+        const nextImg = product.images[idx];
+        const nextSrc = nextImg && nextImg.startsWith('http') ? nextImg : './assets/' + (nextImg || 'logo.jpeg').replace(/^\.?\/?assets\//, '');
+
+        // Smooth transition? Just src swap for now.
+        // To make it smooth, we'd need dual images cross-fading.
+        // Given complexity, src swap is standard for simple slideshows.
+        img.src = nextSrc;
+    }, 1200);
+
+    card.dataset.slideshowInterval = interval;
+};
+
+window.stopCardSlideshow = (productId, card) => {
+    const interval = card.dataset.slideshowInterval;
+    if (interval) {
+        clearInterval(interval);
+        delete card.dataset.slideshowInterval;
+    }
+
+    const img = card.querySelector('.product-main-image');
+    if (img && card.dataset.originalSrc) {
+        img.src = card.dataset.originalSrc;
+    }
+};
+
+// --- Modal Logic ---
 window.openModal = (productId) => {
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
