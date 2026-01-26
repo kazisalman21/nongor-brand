@@ -301,7 +301,7 @@ function renderProducts(products) {
         <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0" 
              style="animation-delay: ${index * 100}ms">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
-                <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + product.image}" alt="${product.name}" 
+                <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" alt="${product.name}"  
                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
                      onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
                 
@@ -362,7 +362,7 @@ window.openModal = (productId) => {
         : [product.image].filter(Boolean);
 
     // Set main image
-    const mainImgSrc = images[0] && images[0].startsWith('http') ? images[0] : `./assets/${images[0] || ''}`;
+    const mainImgSrc = images[0] && images[0].startsWith('http') ? images[0] : `./assets/${(images[0] || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
     document.getElementById('modal-image').src = mainImgSrc;
     document.getElementById('modal-title').textContent = product.name;
     document.getElementById('modal-price').textContent = `৳${product.price}`;
@@ -378,7 +378,7 @@ window.openModal = (productId) => {
     const galleryContainer = document.getElementById('modal-gallery');
     if (galleryContainer && images.length > 1) {
         galleryContainer.innerHTML = images.map((img, index) => {
-            const imgSrc = img && img.startsWith('http') ? img : `./assets/${img}`;
+            const imgSrc = img && img.startsWith('http') ? img : `./assets/${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
             return `
                 <img src="${imgSrc}" alt="Thumbnail ${index + 1}" 
                     onclick="changeMainImage('${imgSrc.replace(/'/g, "\\'")}')"

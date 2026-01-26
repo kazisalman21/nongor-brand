@@ -946,7 +946,7 @@
             tbody.innerHTML = allProducts.map(product => `
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4">
-                        <img src="${product.image || './assets/logo.jpeg'}" 
+                        <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" 
                              alt="${product.name}" 
                              class="w-12 h-12 rounded-lg object-cover"
                              onerror="this.src='./assets/logo.jpeg'">
