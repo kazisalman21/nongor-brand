@@ -105,7 +105,7 @@ nongor-ecommerce/
 
 ```bash
 git clone https://github.com/kazisalman21/nongor-brand.git
-cd nongor-ecommerce
+cd nongor-brand
 ```
 
 ### 2. Install Dependencies
