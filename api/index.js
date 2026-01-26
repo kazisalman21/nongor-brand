@@ -173,14 +173,15 @@ module.exports = async (req, res) => {
                 `);
 
                 const insertQuery = `
-                    INSERT INTO products (name, price, image, description, category_slug, category_name, is_featured)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                     RETURNING *
                 `;
                 const values = [
                     data.name,
                     data.price,
                     data.image || '',
+                    data.images || [],
                     data.description || '',
                     data.category_slug || '',
                     data.category_name || '',
@@ -292,16 +293,17 @@ module.exports = async (req, res) => {
 
                 const updateQuery = `
                     UPDATE products 
-                    SET name = $1, price = $2, image = $3, description = $4, 
-                        category_slug = $5, category_name = $6, is_featured = $7, 
-                        is_active = $8, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = $9
+                    SET name = $1, price = $2, image = $3, images = $4, description = $5, 
+                        category_slug = $6, category_name = $7, is_featured = $8, 
+                        is_active = $9, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $10
                     RETURNING *
                 `;
                 const values = [
                     data.name,
                     data.price,
                     data.image || '',
+                    data.images || [],
                     data.description || '',
                     data.category_slug || '',
                     data.category_name || '',

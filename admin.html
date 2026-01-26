@@ -474,15 +474,15 @@
                         placeholder="Enter product description"></textarea>
                 </div>
 
-                <!-- Image Upload -->
+                <!-- Image Upload (Multiple) -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Product Image</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Product Images (Multiple)</label>
                     <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-brand-accent transition cursor-pointer"
                         onclick="document.getElementById('product-image-input').click()">
-                        <input type="file" id="product-image-input" accept="image/*" class="hidden"
-                            onchange="handleImagePreview(event)">
+                        <input type="file" id="product-image-input" accept="image/*" multiple class="hidden"
+                            onchange="handleMultipleImagePreview(event)">
                         <div id="image-preview-container" class="hidden mb-3">
-                            <img id="image-preview" class="max-h-32 mx-auto rounded-lg" src="" alt="Preview">
+                            <div id="image-previews" class="flex flex-wrap gap-2 justify-center"></div>
                         </div>
                         <div id="upload-placeholder">
                             <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor"
@@ -491,11 +491,11 @@
                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                 </path>
                             </svg>
-                            <p class="text-sm text-gray-500">Click to upload image</p>
-                            <p class="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                            <p class="text-sm text-gray-500">Click to upload images</p>
+                            <p class="text-xs text-gray-400 mt-1">Select multiple images (PNG, JPG)</p>
                         </div>
                     </div>
-                    <input type="hidden" id="product-image-url" value="">
+                    <input type="hidden" id="product-images-urls" value="[]">
                 </div>
 
                 <!-- Featured Toggle -->
@@ -991,7 +991,8 @@
             document.getElementById('product-modal-title').textContent = 'Add New Product';
             document.getElementById('product-form').reset();
             document.getElementById('product-id').value = '';
-            document.getElementById('product-image-url').value = '';
+            document.getElementById('product-images-urls').value = '[]';
+            document.getElementById('image-previews').innerHTML = '';
             document.getElementById('image-preview-container').classList.add('hidden');
             document.getElementById('upload-placeholder').classList.remove('hidden');
             document.getElementById('product-modal').classList.remove('hidden');
@@ -1016,7 +1017,13 @@
             document.getElementById('product-price').value = product.price;
             document.getElementById('product-description').value = product.description || '';
             document.getElementById('product-featured').checked = product.is_featured;
-            document.getElementById('product-image-url').value = product.image || '';
+
+            // Handle images (backward compatibility)
+            let images = product.images || [];
+            if (images.length === 0 && product.image) {
+                images = [product.image];
+            }
+            document.getElementById('product-images-urls').value = JSON.stringify(images);
 
             // Set category
             const categoryValue = `${product.category_slug}|${product.category_name}`;
@@ -1028,11 +1035,23 @@
                 }
             }
 
-            // Show image preview if exists
-            if (product.image) {
-                document.getElementById('image-preview').src = product.image;
+            // Show image previews
+            const previewsContainer = document.getElementById('image-previews');
+            previewsContainer.innerHTML = '';
+
+            if (images.length > 0) {
+                images.forEach((imgUrl, index) => {
+                    const img = document.createElement('img');
+                    img.src = imgUrl.startsWith('http') ? imgUrl : `./assets/${imgUrl}`;
+                    img.className = 'w-16 h-16 object-cover rounded-lg border-2 border-gray-200';
+                    img.alt = `Preview ${index + 1}`;
+                    previewsContainer.appendChild(img);
+                });
                 document.getElementById('image-preview-container').classList.remove('hidden');
                 document.getElementById('upload-placeholder').classList.add('hidden');
+            } else {
+                document.getElementById('image-preview-container').classList.add('hidden');
+                document.getElementById('upload-placeholder').classList.remove('hidden');
             }
 
             document.getElementById('product-modal').classList.remove('hidden');
@@ -1067,18 +1086,28 @@
             }
         }
 
-        // Handle Image Preview
-        function handleImagePreview(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // Handle Multiple Image Preview
+        function handleMultipleImagePreview(event) {
+            const files = event.target.files;
+            if (!files.length) return;
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById('image-preview').src = e.target.result;
-                document.getElementById('image-preview-container').classList.remove('hidden');
-                document.getElementById('upload-placeholder').classList.add('hidden');
-            };
-            reader.readAsDataURL(file);
+            const previewsContainer = document.getElementById('image-previews');
+            previewsContainer.innerHTML = '';
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-16 h-16 object-cover rounded-lg border-2 border-gray-200';
+                    img.alt = `Preview ${index + 1}`;
+                    previewsContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('image-preview-container').classList.remove('hidden');
+            document.getElementById('upload-placeholder').classList.add('hidden');
         }
 
         // Upload to Cloudinary
@@ -1100,6 +1129,17 @@
             }
         }
 
+        // Upload multiple images to Cloudinary
+        async function uploadMultipleToCloudinary(files) {
+            const urls = [];
+            for (let i = 0; i < files.length; i++) {
+                showToast(`Uploading image ${i + 1} of ${files.length}...`, 'blue');
+                const url = await uploadToCloudinary(files[i]);
+                urls.push(url);
+            }
+            return urls;
+        }
+
         // Handle Product Submit
         async function handleProductSubmit(event) {
             event.preventDefault();
@@ -1117,14 +1157,16 @@
             spinner.classList.remove('hidden');
 
             try {
-                // Upload image to Cloudinary if new file selected
-                let imageUrl = document.getElementById('product-image-url').value;
-                const imageFile = document.getElementById('product-image-input').files[0];
+                // Upload images to Cloudinary if new files selected
+                let imagesUrls = JSON.parse(document.getElementById('product-images-urls').value || '[]');
+                const imageFiles = document.getElementById('product-image-input').files;
 
-                if (imageFile) {
-                    showToast('Uploading image...', 'blue');
-                    imageUrl = await uploadToCloudinary(imageFile);
+                if (imageFiles.length > 0) {
+                    imagesUrls = await uploadMultipleToCloudinary(imageFiles);
                 }
+
+                // First image is the main image for backward compatibility
+                const mainImage = imagesUrls.length > 0 ? imagesUrls[0] : '';
 
                 // Prepare product data
                 const categoryParts = document.getElementById('product-category').value.split('|');
@@ -1135,7 +1177,8 @@
                     category_slug: categoryParts[0],
                     category_name: categoryParts[1],
                     is_featured: document.getElementById('product-featured').checked,
-                    image: imageUrl
+                    image: mainImage,
+                    images: imagesUrls
                 };
 
                 let url, method;

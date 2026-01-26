@@ -356,8 +356,14 @@ window.openModal = (productId) => {
 
     currentProductId = productId; // Store ID
 
-    // Populate data
-    document.getElementById('modal-image').src = product.image && product.image.startsWith('http') ? product.image : `./assets/${product.image}`;
+    // Get all images (use images array if available, fallback to single image)
+    const images = product.images && product.images.length > 0
+        ? product.images
+        : [product.image].filter(Boolean);
+
+    // Set main image
+    const mainImgSrc = images[0] && images[0].startsWith('http') ? images[0] : `./assets/${images[0] || ''}`;
+    document.getElementById('modal-image').src = mainImgSrc;
     document.getElementById('modal-title').textContent = product.name;
     document.getElementById('modal-price').textContent = `৳${product.price}`;
     document.getElementById('modal-category').textContent = product.category.name;
@@ -367,6 +373,24 @@ window.openModal = (productId) => {
     const imgElement = document.getElementById('modal-image');
     imgElement.style.display = 'block';
     if (imgElement.parentElement) imgElement.parentElement.style.backgroundColor = 'transparent';
+
+    // Render gallery thumbnails
+    const galleryContainer = document.getElementById('modal-gallery');
+    if (galleryContainer && images.length > 1) {
+        galleryContainer.innerHTML = images.map((img, index) => {
+            const imgSrc = img && img.startsWith('http') ? img : `./assets/${img}`;
+            return `
+                <img src="${imgSrc}" alt="Thumbnail ${index + 1}" 
+                    onclick="changeMainImage('${imgSrc.replace(/'/g, "\\'")}')"
+                    class="w-12 h-12 object-cover rounded-lg border-2 cursor-pointer transition-all hover:scale-110 hover:shadow-lg ${index === 0 ? 'border-brand-terracotta shadow-md' : 'border-white/70'}"
+                    onerror="this.style.display='none'">
+            `;
+        }).join('');
+        galleryContainer.classList.remove('hidden');
+    } else if (galleryContainer) {
+        galleryContainer.innerHTML = '';
+        galleryContainer.classList.add('hidden');
+    }
 
     // Reset state
     currentQuantity = 1;
@@ -400,6 +424,11 @@ window.openModal = (productId) => {
 window.closeModal = () => {
     document.getElementById('product-modal').classList.add('hidden');
     document.body.style.overflow = 'auto';
+};
+
+// Change Main Image in Modal
+window.changeMainImage = (src) => {
+    document.getElementById('modal-image').src = src;
 };
 
 // --- Fullscreen Image Lightbox ---
