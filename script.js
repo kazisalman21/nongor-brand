@@ -299,19 +299,34 @@ function renderProducts(products) {
         return;
     }
 
-    grid.innerHTML = products.map((product, index) => `
+    grid.innerHTML = products.map((product, index) => {
+        // Prepare Hover Image Logic
+        let hoverImgHTML = '';
+        if (product.images && product.images.length > 1) {
+            const img2 = product.images[1];
+            const hoverSrc = img2 && img2.startsWith('http') ? img2 : './assets/' + (img2 || 'logo.jpeg').replace(/^\.?\/?assets\//, '');
+            hoverImgHTML = `<img src="${hoverSrc}" alt="${product.name} Hover" 
+                class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out z-10"
+                onerror="this.style.display='none'">`;
+        }
+
+        return `
         <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0" 
              style="animation-delay: ${index * 100}ms">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
+                <!-- Main Image -->
                 <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" alt="${product.name}"  
-                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out relative z-0"
                      onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
                 
-                <!-- Overlay Gradient -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <!-- Hover Image (Swap) -->
+                ${hoverImgHTML}
+                
+                <!-- Overlay Gradient (z-20 to stay on top) -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none"></div>
 
-                <!-- Badges -->
-                <div class="absolute top-4 left-4 flex flex-col gap-2">
+                <!-- Badges (z-30) -->
+                <div class="absolute top-4 left-4 flex flex-col gap-2 z-30 pointer-events-none">
                     ${product.is_featured ? '<span class="bg-white/90 backdrop-blur-sm text-brand-deep text-xs font-bold px-3 py-1.5 rounded-full shadow-sm font-bengali">🔥 জনপ্রিয়</span>' : ''}
                     ${product.images && product.images.length > 1 ? '<span class="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ' + product.images.length + '</span>' : ''}
                 </div>
@@ -345,7 +360,8 @@ function renderProducts(products) {
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 
