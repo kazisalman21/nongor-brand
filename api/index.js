@@ -99,7 +99,7 @@ module.exports = async (req, res) => {
                     return res.status(401).json({ result: 'error', message: 'Unauthorized' });
                 }
 
-                const result = await client.query('SELECT * FROM products ORDER BY created_at DESC');
+                const result = await client.query('SELECT * FROM products WHERE is_active = true ORDER BY created_at DESC');
                 await client.end();
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
