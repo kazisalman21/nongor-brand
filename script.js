@@ -226,6 +226,7 @@ async function initProducts() {
         }
 
         renderProducts(allProducts);
+        if (window.location.pathname.includes('checkout')) initCheckout();
     } catch (error) {
         console.error('Error fetching products:', error);
         // Use fallback data on error
@@ -234,6 +235,7 @@ async function initProducts() {
             category: { name: p.category_name, slug: p.category_slug }
         }));
         renderProducts(allProducts);
+        if (window.location.pathname.includes('checkout')) initCheckout();
     }
 }
 
@@ -581,7 +583,7 @@ window.updateCartUI = () => {
         container.innerHTML = cart.map((item, index) => `
             <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
                 <div class="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
-                    <img src="./assets/${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='./assets/logo.jpeg'">
                 </div>
                 
                 <div class="flex-grow min-w-0">
@@ -675,7 +677,7 @@ window.initCheckout = () => {
         // --- Buy Now Mode ---
         const qty = parseInt(params.get('qty')) || 1;
         const size = params.get('size') || 'M';
-        const product = productsData.find(p => p.id === id);
+        const product = allProducts.find(p => p.id === id);
 
         if (product) {
             checkoutItems.push({
@@ -702,7 +704,7 @@ window.initCheckout = () => {
     const container = document.getElementById('checkout-items-container');
     container.innerHTML = checkoutItems.map(item => `
         <div class="flex gap-4 items-start bg-gray-50/50 p-2 rounded-lg">
-            <img src="./assets/${item.image}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100">
+            <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
             <div class="flex-grow">
                 <div class="flex justify-between items-start">
                     <div>
