@@ -36,6 +36,17 @@
         ::-webkit-scrollbar-thumb {
             background: #E07A5F;
             border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3D405B;
+        }
+
+        /* Selection Color */
+        ::selection {
+            background: rgba(224, 122, 95, 0.3);
+            color: #3D405B;
         }
 
         .text-shadow {
@@ -86,6 +97,15 @@
 
         .animate-fade-in-up {
             animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Smooth Focus States */
+        input:focus,
+        button:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(224, 122, 95, 0.3);
         }
     </style>
 </head>
@@ -664,7 +684,7 @@
     </div>
 
     <!-- Standard script import, no module needed for simple setup -->
-    <script src="./script.js?v=premium2" defer></script>
+    <script src="./script.js?v=final" defer></script>
 </body>
 
 </html>
