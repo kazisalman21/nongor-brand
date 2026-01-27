@@ -252,6 +252,19 @@
             <button onclick="openTrackingModal()"
                 class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Track
                 Order</button>
+
+            <!-- Search Bar -->
+            <div class="relative flex items-center">
+                <input type="text" id="desktop-search" placeholder="Search..."
+                    class="bg-transparent border border-white/30 rounded-full py-1.5 px-4 text-sm text-brand-light placeholder-white/50 focus:border-brand-terracotta focus:w-48 w-32 transition-all duration-300 outline-none backdrop-blur-sm"
+                    oninput="handleSearch(this.value)">
+                <svg class="w-4 h-4 text-white/70 absolute right-3 pointer-events-none" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+
             <a href="#contact"
                 class="bg-white/10 px-5 py-2 rounded-full hover:bg-brand-terracotta hover:text-white transition-all duration-300 backdrop-blur-sm border border-white/20">Contact
                 Us</a>
@@ -280,6 +293,19 @@
             <!-- Mobile Menu Overlay -->
             <div id="mobile-menu"
                 class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
+
+                <!-- Mobile Search -->
+                <div class="relative w-3/4 mb-4">
+                    <input type="text" id="mobile-search" placeholder="Search products..."
+                        class="w-full bg-white/10 border border-white/20 rounded-full py-2 px-4 text-white placeholder-white/50 focus:border-brand-terracotta outline-none"
+                        oninput="handleSearch(this.value)">
+                    <svg class="w-5 h-5 text-white/50 absolute right-3 top-1/2 -translate-y-1/2" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+
                 <a href="#home" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
                     onclick="toggleMobileMenu()">Home</a>
                 <a href="about.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
@@ -639,6 +665,7 @@
                     <a href="#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
                     <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
                     <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                    <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
                 </div>
             </div>
 

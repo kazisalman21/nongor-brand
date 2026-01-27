@@ -239,6 +239,10 @@ async function initProducts() {
 window.filterProducts = (category, event) => {
     currentCategory = category;
 
+    // Clear Search Inputs when changing category
+    document.getElementById('desktop-search').value = '';
+    document.getElementById('mobile-search').value = '';
+
     if (event) {
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
@@ -254,6 +258,58 @@ window.filterProducts = (category, event) => {
         renderProducts(filtered);
     }
 };
+
+// --- Search Logic ---
+let searchTimeout;
+window.handleSearch = (query) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        performSearch(query);
+    }, 300);
+};
+
+function performSearch(query) {
+    const q = query.toLowerCase().trim();
+
+    // Sync Inputs
+    const desktopInput = document.getElementById('desktop-search');
+    const mobileInput = document.getElementById('mobile-search');
+    if (desktopInput && desktopInput.value !== query) desktopInput.value = query;
+    if (mobileInput && mobileInput.value !== query) mobileInput.value = query;
+
+    if (!q) {
+        filterProducts('all');
+        // Reset category UI to 'All'
+        const allBtn = document.querySelector('.category-btn'); // Assuming first one is 'All'
+        if (allBtn) {
+            // Trigger click simulation or manual update
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
+            });
+            allBtn.className = 'category-btn active px-8 py-3 rounded-full bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/30 transform scale-105 transition-all duration-300 font-medium border border-transparent';
+        }
+        return;
+    }
+
+    // Visual feedback: Deselect categories
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
+    });
+
+    const filtered = allProducts.filter(p => {
+        return p.name.toLowerCase().includes(q) ||
+            p.category.name.toLowerCase().includes(q) ||
+            (p.description && p.description.toLowerCase().includes(q));
+    });
+
+    renderProducts(filtered);
+
+    // Auto-scroll to collection if needed
+    const collection = document.getElementById('collection');
+    if (collection && window.scrollY < collection.offsetTop - 150) {
+        collection.scrollIntoView({ behavior: 'smooth' });
+    }
+}
 
 // --- Smart Image Optimization ---
 window.getOptimizedImage = (url, type = 'main') => {

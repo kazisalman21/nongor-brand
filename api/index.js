@@ -1,40 +1,35 @@
 const { Client } = require('pg');
+const jwt = require('jsonwebtoken');
 
 // Vercel Serverless Function (Standard Node.js HTTP)
 module.exports = async (req, res) => {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-password, x-admin-user, x-admin-pass, x-admin-secret');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-password, x-admin-user, x-admin-pass, x-admin-secret');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 
+    const JWT_SECRET = process.env.JWT_SECRET;
+
     // --- AUTH HELPERS ---
-    const users = {
-        'admin': process.env.ADMIN_PASSWORD || 'nongor@2025',
-        'manager': 'nongor@1234'
-    };
+    function verifyAdminToken(req) {
+        const authHeader = req.headers.authorization;
 
-    const isAuthenticated = (req) => {
-        const user = req.headers['x-admin-user'];
-        const pass = req.headers['x-admin-pass'];
-        const legacyPass = req.headers['x-admin-password'];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            // Fallback to legacy secret check for backward compatibility during migration?
+            // User guide says "Replace", suggesting we enforce token. 
+            // However, existing FE uses x-admin-secret. I will force migration.
+            return { valid: false, error: 'No token provided' };
+        }
 
-        if (legacyPass && (legacyPass === process.env.ADMIN_PASSWORD || legacyPass === 'nongor1234')) return true;
-        if (user && users[user] && users[user] === pass) return true;
-        return false;
-    };
+        const token = authHeader.substring(7);
 
-    // Admin secret check for product management (also accepts admin passwords)
-    const isAdminSecretValid = (req) => {
-        const secret = req.headers['x-admin-secret'];
-        const adminSecret = process.env.ADMIN_SECRET || 'nongor_secret_2025';
-
-        // Check admin secret OR any admin password
-        if (secret === adminSecret) return true;
-        if (secret === (process.env.ADMIN_PASSWORD || 'nongor@2025')) return true;
-        if (secret === 'nongor@1234') return true; // Manager password
-
-        return false;
-    };
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            return { valid: true, decoded };
+        } catch (error) {
+            return { valid: false, error: 'Invalid or expired token' };
+        }
+    }
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -49,14 +44,7 @@ module.exports = async (req, res) => {
 
         // --- 1. GET REQUESTS ---
         if (method === 'GET') {
-            // Login Check
-            if (query.action === 'login') {
-                if (isAuthenticated(req)) {
-                    return res.status(200).json({ result: 'success', message: 'Logged in' });
-                } else {
-                    return res.status(401).json({ result: 'error', message: 'Invalid Credentials' });
-                }
-            }
+            // Login handled by api/auth.js now
 
             if (!process.env.NETLIFY_DATABASE_URL) {
                 throw new Error("Missing NETLIFY_DATABASE_URL");
@@ -70,7 +58,7 @@ module.exports = async (req, res) => {
 
             // --- GET PRODUCTS (Public) ---
             if (query.action === 'getProducts') {
-                // Ensure products table exists
+                // Ensure products table exists (Keeping this logic as is for now)
                 await client.query(`
                     CREATE TABLE IF NOT EXISTS products (
                         id SERIAL PRIMARY KEY,
@@ -94,9 +82,10 @@ module.exports = async (req, res) => {
 
             // --- GET ALL PRODUCTS (Admin, includes inactive) ---
             if (query.action === 'getAllProducts') {
-                if (!isAuthenticated(req) && !isAdminSecretValid(req)) {
+                const auth = verifyAdminToken(req);
+                if (!auth.valid) {
                     await client.end();
-                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
                 }
 
                 const result = await client.query('SELECT * FROM products WHERE is_active = true ORDER BY created_at DESC');
@@ -104,7 +93,7 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
-            // Tracking
+            // Tracking (Public)
             if (query.orderId) {
                 const result = await client.query('SELECT * FROM orders WHERE order_id = $1', [query.orderId]);
                 await client.end();
@@ -118,9 +107,10 @@ module.exports = async (req, res) => {
 
             // Admin - Get All Orders
             if (query.action === 'getAllOrders') {
-                if (!isAuthenticated(req)) {
+                const auth = verifyAdminToken(req);
+                if (!auth.valid) {
                     await client.end();
-                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
                 }
 
                 const result = await client.query('SELECT * FROM orders ORDER BY created_at DESC');
@@ -150,9 +140,10 @@ module.exports = async (req, res) => {
 
             // --- ADD PRODUCT (Protected) ---
             if (query.action === 'addProduct') {
-                if (!isAdminSecretValid(req)) {
+                const auth = verifyAdminToken(req);
+                if (!auth.valid) {
                     await client.end();
-                    return res.status(403).json({ result: 'error', message: 'Forbidden: Invalid admin secret' });
+                    return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
                 }
 
                 // Ensure products table exists
@@ -194,6 +185,7 @@ module.exports = async (req, res) => {
             }
 
             // --- CREATE ORDER (Legacy, Public) ---
+            // ... (Order creation remains public)
             // Determine Initial Statuses
             let initialDelivery = 'Pending';
             let initialPayment = 'Unpaid';
@@ -286,16 +278,17 @@ module.exports = async (req, res) => {
 
             // --- UPDATE PRODUCT (Protected) ---
             if (query.action === 'updateProduct') {
-                if (!isAdminSecretValid(req)) {
+                const auth = verifyAdminToken(req);
+                if (!auth.valid) {
                     await client.end();
-                    return res.status(403).json({ result: 'error', message: 'Forbidden: Invalid admin secret' });
+                    return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
                 }
 
                 const updateQuery = `
                     UPDATE products 
                     SET name = $1, price = $2, image = $3, images = $4, description = $5, 
-                        category_slug = $6, category_name = $7, is_featured = $8, 
-                        is_active = $9, updated_at = CURRENT_TIMESTAMP
+                    category_slug = $6, category_name = $7, is_featured = $8, 
+                    is_active = $9, updated_at = CURRENT_TIMESTAMP
                     WHERE id = $10
                     RETURNING *
                 `;
@@ -322,10 +315,11 @@ module.exports = async (req, res) => {
                 }
             }
 
-            // --- UPDATE ORDER STATUS (Legacy) ---
-            if (!isAuthenticated(req)) {
+            // --- UPDATE ORDER STATUS (Protected) ---
+            const auth = verifyAdminToken(req);
+            if (!auth.valid) {
                 await client.end();
-                return res.status(401).json({ error: 'Unauthorized' });
+                return res.status(401).json({ error: 'Unauthorized: ' + auth.error });
             }
 
             try {
@@ -348,8 +342,9 @@ module.exports = async (req, res) => {
         // --- 4. DELETE REQUESTS ---
         if (method === 'DELETE') {
             // --- DELETE PRODUCT (Protected) ---
-            if (!isAdminSecretValid(req)) {
-                return res.status(403).json({ result: 'error', message: 'Forbidden: Invalid admin secret' });
+            const auth = verifyAdminToken(req);
+            if (!auth.valid) {
+                return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
             }
 
             const productId = query.id;
