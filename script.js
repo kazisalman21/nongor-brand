@@ -417,31 +417,51 @@ window.startCardSlideshow = (productId, card) => {
     const img = card.querySelector('.product-main-image');
     if (!img) return;
 
-    // If already running, don't restart
-    if (card.dataset.slideshowInterval) return;
+    // Use a delay to prevent lag when quickly moving over items
+    // Store the timeout ID so we can cancel it if the user leaves quickly
+    card.dataset.hoverTimeout = setTimeout(() => {
+        // If already running (safety check), don't restart
+        if (card.dataset.slideshowInterval) return;
 
-    let idx = 0;
-    // Store original display src to reset later
-    if (!card.dataset.displaySrc) {
-        card.dataset.displaySrc = img.src;
-    }
+        let idx = 0;
+        // Store original display src to reset later
+        if (!card.dataset.displaySrc) {
+            card.dataset.displaySrc = img.src;
+        }
 
-    const interval = setInterval(() => {
-        idx = (idx + 1) % product.images.length;
-        const nextImgData = product.images[idx];
+        const interval = setInterval(() => {
+            idx = (idx + 1) % product.images.length;
+            const nextImgData = product.images[idx];
 
-        // Use optimized image for slideshow too
-        const nextSrc = getOptimizedImage(nextImgData);
-        img.src = nextSrc;
-    }, 1200);
+            // Use optimized image for slideshow too
+            const nextSrc = getOptimizedImage(nextImgData);
 
-    card.dataset.slideshowInterval = interval;
+            // Preload next image to prevent flicker
+            const preloadImg = new Image();
+            preloadImg.src = nextSrc;
+            preloadImg.onload = () => {
+                // Only verify we are still mounted/hovered
+                if (card.dataset.slideshowInterval) {
+                    img.src = nextSrc;
+                }
+            };
+        }, 1200);
+
+        card.dataset.slideshowInterval = interval;
+    }, 400); // 400ms Delay before starting slideshow
 };
 
 window.stopCardSlideshow = (productId, card) => {
+    // 1. Clear the pending start (if the user left quickly)
+    if (card.dataset.hoverTimeout) {
+        clearTimeout(parseInt(card.dataset.hoverTimeout));
+        delete card.dataset.hoverTimeout;
+    }
+
+    // 2. Clear the active slideshow
     const interval = card.dataset.slideshowInterval;
     if (interval) {
-        clearInterval(interval);
+        clearInterval(parseInt(interval));
         delete card.dataset.slideshowInterval;
     }
 
