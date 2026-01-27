@@ -93,6 +93,7 @@
         transform: translateZ(0);
         backface-visibility: hidden;
         perspective: 1000px;
+        will-change: transform;
     }
 
     .will-animate {
