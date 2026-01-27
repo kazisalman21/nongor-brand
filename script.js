@@ -195,7 +195,6 @@ function initCategories() {
 
 async function initProducts() {
     // 1. Optimistic Render: Show fallback immediately (No loading spinner)
-    // This ensures "Direct show product" as requested
     console.log("initProducts: Optimistic render");
     renderProducts(fallbackProducts);
 
@@ -235,42 +234,10 @@ async function initProducts() {
     }
 }
 
-if (result.result === 'success' && result.data && result.data.length > 0) {
-    // Transform API data to match expected format
-    allProducts = result.data.map(p => ({
-        id: p.id,
-        name: p.name,
-        price: parseFloat(p.price),
-        image: p.image,
-        images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
-        description: p.description,
-        is_featured: p.is_featured,
-        category: {
-            name: p.category_name || 'অন্যান্য',
-            slug: p.category_slug || 'other'
-        }
     }));
-} else {
-    console.warn('No products from API, using fallback data');
-    allProducts = fallbackProducts.map(p => ({
-        ...p,
-        category: { name: p.category_name, slug: p.category_slug }
-    }));
-}
-
-console.log("Rendering products:", allProducts.length);
+console.log("Rendering fallback products due to error");
 renderProducts(allProducts);
 if (window.location.pathname.includes('checkout')) initCheckout();
-    } catch (error) {
-    console.error('Error fetching products:', error);
-    // Use fallback data on error
-    allProducts = fallbackProducts.map(p => ({
-        ...p,
-        category: { name: p.category_name, slug: p.category_slug }
-    }));
-    console.log("Rendering fallback products due to error");
-    renderProducts(allProducts);
-    if (window.location.pathname.includes('checkout')) initCheckout();
 }
 }
 
