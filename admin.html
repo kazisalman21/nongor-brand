@@ -689,9 +689,18 @@
                     btnLoading.classList.add('hidden');
                 }
             } catch (error) {
+                console.error('Detailed Login Error:', error);
                 errorDiv.classList.remove('hidden');
-                errorDiv.textContent = '✗ Connection error. Please try again.';
-                console.error(error);
+
+                // Show actual error message if available, otherwise generic
+                let errorMsg = 'Connection error. Please check console.';
+                if (error.message && error.message.includes('Unexpected token')) {
+                    errorMsg = 'Server Error (500): Invalid JSON response. Check server logs.';
+                } else if (error.message) {
+                    errorMsg = error.message;
+                }
+
+                errorDiv.textContent = '✗ ' + errorMsg;
                 btnText.classList.remove('hidden');
                 btnLoading.classList.add('hidden');
             }
