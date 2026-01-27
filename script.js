@@ -194,23 +194,22 @@ function initCategories() {
 }
 
 async function initProducts() {
-    try {
-        // Show loading state
-        const grid = document.getElementById('products-grid');
-        if (grid) {
-            grid.innerHTML = `
-                <div class="col-span-full flex justify-center items-center py-20">
-                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-terracotta"></div>
-                </div>
-            `;
-        }
+    // 1. Optimistic Render: Show fallback immediately (No loading spinner)
+    // This ensures "Direct show product" as requested
+    console.log("initProducts: Optimistic render");
+    renderProducts(fallbackProducts);
 
-        // Fetch products from API
+    try {
+        console.log("Fetching API background update...");
+
+        // Background Fetch (Silent update)
         const response = await fetch(`${API_URL}?action=getProducts`);
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
         const result = await response.json();
 
         if (result.result === 'success' && result.data && result.data.length > 0) {
-            // Transform API data to match expected format
+            // Transform API data
             allProducts = result.data.map(p => ({
                 id: p.id,
                 name: p.name,
@@ -224,26 +223,55 @@ async function initProducts() {
                     slug: p.category_slug || 'other'
                 }
             }));
-        } else {
-            console.warn('No products from API, using fallback data');
-            allProducts = fallbackProducts.map(p => ({
-                ...p,
-                category: { name: p.category_name, slug: p.category_slug }
-            }));
-        }
 
-        renderProducts(allProducts);
-        if (window.location.pathname.includes('checkout')) initCheckout();
+            // 2. Update Render with real data
+            console.log("API Success: Updating products");
+            renderProducts(allProducts);
+            if (window.location.pathname.includes('checkout')) initCheckout();
+        }
     } catch (error) {
-        console.error('Error fetching products:', error);
-        // Use fallback data on error
-        allProducts = fallbackProducts.map(p => ({
-            ...p,
-            category: { name: p.category_name, slug: p.category_slug }
-        }));
-        renderProducts(allProducts);
-        if (window.location.pathname.includes('checkout')) initCheckout();
+        console.warn('API Fetch failed or timed out. User is seeing fallback data.', error);
+        // No action needed, fallback is already visible
     }
+}
+
+if (result.result === 'success' && result.data && result.data.length > 0) {
+    // Transform API data to match expected format
+    allProducts = result.data.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: parseFloat(p.price),
+        image: p.image,
+        images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
+        description: p.description,
+        is_featured: p.is_featured,
+        category: {
+            name: p.category_name || 'অন্যান্য',
+            slug: p.category_slug || 'other'
+        }
+    }));
+} else {
+    console.warn('No products from API, using fallback data');
+    allProducts = fallbackProducts.map(p => ({
+        ...p,
+        category: { name: p.category_name, slug: p.category_slug }
+    }));
+}
+
+console.log("Rendering products:", allProducts.length);
+renderProducts(allProducts);
+if (window.location.pathname.includes('checkout')) initCheckout();
+    } catch (error) {
+    console.error('Error fetching products:', error);
+    // Use fallback data on error
+    allProducts = fallbackProducts.map(p => ({
+        ...p,
+        category: { name: p.category_name, slug: p.category_slug }
+    }));
+    console.log("Rendering fallback products due to error");
+    renderProducts(allProducts);
+    if (window.location.pathname.includes('checkout')) initCheckout();
+}
 }
 
 window.filterProducts = (category, event) => {
@@ -267,7 +295,7 @@ window.filterProducts = (category, event) => {
 
 // --- Smart Image Optimization ---
 window.getOptimizedImage = (url, type = 'main') => {
-    if (!url) return './assets/logo.jpeg';
+    if (!url || typeof url !== 'string') return './assets/logo.jpeg';
 
     // 1. Cloudinary Optimization
     if (url.includes('cloudinary.com')) {
@@ -314,10 +342,95 @@ window.getOptimizedImage = (url, type = 'main') => {
 // ... (initCategories, initProducts omitted for brevity) ...
 
 function renderProducts(products) {
-    // ... (omitted) ...
-}
+    const grid = document.getElementById('products-grid');
+    if (!grid) return;
 
-// ... (renderProducts implementation omitted for brevity) ...
+    if (products.length === 0) {
+        // ... (Empty state code) ...
+        grid.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-20 animate-fade-in-up">
+                <div class="relative mb-8">
+                    <div class="w-32 h-32 rounded-full bg-gradient-to-br from-brand-terracotta/20 to-brand-deep/10 flex items-center justify-center animate-pulse">
+                        <svg class="w-16 h-16 text-brand-terracotta/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-700 mb-3 font-bengali-display text-center">এই ক্যাটেগরিতে কোনো পণ্য নেই</h3>
+            </div>`;
+        return;
+    }
+
+    grid.innerHTML = products.map((product, index) => {
+        // Robust Image Handling
+        let optimizedSrc = './assets/logo.jpeg';
+        let originalSrc = './assets/logo.jpeg';
+
+        if (product.image && typeof product.image === 'string') {
+            // Basic Fallback
+            originalSrc = product.image.startsWith('http') ? product.image : './assets/' + product.image.replace(/^\.?\/?assets\//, '');
+            // Try Optimization
+            try {
+                optimizedSrc = getOptimizedImage(product.image);
+            } catch (e) {
+                optimizedSrc = originalSrc;
+            }
+        }
+
+        return `
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0 relative" 
+             style="animation-delay: ${index * 100}ms"
+             onmouseenter="startCardSlideshow(${product.id}, this)"
+             onmouseleave="stopCardSlideshow(${product.id}, this)">
+            <div class="relative h-80 bg-gray-100 overflow-hidden">
+                <!-- Main Image -->
+                <img src="${optimizedSrc}" alt="${product.name}"  
+                     data-original-src="${originalSrc}"
+                     class="product-main-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out will-animate relative z-0"
+                     loading="lazy"
+                     decoding="async"
+                     onerror="this.onerror=null; this.src='${originalSrc}';">
+                
+                <!-- Overlay Gradient (z-20 to stay on top) -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none"></div>
+
+                <!-- Badges (z-30) -->
+                <div class="absolute top-4 left-4 flex flex-col gap-2 z-30 pointer-events-none">
+                    ${product.is_featured ? '<span class="bg-white/90 backdrop-blur-sm text-brand-deep text-xs font-bold px-3 py-1.5 rounded-full shadow-sm font-bengali">🔥 জনপ্রিয়</span>' : ''}
+                </div>
+            </div>
+            
+            <div class="p-6 flex flex-col flex-grow">
+                <div class="mb-4">
+                    <span class="inline-block px-3 py-1 bg-brand-light/30 text-brand-terracotta text-xs font-bold rounded-lg mb-2 font-bengali">
+                        ${(product.category && product.category.name) || 'অন্যান্য'}
+                    </span>
+                    <h3 class="text-xl font-bold text-gray-900 leading-tight font-bengali-display group-hover:text-brand-terracotta transition-colors">
+                        ${product.name}
+                    </h3>
+                </div>
+                
+                <p class="text-gray-500 text-sm font-bengali line-clamp-2 mb-6 flex-grow leading-relaxed">
+                    ${product.description || ''}
+                </p>
+                
+                <div class="flex items-center justify-between gap-4 mt-auto border-t border-gray-100 pt-5">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-400 font-medium">মূল্য</span>
+                        <span class="text-2xl font-bold text-brand-deep">৳${(product.price || 0).toLocaleString('bn-BD')}</span>
+                    </div>
+                    <button onclick="openModal(${product.id})" class="flex-1 bg-brand-deep text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-deep/20 hover:bg-brand-terracotta hover:shadow-[0_8px_30px_rgba(224,122,95,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 font-bengali flex items-center justify-center gap-2">
+                        <span>অর্ডার করুন</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
 
 
 // --- Modal Logic ---
