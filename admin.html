@@ -1299,7 +1299,8 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            formData.append('format', 'webp'); // Force valid WebP conversion
+            // Note: We don't use formData.append('format', 'webp') because it often fails with unsigned presets.
+            // Instead, we simply request the .webp extension in the returned URL.
 
             try {
                 const response = await fetch(
@@ -1308,11 +1309,19 @@
                 );
                 const data = await response.json();
 
+                if (data.error) {
+                    throw new Error(data.error.message || 'Upload failed');
+                }
+
                 // Inject Auto-Format and Auto-Quality optimization immediately
                 // Cloudinary returns: .../upload/v12345/filename.jpg
-                // We want: .../upload/f_auto,q_auto/v12345/filename.jpg
+                // We convert to: .../upload/f_auto,q_auto/v12345/filename.webp
                 let secureUrl = data.secure_url;
                 if (secureUrl && secureUrl.includes('/upload/')) {
+                    // 1. Force WebP extension (logic: replace known extension or end of string)
+                    secureUrl = secureUrl.replace(/\.(jpg|jpeg|png|bmp|gif|tiff|webp)$/i, '.webp');
+
+                    // 2. Inject transformation params
                     const parts = secureUrl.split('/upload/');
                     secureUrl = `${parts[0]}/upload/f_auto,q_auto/${parts[1]}`;
                 }
