@@ -234,12 +234,7 @@ async function initProducts() {
     }
 }
 
-    }));
-console.log("Rendering fallback products due to error");
-renderProducts(allProducts);
-if (window.location.pathname.includes('checkout')) initCheckout();
-}
-}
+
 
 window.filterProducts = (category, event) => {
     currentCategory = category;
