@@ -298,9 +298,12 @@
     <!-- Hero Section -->
     <header id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden w-full">
         <div class="absolute inset-0 z-0">
-            <img src="./assets/hero-bg.jpg" alt="Background" class="w-full h-full object-cover blur-[2px] scale-105"
-                fetchpriority="high" loading="eager" decoding="sync"
-                onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#3D405B'">
+            <picture>
+                <source srcset="./assets/hero-bg.webp" type="image/webp">
+                <img src="./assets/hero-bg.jpg" alt="Background" class="w-full h-full object-cover blur-[2px] scale-105"
+                    fetchpriority="high" loading="eager" decoding="sync"
+                    onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#3D405B'">
+            </picture>
             <!-- Subtle gradient only at the very bottom for smooth transition, mostly clear -->
             <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-brand-deep/30"></div>
         </div>

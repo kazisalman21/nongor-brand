@@ -265,48 +265,87 @@ window.filterProducts = (category, event) => {
     }
 };
 
+// --- Smart Image Optimization ---
+window.getOptimizedImage = (url, type = 'main') => {
+    if (!url) return './assets/logo.jpeg';
+
+    // 1. Cloudinary Optimization
+    if (url.includes('cloudinary.com')) {
+        // If already optimized, return as is (unless we need thumb sizing)
+        if (url.includes('f_auto,q_auto') && type !== 'thumb') return url;
+
+        // Inject transformations
+        // Pattern: /upload/v1234/id -> /upload/f_auto,q_auto/v1234/id
+        let params = 'f_auto,q_auto';
+        if (type === 'thumb') params += ',w_300';
+
+        // Handle existing params or lack thereof
+        if (url.includes('/upload/')) {
+            const parts = url.split('/upload/');
+            return `${parts[0]}/upload/${params}/${parts[1]}`;
+        }
+        return url;
+    }
+
+    // 2. Local Asset Optimization (WebP)
+    // Assume local if not http/https or starts with ./assets
+    if (!url.startsWith('http') || url.startsWith('./assets/')) {
+        let path = url;
+        if (!path.startsWith('./assets/')) {
+            path = './assets/' + path.replace(/^\.?\/?assets\//, '');
+        }
+
+        // Replace extension with webp
+        const base = path.replace(/\.(jpg|jpeg|png)$/i, '');
+
+        if (type === 'thumb') {
+            return `${base}-thumb.webp`;
+        } else {
+            return `${base}.webp`;
+        }
+    }
+
+    // External regular URL - return as is
+    return url;
+};
+
+// --- Product Logic ---
+// ... (initCategories, initProducts omitted for brevity) ...
+
 function renderProducts(products) {
     const grid = document.getElementById('products-grid');
     if (!grid) return;
 
     if (products.length === 0) {
+        // ... (Empty state code) ...
         grid.innerHTML = `
             <div class="col-span-full flex flex-col items-center justify-center py-20 animate-fade-in-up">
-                <!-- Animated Icon -->
                 <div class="relative mb-8">
                     <div class="w-32 h-32 rounded-full bg-gradient-to-br from-brand-terracotta/20 to-brand-deep/10 flex items-center justify-center animate-pulse">
                         <svg class="w-16 h-16 text-brand-terracotta/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                         </svg>
                     </div>
-                    <!-- Floating particles -->
                     <div class="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-brand-terracotta/30 animate-bounce" style="animation-delay: 0.1s"></div>
                     <div class="absolute -bottom-1 -left-3 w-3 h-3 rounded-full bg-brand-deep/20 animate-bounce" style="animation-delay: 0.3s"></div>
                     <div class="absolute top-1/2 -right-4 w-2 h-2 rounded-full bg-brand-terracotta/40 animate-bounce" style="animation-delay: 0.5s"></div>
                 </div>
-                
-                <!-- Message -->
-                <h3 class="text-2xl font-bold text-gray-700 mb-3 font-bengali-display text-center">
-                    এই ক্যাটেগরিতে কোনো পণ্য নেই
-                </h3>
-                <p class="text-gray-500 font-bengali text-center max-w-md mb-6 leading-relaxed">
-                    আমরা শীঘ্রই নতুন পণ্য নিয়ে আসছি। অনুগ্রহ করে অপেক্ষা করুন! ✨
-                </p>
-                
-                <!-- Coming Soon Badge -->
+                <h3 class="text-2xl font-bold text-gray-700 mb-3 font-bengali-display text-center">এই ক্যাটেগরিতে কোনো পণ্য নেই</h3>
+                <p class="text-gray-500 font-bengali text-center max-w-md mb-6 leading-relaxed">আমরা শীঘ্রই নতুন পণ্য নিয়ে আসছি। অনুগ্রহ করে অপেক্ষা করুন! ✨</p>
                 <div class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-terracotta/10 to-brand-deep/10 rounded-full border border-brand-terracotta/20">
-                    <span class="relative flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-terracotta opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-brand-terracotta"></span>
-                    </span>
+                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-terracotta opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-brand-terracotta"></span></span>
                     <span class="text-sm font-semibold text-brand-deep font-bengali">শীঘ্রই আসছে</span>
                 </div>
-            </div>
-        `;
+            </div>`;
         return;
     }
 
     grid.innerHTML = products.map((product, index) => {
+        // Use optimized main image
+        const optimizedSrc = getOptimizedImage(product.image);
+        // Fallback to original if optimization fails (e.g. 404 on webp)
+        const originalSrc = product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '');
+
         return `
         <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0 relative" 
              style="animation-delay: ${index * 100}ms"
@@ -314,11 +353,12 @@ function renderProducts(products) {
              onmouseleave="stopCardSlideshow(${product.id}, this)">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
                 <!-- Main Image -->
-                <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" alt="${product.name}"  
+                <img src="${optimizedSrc}" alt="${product.name}"  
+                     data-original-src="${originalSrc}"
                      class="product-main-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out will-animate relative z-0"
                      loading="lazy"
                      decoding="async"
-                     onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#f3f4f6'">
+                     onerror="this.onerror=null; this.src='${originalSrc}';">
                 
                 <!-- Overlay Gradient (z-20 to stay on top) -->
                 <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none"></div>
@@ -381,23 +421,17 @@ window.startCardSlideshow = (productId, card) => {
     if (card.dataset.slideshowInterval) return;
 
     let idx = 0;
-    // Immediate swap on hover? No, wait 1s. Or maybe 800ms.
-    // User said "move like loop".
-    // Let's do 1200ms interval.
-
-    // Store original src to reset later
-    if (!card.dataset.originalSrc) {
-        card.dataset.originalSrc = img.src;
+    // Store original display src to reset later
+    if (!card.dataset.displaySrc) {
+        card.dataset.displaySrc = img.src;
     }
 
     const interval = setInterval(() => {
         idx = (idx + 1) % product.images.length;
-        const nextImg = product.images[idx];
-        const nextSrc = nextImg && nextImg.startsWith('http') ? nextImg : './assets/' + (nextImg || 'logo.jpeg').replace(/^\.?\/?assets\//, '');
+        const nextImgData = product.images[idx];
 
-        // Smooth transition? Just src swap for now.
-        // To make it smooth, we'd need dual images cross-fading.
-        // Given complexity, src swap is standard for simple slideshows.
+        // Use optimized image for slideshow too
+        const nextSrc = getOptimizedImage(nextImgData);
         img.src = nextSrc;
     }, 1200);
 
@@ -412,8 +446,8 @@ window.stopCardSlideshow = (productId, card) => {
     }
 
     const img = card.querySelector('.product-main-image');
-    if (img && card.dataset.originalSrc) {
-        img.src = card.dataset.originalSrc;
+    if (img && card.dataset.displaySrc) {
+        img.src = card.dataset.displaySrc;
     }
 };
 
@@ -430,8 +464,16 @@ window.openModal = (productId) => {
         : [product.image].filter(Boolean);
 
     // Set main image
-    const mainImgSrc = images[0] && images[0].startsWith('http') ? images[0] : `./assets/${(images[0] || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
-    document.getElementById('modal-image').src = mainImgSrc;
+    // Optimized Main Image
+    const mainImgData = images[0];
+    const mainImgSrc = getOptimizedImage(mainImgData, 'main');
+    const mainImgOriginal = mainImgData && mainImgData.startsWith('http') ? mainImgData : `./assets/${(mainImgData || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
+
+    const modalImgEl = document.getElementById('modal-image');
+    modalImgEl.src = mainImgSrc;
+    // Add error handler specific to modal to fallback
+    modalImgEl.onerror = function () { this.src = mainImgOriginal; };
+
     document.getElementById('modal-title').textContent = product.name;
     document.getElementById('modal-price').textContent = `৳${product.price}`;
     document.getElementById('modal-category').textContent = product.category.name;
@@ -446,12 +488,17 @@ window.openModal = (productId) => {
     const galleryContainer = document.getElementById('modal-gallery');
     if (galleryContainer && images.length > 1) {
         galleryContainer.innerHTML = images.map((img, index) => {
-            const imgSrc = img && img.startsWith('http') ? img : `./assets/${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
+            const thumbSrc = getOptimizedImage(img, 'thumb');
+            const originalSrc = img && img.startsWith('http') ? img : `./assets/${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
+
+            // For click, we want the high-res version (optimized main)
+            const mainSwapSrc = getOptimizedImage(img, 'main');
+
             return `
-                <img src="${imgSrc}" alt="Thumbnail ${index + 1}" 
-                    onclick="changeMainImage('${imgSrc.replace(/'/g, "\\'")}', this)"
+                <img src="${thumbSrc}" alt="Thumbnail ${index + 1}" 
+                    onclick="changeMainImage('${mainSwapSrc.replace(/'/g, "\\'")}', this, '${originalSrc.replace(/'/g, "\\'")}')"
                     class="w-14 h-14 object-cover rounded-lg border-2 cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg ${index === 0 ? 'border-brand-terracotta shadow-md scale-105' : 'border-gray-200 opacity-70 hover:opacity-100'}"
-                    onerror="this.style.display='none'">
+                    onerror="this.src='${originalSrc}'">
             `;
         }).join('');
         galleryContainer.classList.remove('hidden');
@@ -495,7 +542,8 @@ window.closeModal = () => {
 };
 
 // Change Main Image in Modal with Fade & Active State
-window.changeMainImage = (src, thumbnail) => {
+// Change Main Image in Modal with Fade & Active State
+window.changeMainImage = (src, thumbnail, originalSrc) => {
     const mainImg = document.getElementById('modal-image');
 
     // Smooth Fade Out
@@ -504,6 +552,11 @@ window.changeMainImage = (src, thumbnail) => {
 
     setTimeout(() => {
         mainImg.src = src;
+        // Update error handler for dynamic swap
+        mainImg.onerror = function () {
+            if (originalSrc) this.src = originalSrc;
+        };
+
         // Smooth Fade In
         mainImg.style.opacity = '1';
         mainImg.style.transform = 'scale(1)';

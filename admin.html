@@ -1306,7 +1306,17 @@
                     { method: 'POST', body: formData }
                 );
                 const data = await response.json();
-                return data.secure_url;
+
+                // Inject Auto-Format and Auto-Quality optimization immediately
+                // Cloudinary returns: .../upload/v12345/filename.jpg
+                // We want: .../upload/f_auto,q_auto/v12345/filename.jpg
+                let secureUrl = data.secure_url;
+                if (secureUrl && secureUrl.includes('/upload/')) {
+                    const parts = secureUrl.split('/upload/');
+                    secureUrl = `${parts[0]}/upload/f_auto,q_auto/${parts[1]}`;
+                }
+
+                return secureUrl;
             } catch (error) {
                 console.error('Cloudinary upload error:', error);
                 throw error;
