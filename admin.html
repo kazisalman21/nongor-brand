@@ -1299,6 +1299,7 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            formData.append('format', 'webp'); // Force valid WebP conversion
 
             try {
                 const response = await fetch(

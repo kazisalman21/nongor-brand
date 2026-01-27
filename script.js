@@ -287,6 +287,10 @@ window.getOptimizedImage = (url, type = 'main') => {
         }
 
         // Replace extension with webp
+        // DISABLE WEBP OPTIMIZATION FOR NOW (Files don't exist)
+        return path;
+
+        /* 
         const base = path.replace(/\.(jpg|jpeg|png)$/i, '');
 
         if (type === 'thumb') {
@@ -294,6 +298,7 @@ window.getOptimizedImage = (url, type = 'main') => {
         } else {
             return `${base}.webp`;
         }
+        */
     }
 
     // External regular URL - return as is
