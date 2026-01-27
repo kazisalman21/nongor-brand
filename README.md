@@ -104,8 +104,8 @@ nongor-ecommerce/
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/nongor-ecommerce.git
-cd nongor-ecommerce
+git clone https://github.com/kazisalman21/nongor-brand.git
+cd nongor-brand
 ```
 
 ### 2. Install Dependencies
