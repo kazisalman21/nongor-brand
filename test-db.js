@@ -1,6 +1,7 @@
 const { Client } = require('pg');
 
-const connectionString = 'postgresql://neondb_owner:npg_6Yurm1NtbxHI@ep-plain-art-aez29oyf-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require';
+require('dotenv').config();
+const connectionString = process.env.NETLIFY_DATABASE_URL;
 
 const client = new Client({
     connectionString: connectionString,

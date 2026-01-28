@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 async function generateHash() {
-    const password = 'admin'; // DEFAULT PASSWORD - CHANGE BEFORE USE
+    const password = 'nongor@2025'; // DEFAULT PASSWORD - CHANGE BEFORE USE
     const hash = await bcrypt.hash(password, 10);
     console.log('\n=== COPY THESE TO YOUR ENVIRONMENT VARIABLES ===');
     console.log('ADMIN_PASSWORD_HASH=' + hash);
