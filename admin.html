@@ -35,6 +35,35 @@
             backdrop-filter: blur(10px);
         }
 
+        /* Animated Gradient Background */
+        .premium-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #6B8DD6, #8E37D7);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        }
+
         .table-row-hover:hover {
             background-color: #f9fafb;
             transition: all 0.2s;
@@ -100,28 +129,46 @@
             }
         }
 
-        @keyframes pulse-glow {
-
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(126, 58, 242, 0.4);
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
             }
 
             50% {
-                box-shadow: 0 0 0 10px rgba(126, 58, 242, 0);
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
             }
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
+            animation: fadeIn 0.5s ease-out forwards;
         }
 
         .animate-slide-in-up {
-            animation: slideInUp 0.4s ease-out forwards;
+            animation: slideInUp 0.6s ease-out forwards;
         }
 
         .animate-scale-in {
-            animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .delay-100 {
+            animation-delay: 100ms;
+        }
+
+        .delay-200 {
+            animation-delay: 200ms;
+        }
+
+        .delay-300 {
+            animation-delay: 300ms;
         }
 
         /* Smooth Fade Transition Class */
@@ -147,7 +194,7 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(126, 58, 242, 0.3);
+            box-shadow: 0 10px 30px rgba(126, 58, 242, 0.4);
         }
 
         .btn-primary:active {
@@ -184,38 +231,44 @@
 
     <!-- Login Screen (initially visible) -->
     <div id="login-screen"
-        class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-opacity duration-300">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md">
-            <img class="mx-auto h-16 w-auto rounded-full" src="./assets/logo.jpeg" alt="Nongor">
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Nongor Admin Panel
+        class="min-h-screen premium-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-opacity duration-500">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md animate-slide-in-up">
+            <div class="animate-float">
+                <img class="mx-auto h-20 w-auto rounded-full ring-4 ring-white/30 shadow-2xl" src="./assets/logo.jpeg"
+                    alt="Nongor">
+            </div>
+            <h2 class="mt-6 text-center text-4xl font-extrabold text-white drop-shadow-md tracking-tight">
+                Nongor Admin
             </h2>
+            <p class="mt-2 text-center text-sm text-blue-100 font-medium opacity-90">
+                Secure Dashboard Access
+            </p>
         </div>
 
-        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md animate-slide-in-up delay-100">
+            <div class="glass-card py-10 px-6 shadow-2xl sm:rounded-2xl sm:px-10">
                 <form class="space-y-6" onsubmit="handleLogin(event)">
-                    <div>
-                        <label for="admin-email-input" class="block text-sm font-medium text-gray-700">
+                    <div class="animate-slide-in-up delay-200">
+                        <label for="admin-email-input" class="block text-sm font-semibold text-gray-700 ml-1">
                             Email Address
                         </label>
-                        <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="mt-1 relative rounded-xl shadow-sm">
                             <input id="admin-email-input" name="email" type="email" required
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent sm:text-sm"
+                                class="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-brand-accent sm:text-sm transition-all"
                                 placeholder="admin@example.com">
                         </div>
                     </div>
 
-                    <div>
-                        <label for="admin-password-input" class="block text-sm font-medium text-gray-700">
+                    <div class="animate-slide-in-up delay-300">
+                        <label for="admin-password-input" class="block text-sm font-semibold text-gray-700 ml-1">
                             Password
                         </label>
-                        <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="mt-1 relative rounded-xl shadow-sm">
                             <input id="admin-password-input" name="password" type="password" required
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent sm:text-sm"
+                                class="appearance-none block w-full px-4 py-3 border border-gray-200 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-brand-accent sm:text-sm transition-all"
                                 placeholder="••••••••">
                             <button type="button" onclick="togglePasswordVisibility()"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 hover:text-brand-accent transition-colors">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -227,15 +280,26 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div class="animate-slide-in-up delay-300">
                         <button type="submit" id="login-button"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-deep hover:bg-brand-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent transition-colors">
-                            Sign in
+                            class="group w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg run-shadow text-sm font-bold text-white bg-gradient-to-r from-brand-deep to-brand-accent hover:from-purple-700 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent transition-all transform hover:-translate-y-0.5">
+                            Sign in to Dashboard
+                            <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
                         </button>
                     </div>
                 </form>
-                <div id="login-error" class="mt-4 text-center text-sm text-red-600 hidden"></div>
+                <div id="login-error"
+                    class="mt-4 p-3 rounded-lg bg-red-50 text-center text-sm text-red-600 hidden border border-red-100 animate-slide-in-up">
+                </div>
             </div>
+
+            <p class="mt-6 text-center text-xs text-white/60">
+                &copy; 2024 Nongor Brand. Secure System.
+            </p>
         </div>
     </div>
 
