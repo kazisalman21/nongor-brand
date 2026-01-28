@@ -184,44 +184,58 @@
 
     <!-- Login Screen (initially visible) -->
     <div id="login-screen"
-        class="min-h-screen bg-gradient-to-br from-brand-admin-dark via-brand-sidebar to-brand-admin-dark flex items-center justify-center p-6">
-        <div class="max-w-md w-full">
-            <div class="text-center mb-8">
-                <img src="./assets/logo.jpeg" alt="Nongor" class="h-20 mx-auto rounded-xl shadow-2xl mb-4">
-                <h1 class="text-3xl font-bold text-white mb-2">নোঙর Admin</h1>
-                <p class="text-gray-400">Secure Dashboard Login</p>
-            </div>
+        class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-opacity duration-300">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <img class="mx-auto h-16 w-auto rounded-full" src="./assets/logo.jpeg" alt="Nongor">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Nongor Admin Panel
+            </h2>
+        </div>
 
-            <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
-                <form id="login-form" class="space-y-6">
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <form class="space-y-6" onsubmit="handleLogin(event)">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Admin Password</label>
-                        <input type="password" id="admin-password-input" required placeholder="Enter password"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none transition">
+                        <label for="admin-email-input" class="block text-sm font-medium text-gray-700">
+                            Email Address
+                        </label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input id="admin-email-input" name="email" type="email" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent sm:text-sm"
+                                placeholder="admin@example.com">
+                        </div>
                     </div>
 
-                    <div id="login-error"
-                        class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm"></div>
+                    <div>
+                        <label for="admin-password-input" class="block text-sm font-medium text-gray-700">
+                            Password
+                        </label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input id="admin-password-input" name="password" type="password" required
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent sm:text-sm"
+                                placeholder="••••••••">
+                            <button type="button" onclick="togglePasswordVisibility()"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
-                    <button type="submit"
-                        class="w-full bg-brand-accent hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-all transform hover:-translate-y-0.5 hover:shadow-xl">
-                        <span id="login-btn-text">Login</span>
-                        <span id="login-btn-loading" class="hidden">
-                            <svg class="animate-spin h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                        </span>
-                    </button>
+                    <div>
+                        <button type="submit" id="login-button"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-deep hover:bg-brand-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent transition-colors">
+                            Sign in
+                        </button>
+                    </div>
                 </form>
+                <div id="login-error" class="mt-4 text-center text-sm text-red-600 hidden"></div>
             </div>
-
-            <p class="text-center text-gray-500 text-xs mt-6">
-                © 2025 Nongor Brand. All rights reserved.
-            </p>
         </div>
     </div>
 
@@ -618,131 +632,150 @@
             checkAuth();
         });
 
-        function checkAuth() {
-            const token = localStorage.getItem('nongor_admin_token');
-
+        // Helper: Authenticated Fetch
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('nongor_session_token');
             if (!token) {
-                showLoginScreen();
-                return;
+                handleLogout(); // Redirect if no token
+                throw new Error('No session token');
             }
 
-            fetch(AUTH_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'verify', token })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.valid) {
-                        showAdminDashboard();
-                        // Load data
-                        loadOrders();
-                        // We don't load products immediately unless tab is switched, but let's stick to existing logic if any
-                    } else {
-                        localStorage.removeItem('nongor_admin_token');
-                        showLoginScreen();
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'x-session-token': token // Support both header types
+            };
+
+            const response = await fetch(url, { ...options, headers });
+
+            if (response.status === 401 || response.status === 403) {
+                // Determine if it's an auth error vs permission error
+                // For valid=false, redirect to login
+                const cloned = response.clone();
+                try {
+                    const err = await cloned.json();
+                    if (err.message && (err.message.includes('Invalid') || err.message.includes('expired'))) {
+                        handleLogout();
+                        throw new Error('Session expired');
                     }
-                })
-                .catch(error => {
-                    console.error('Auth check failed:', error);
-                    showLoginScreen();
-                });
+                } catch (e) { }
+            }
+
+            return response;
         }
 
-        // Handle login
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
+        // --- AUTH LOGIC ---
+        function checkAuth() {
+            const token = localStorage.getItem('nongor_session_token');
+            const loginScreen = document.getElementById('login-screen');
+            const dashboard = document.getElementById('admin-dashboard');
+
+            if (token) {
+                // Optimistically show dashboard, but verify in background
+                loginScreen.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+
+                // Verify session
+                fetch(AUTH_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'verify', sessionToken: token })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.valid) {
+                            handleLogout();
+                        } else {
+                            // Optional: Show user name
+                            // showToast(`Welcome back, ${data.user.full_name || 'Admin'}`, 'blue');
+                        }
+                    })
+                    .catch(() => {
+                        // Network error? Don't logout immediately, maybe retry? 
+                        // For security, if we can't verify, we assume OK until API call fails.
+                    });
+
+                loadOrders(); // Initial load
+            } else {
+                loginScreen.classList.remove('hidden');
+                dashboard.classList.add('hidden');
+            }
+        }
+
+        async function handleLogin(e) {
             e.preventDefault();
-
-            const password = document.getElementById('admin-password-input').value;
+            const email = document.getElementById('admin-email-input').value;
+            const password = document.getElementById('admin-password-input').value; // Keep raw
             const errorDiv = document.getElementById('login-error');
-            const btnText = document.getElementById('login-btn-text');
-            const btnLoading = document.getElementById('login-btn-loading');
+            const btn = document.getElementById('login-button');
 
-            btnText.classList.add('hidden');
-            btnLoading.classList.remove('hidden');
             errorDiv.classList.add('hidden');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
 
             try {
                 const response = await fetch(AUTH_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'login', password })
+                    body: JSON.stringify({
+                        action: 'login', // Action added
+                        email: email,
+                        password: password
+                    })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    localStorage.setItem('nongor_admin_token', data.token);
+                    localStorage.setItem('nongor_session_token', data.sessionToken);
 
-                    errorDiv.classList.remove('hidden', 'bg-red-50', 'border-red-200', 'text-red-700');
-                    errorDiv.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
-                    errorDiv.textContent = '✓ Login successful!';
+                    // Show animation?
 
-                    setTimeout(() => {
-                        showAdminDashboard();
-                        loadOrders();
-                    }, 1000);
+                    checkAuth();
+
+                    // Reset form
+                    document.getElementById('admin-password-input').value = '';
                 } else {
+                    errorDiv.textContent = data.message || 'Invalid credentials';
                     errorDiv.classList.remove('hidden');
-                    errorDiv.textContent = '✗ ' + (data.message || 'Invalid password');
-                    btnText.classList.remove('hidden');
-                    btnLoading.classList.add('hidden');
                 }
             } catch (error) {
-                console.error('Detailed Login Error:', error);
+                console.error('Login error:', error);
+                errorDiv.textContent = 'Connection error. Please try again.';
                 errorDiv.classList.remove('hidden');
-
-                // Show actual error message if available, otherwise generic
-                let errorMsg = 'Connection error. Please check console.';
-                if (error.message && error.message.includes('Unexpected token')) {
-                    errorMsg = 'Server Error (500): Invalid JSON response. Check server logs.';
-                } else if (error.message) {
-                    errorMsg = error.message;
-                }
-
-                errorDiv.textContent = '✗ ' + errorMsg;
-                btnText.classList.remove('hidden');
-                btnLoading.classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Sign in';
             }
-        });
-
-        function showLoginScreen() {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
         }
 
-        function showAdminDashboard() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden');
-        }
-
-        function logout() {
-            localStorage.removeItem('nongor_admin_token');
-            showLoginScreen();
-        }
-
-        // Helper function for authenticated API calls
-        async function authenticatedFetch(url, options = {}) {
-            const token = localStorage.getItem('nongor_admin_token');
-
-            if (!token) {
-                logout();
-                throw new Error('No authentication token');
+        function handleLogout() {
+            // Call logout API to destroy session server-side
+            const token = localStorage.getItem('nongor_session_token');
+            if (token) {
+                fetch(AUTH_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'logout', sessionToken: token })
+                });
             }
 
-            const headers = {
-                ...options.headers,
-                'Authorization': `Bearer ${token}`
-            };
+            localStorage.removeItem('nongor_session_token');
 
-            const response = await fetch(url, { ...options, headers });
+            // Clear data for security
+            allOrders = [];
+            allProducts = [];
 
-            if (response.status === 401) {
-                logout();
-                throw new Error('Session expired');
-            }
+            checkAuth();
 
-            return response;
+            // Reset UI state
+            document.getElementById('admin-email-input').value = '';
+            document.getElementById('admin-password-input').value = '';
+        }
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById('admin-password-input');
+            input.type = input.type === 'password' ? 'text' : 'password';
         }
 
         // Mobile sidebar toggle

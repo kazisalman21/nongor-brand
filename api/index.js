@@ -11,23 +11,32 @@ module.exports = async (req, res) => {
     const JWT_SECRET = process.env.JWT_SECRET;
 
     // --- AUTH HELPERS ---
-    function verifyAdminToken(req) {
-        const authHeader = req.headers.authorization;
+    async function verifySession(req, client) {
+        const sessionToken = req.headers['x-session-token'] ||
+            req.headers['authorization']?.replace('Bearer ', '');
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            // Fallback to legacy secret check for backward compatibility during migration?
-            // User guide says "Replace", suggesting we enforce token. 
-            // However, existing FE uses x-admin-secret. I will force migration.
-            return { valid: false, error: 'No token provided' };
+        if (!sessionToken) {
+            return { valid: false, error: 'No session token' };
         }
 
-        const token = authHeader.substring(7);
-
         try {
-            const decoded = jwt.verify(token, JWT_SECRET);
-            return { valid: true, decoded };
+            const result = await client.query('SELECT * FROM auth.verify_session($1::TEXT)', [sessionToken]);
+
+            if (result.rows.length === 0) {
+                return { valid: false, error: 'Invalid session' };
+            }
+
+            return {
+                valid: true,
+                user: {
+                    id: result.rows[0].user_id,
+                    email: result.rows[0].res_email,
+                    role: result.rows[0].res_role,
+                    fullName: result.rows[0].res_full_name
+                }
+            };
         } catch (error) {
-            return { valid: false, error: 'Invalid or expired token' };
+            return { valid: false, error: error.message };
         }
     }
 
@@ -80,12 +89,17 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
-            // --- GET ALL PRODUCTS (Admin, includes inactive) ---
             if (query.action === 'getAllProducts') {
-                const auth = verifyAdminToken(req);
+                const auth = await verifySession(req, client);
                 if (!auth.valid) {
                     await client.end();
                     return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
+                }
+
+                // Check role
+                if (auth.user.role !== 'admin') {
+                    await client.end();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
                 }
 
                 const result = await client.query('SELECT * FROM products WHERE is_active = true ORDER BY created_at DESC');
@@ -107,10 +121,15 @@ module.exports = async (req, res) => {
 
             // Admin - Get All Orders
             if (query.action === 'getAllOrders') {
-                const auth = verifyAdminToken(req);
+                const auth = await verifySession(req, client);
                 if (!auth.valid) {
                     await client.end();
                     return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
+                }
+
+                if (auth.user.role !== 'admin') {
+                    await client.end();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
                 }
 
                 const result = await client.query('SELECT * FROM orders ORDER BY created_at DESC');
@@ -140,10 +159,14 @@ module.exports = async (req, res) => {
 
             // --- ADD PRODUCT (Protected) ---
             if (query.action === 'addProduct') {
-                const auth = verifyAdminToken(req);
+                const auth = await verifySession(req, client);
                 if (!auth.valid) {
                     await client.end();
                     return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    await client.end();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
                 }
 
                 // Ensure products table exists
@@ -278,10 +301,14 @@ module.exports = async (req, res) => {
 
             // --- UPDATE PRODUCT (Protected) ---
             if (query.action === 'updateProduct') {
-                const auth = verifyAdminToken(req);
+                const auth = await verifySession(req, client);
                 if (!auth.valid) {
                     await client.end();
                     return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    await client.end();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
                 }
 
                 const updateQuery = `
@@ -316,10 +343,14 @@ module.exports = async (req, res) => {
             }
 
             // --- UPDATE ORDER STATUS (Protected) ---
-            const auth = verifyAdminToken(req);
+            const auth = await verifySession(req, client);
             if (!auth.valid) {
                 await client.end();
                 return res.status(401).json({ error: 'Unauthorized: ' + auth.error });
+            }
+            if (auth.user.role !== 'admin') {
+                await client.end();
+                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
             }
 
             try {
@@ -342,9 +373,30 @@ module.exports = async (req, res) => {
         // --- 4. DELETE REQUESTS ---
         if (method === 'DELETE') {
             // --- DELETE PRODUCT (Protected) ---
-            const auth = verifyAdminToken(req);
+            // Need to connect first for DELETE as it doesn't have auto-connect block in original code? 
+            // Original code: if (!client) connect...
+            // Logic check: The original code logic for DELETE checked auth BEFORE connecting (using verifyAdminToken which was sync and JWT only).
+            // Now verifySession needs DB. So we MUST connect before auth.
+
+            if (!client) {
+                if (!process.env.NETLIFY_DATABASE_URL) {
+                    throw new Error("Missing NETLIFY_DATABASE_URL");
+                }
+                client = new Client({
+                    connectionString: process.env.NETLIFY_DATABASE_URL,
+                    ssl: { rejectUnauthorized: false }
+                });
+                await client.connect();
+            }
+
+            const auth = await verifySession(req, client);
             if (!auth.valid) {
+                await client.end();
                 return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
+            }
+            if (auth.user.role !== 'admin') {
+                await client.end();
+                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
             }
 
             const productId = query.id;
