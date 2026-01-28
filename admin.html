@@ -102,16 +102,13 @@
         /* Enhanced Glass Card */
         /* Enhanced Glass Card V2 */
         .premium-glass-card {
-            background: linear-gradient(135deg,
-                    rgba(126, 34, 206, 0.3) 0%,
-                    rgba(147, 51, 234, 0.25) 50%,
-                    rgba(192, 38, 211, 0.3) 100%);
-            backdrop-filter: blur(40px) saturate(200%);
-            border: 1px solid rgba(217, 70, 239, 0.4);
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(40px) saturate(150%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             box-shadow:
-                0 8px 32px 0 rgba(192, 38, 211, 0.4),
-                inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
-                0 0 60px rgba(168, 85, 247, 0.2);
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                0 20px 60px rgba(0, 0, 0, 0.08);
             border-radius: 24px;
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -751,6 +748,29 @@
         }
 
         /* 4. PASSWORD REQUIREMENTS CHECKLIST */
+        /* Text Color Overrides for White Card */
+        #login-screen h2,
+        #login-screen .text-4xl,
+        #login-screen .font-bold {
+            color: #0F172A !important;
+            text-shadow: none !important;
+        }
+
+        #login-screen p,
+        #login-screen .text-sm {
+            color: #64748B !important;
+        }
+
+        .premium-glass-card label,
+        .premium-glass-card a,
+        .premium-glass-card .text-xs {
+            color: #475569 !important;
+        }
+
+        .premium-glass-card a:hover {
+            color: #0F172A !important;
+        }
+
         .password-requirements {
             margin-top: 12px;
             padding: 12px;
