@@ -5,7 +5,8 @@ const connectionString = "postgresql://neondb_owner:npg_aXlrxhuS9GR8@ep-plain-ar
 
 const client = new Client({
     connectionString,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 5000 // 5 second timeout
 });
 
 async function setup() {
