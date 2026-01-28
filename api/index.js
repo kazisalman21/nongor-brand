@@ -20,21 +20,13 @@ module.exports = async (req, res) => {
         }
 
         try {
-            const result = await client.query('SELECT * FROM auth.verify_session($1::TEXT)', [sessionToken]);
+            const result = await client.query('SELECT * FROM auth.verify_session_v2($1::TEXT)', [sessionToken]);
 
             if (result.rows.length === 0) {
                 return { valid: false, error: 'Invalid session' };
             }
 
-            return {
-                valid: true,
-                user: {
-                    id: result.rows[0].user_id,
-                    email: result.rows[0].res_email,
-                    role: result.rows[0].res_role,
-                    fullName: result.rows[0].res_full_name
-                }
-            };
+            return { valid: true, user: result.rows[0] };
         } catch (error) {
             return { valid: false, error: error.message };
         }
