@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
             }
 
             // Verify user credentials
-            const userResult = await client.query('SELECT * FROM auth.verify_user_v2($1::TEXT, $2::TEXT)', [email, password]);
+            const userResult = await client.query('SELECT * FROM auth.verify_user_v3($1::TEXT, $2::TEXT)', [email, password]);
 
             if (userResult.rows.length === 0) {
                 return res.status(401).json({
@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
             const user = userResult.rows[0];
 
             // Check if user is admin
-            if (user.role !== 'admin') {
+            if (user.res_role !== 'admin') {
                 return res.status(403).json({
                     success: false,
                     message: 'Access denied: Admin only'
@@ -86,9 +86,9 @@ module.exports = async (req, res) => {
                 sessionToken: newSessionToken,
                 user: {
                     id: user.user_id,
-                    email: user.email,
-                    role: user.role,
-                    fullName: user.full_name
+                    email: user.res_email,
+                    role: user.res_role,
+                    fullName: user.res_full_name
                 },
                 expiresAt: expiresAt.toISOString()
             });
@@ -106,7 +106,7 @@ module.exports = async (req, res) => {
             }
 
             // Verify session
-            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v2($1::TEXT)', [sessionToken]);
+            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
 
             if (sessionResult.rows.length === 0) {
                 return res.status(401).json({
@@ -123,9 +123,9 @@ module.exports = async (req, res) => {
                 valid: true,
                 user: {
                     id: user.user_id,
-                    email: user.email,
-                    role: user.role,
-                    fullName: user.full_name
+                    email: user.res_email,
+                    role: user.res_role,
+                    fullName: user.res_full_name
                 }
             });
         }
@@ -164,7 +164,7 @@ module.exports = async (req, res) => {
             }
 
             // Verify session first
-            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v2($1::TEXT)', [sessionToken]);
+            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
 
             if (sessionResult.rows.length === 0) {
                 return res.status(401).json({
@@ -175,8 +175,8 @@ module.exports = async (req, res) => {
 
             const user = sessionResult.rows[0];
 
-            // Verify current password - use user.email because V2 returns 'email'
-            const verifyResult = await client.query('SELECT * FROM auth.verify_user_v2($1::TEXT, $2::TEXT)', [user.email, currentPassword]);
+            // Verify current password - use user.res_email
+            const verifyResult = await client.query('SELECT * FROM auth.verify_user_v3($1::TEXT, $2::TEXT)', [user.res_email, currentPassword]);
 
             if (verifyResult.rows.length === 0) {
                 return res.status(401).json({
