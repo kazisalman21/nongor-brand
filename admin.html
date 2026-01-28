@@ -37,7 +37,7 @@
 
         /* Floating Particles Background */
         .premium-bg {
-            background: linear-gradient(-45deg, #667eea, #764ba2, #6B8DD6, #8E37D7);
+            background: linear-gradient(-45deg, #7e22ce, #9333ea, #c026d3, #d946ef);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             position: relative;
@@ -68,7 +68,8 @@
 
         .particle {
             position: absolute;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(168, 85, 247, 0.15);
+            /* Purple tint */
             border-radius: 50%;
             animation: float-particle 20s infinite ease-in-out;
         }
@@ -98,14 +99,18 @@
         }
 
         /* Enhanced Glass Card */
+        /* Enhanced Glass Card V2 */
         .premium-glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg,
+                    rgba(126, 34, 206, 0.3) 0%,
+                    rgba(147, 51, 234, 0.25) 50%,
+                    rgba(192, 38, 211, 0.3) 100%);
+            backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(217, 70, 239, 0.4);
             box-shadow:
-                0 8px 32px 0 rgba(31, 38, 135, 0.2),
-                inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
-                0 0 0 1px rgba(255, 255, 255, 0.05);
+                0 8px 32px 0 rgba(192, 38, 211, 0.4),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
+                0 0 60px rgba(168, 85, 247, 0.2);
             border-radius: 24px;
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -147,11 +152,11 @@
             right: -8px;
             bottom: -8px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #667eea, #764ba2, #06b6d4, #667eea);
+            background: linear-gradient(45deg, #7e22ce, #a855f7, #c026d3, #7e22ce);
             background-size: 300% 300%;
             animation: rotate-gradient 8s linear infinite;
             z-index: -1;
-            filter: blur(8px);
+            filter: blur(12px);
             opacity: 0.6;
         }
 
@@ -227,9 +232,9 @@
 
         .floating-label-input:focus {
             outline: none;
-            border-color: #667eea;
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 0 20px rgba(102, 126, 234, 0.3);
+            border-color: #a855f7;
+            background: rgba(139, 92, 246, 0.15);
+            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15), 0 0 20px rgba(192, 38, 211, 0.3);
         }
 
         .floating-label {
@@ -247,7 +252,7 @@
         .floating-label-input:not(:placeholder-shown)~.floating-label {
             top: 12px;
             font-size: 12px;
-            color: rgba(102, 126, 234, 1);
+            color: #d946ef;
             font-weight: 600;
             transform: translateY(0);
         }
@@ -264,7 +269,7 @@
         }
 
         .floating-label-input:focus~.input-icon {
-            color: #667eea;
+            color: #d946ef;
             transform: translateY(-50%) scale(1.1);
         }
 
@@ -292,12 +297,12 @@
 
         .strength-medium {
             width: 66%;
-            background: linear-gradient(90deg, #F59E0B, #FBBF24);
+            background: linear-gradient(90deg, #a855f7, #c084fc);
         }
 
         .strength-strong {
             width: 100%;
-            background: linear-gradient(90deg, #10B981, #34D399);
+            background: linear-gradient(90deg, #7e22ce, #a855f7);
         }
 
         /* Premium Button with Gradient */
@@ -305,8 +310,8 @@
             position: relative;
             height: 56px;
             width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
+            background: linear-gradient(135deg, #7e22ce 0%, #c026d3 100%);
+            border: 1px solid rgba(217, 70, 239, 0.3);
             border-radius: 12px;
             color: white;
             font-size: 16px;
@@ -314,12 +319,13 @@
             cursor: pointer;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 8px 24px rgba(126, 58, 242, 0.3);
+            box-shadow: 0 8px 24px rgba(192, 38, 211, 0.4);
         }
 
         .premium-button:hover {
+            background: linear-gradient(135deg, #6b21a8 0%, #a855f7 100%);
             transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 40px rgba(126, 58, 242, 0.5);
+            box-shadow: 0 12px 40px rgba(192, 38, 211, 0.6);
         }
 
         .premium-button:active {
@@ -394,7 +400,7 @@
         }
 
         input:checked+.toggle-switch {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #7e22ce, #c026d3);
         }
 
         input:checked+.toggle-switch::after {
@@ -437,13 +443,13 @@
             width: 100%;
             height: 100%;
             border: 3px solid transparent;
-            border-top-color: #667eea;
+            border-top-color: #7e22ce;
             border-radius: 50%;
             animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
         }
 
         .spinner-ring:nth-child(2) {
-            border-top-color: #764ba2;
+            border-top-color: #a855f7;
             animation-delay: 0.3s;
             width: 70%;
             height: 70%;
@@ -452,7 +458,7 @@
         }
 
         .spinner-ring:nth-child(3) {
-            border-top-color: #06b6d4;
+            border-top-color: #c026d3;
             animation-delay: 0.6s;
             width: 40%;
             height: 40%;
@@ -605,7 +611,7 @@
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-bottom: 35px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 35px solid rgba(168, 85, 247, 0.12);
             background: none !important;
             border-radius: 0;
         }
@@ -613,7 +619,7 @@
         .particle-hexagon {
             width: 40px;
             height: 23px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(168, 85, 247, 0.12);
             position: relative;
             border-radius: 0;
         }
@@ -627,7 +633,7 @@
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-bottom: 11.5px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 11.5px solid rgba(168, 85, 247, 0.12);
         }
 
         .particle-hexagon::after {
@@ -639,13 +645,13 @@
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-top: 11.5px solid rgba(255, 255, 255, 0.08);
+            border-top: 11.5px solid rgba(168, 85, 247, 0.12);
         }
 
         .particle-glow {
             box-shadow:
-                0 0 20px rgba(255, 255, 255, 0.1),
-                0 0 40px rgba(102, 126, 234, 0.05);
+                0 0 20px rgba(168, 85, 247, 0.2),
+                0 0 40px rgba(192, 38, 211, 0.15);
         }
 
         .particle-interactive {
@@ -668,7 +674,7 @@
             left: -2px;
             right: -2px;
             bottom: -2px;
-            background: linear-gradient(45deg, #667eea, #764ba2, #06b6d4, #8b5cf6, #667eea);
+            background: linear-gradient(45deg, #7e22ce, #a855f7, #c026d3, #9333ea, #7e22ce);
             background-size: 400% 400%;
             border-radius: 24px;
             z-index: -1;
@@ -725,7 +731,7 @@
             left: 50%;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, #667eea, #06b6d4);
+            background: linear-gradient(90deg, #7e22ce, #c026d3);
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             transform: translateX(-50%);
             z-index: 10;
