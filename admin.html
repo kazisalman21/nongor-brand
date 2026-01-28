@@ -36,10 +36,11 @@
            =================================== */
 
         /* Floating Particles Background */
+        /* Floating Particles Background (Monochrome Ash) */
         .premium-bg {
-            background: linear-gradient(-45deg, #7e22ce, #9333ea, #c026d3, #d946ef);
+            background: linear-gradient(-45deg, #F8FAFC, #E2E8F0, #CBD5E1, #94A3B8);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 20s ease infinite;
             position: relative;
             overflow: hidden;
         }
@@ -68,8 +69,8 @@
 
         .particle {
             position: absolute;
-            background: rgba(168, 85, 247, 0.15);
-            /* Purple tint */
+            background: rgba(15, 23, 42, 0.05);
+            /* Dark subtle particles */
             border-radius: 50%;
             animation: float-particle 20s infinite ease-in-out;
         }
@@ -125,7 +126,7 @@
             bottom: 0;
             border-radius: 24px;
             padding: 1px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
@@ -152,7 +153,7 @@
             right: -8px;
             bottom: -8px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #7e22ce, #a855f7, #c026d3, #7e22ce);
+            background: linear-gradient(45deg, #94A3B8, #CBD5E1, #FFFFFF, #94A3B8);
             background-size: 300% 300%;
             animation: rotate-gradient 8s linear infinite;
             z-index: -1;
@@ -201,12 +202,11 @@
             height: 56px;
             padding: 20px 16px 8px 48px;
             font-size: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(203, 213, 225, 0.5);
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+            background: rgba(248, 250, 252, 0.6);
+            color: #1E293B;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
         }
 
         /* Input text color fix for dark bg */
@@ -220,10 +220,10 @@
             /* White text on dark bg if applicable, but card is light */
         }
 
-        /* Override specifically for this design where inputs are on glass */
+        /* Override specifically for this design */
         .floating-label-input {
-            color: #ffffff;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            color: #1E293B;
+            text-shadow: none;
         }
 
         .floating-label-input::placeholder {
@@ -232,9 +232,11 @@
 
         .floating-label-input:focus {
             outline: none;
-            border-color: #a855f7;
-            background: rgba(139, 92, 246, 0.15);
-            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15), 0 0 20px rgba(192, 38, 211, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(100, 116, 139, 0.4);
+            box-shadow:
+                0 0 0 4px rgba(148, 163, 184, 0.1),
+                0 2px 12px rgba(0, 0, 0, 0.05);
         }
 
         .floating-label {
@@ -243,7 +245,7 @@
             top: 50%;
             transform: translateY(-50%);
             font-size: 16px;
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(100, 116, 139, 0.7);
             pointer-events: none;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -252,7 +254,7 @@
         .floating-label-input:not(:placeholder-shown)~.floating-label {
             top: 12px;
             font-size: 12px;
-            color: #d946ef;
+            color: #3B82F6;
             font-weight: 600;
             transform: translateY(0);
         }
@@ -263,20 +265,20 @@
             left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(100, 116, 139, 0.5);
             transition: all 0.3s ease;
             pointer-events: none;
         }
 
         .floating-label-input:focus~.input-icon {
-            color: #d946ef;
+            color: #3B82F6;
             transform: translateY(-50%) scale(1.1);
         }
 
         /* Password Strength Indicator */
         .password-strength-bar {
             height: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
             border-radius: 2px;
             overflow: hidden;
             margin-top: 8px;
@@ -292,26 +294,26 @@
 
         .strength-weak {
             width: 33%;
-            background: linear-gradient(90deg, #EF4444, #F87171);
+            background: linear-gradient(90deg, #64748B, #94A3B8);
         }
 
         .strength-medium {
             width: 66%;
-            background: linear-gradient(90deg, #a855f7, #c084fc);
+            background: linear-gradient(90deg, #475569, #64748B);
         }
 
         .strength-strong {
             width: 100%;
-            background: linear-gradient(90deg, #7e22ce, #a855f7);
+            background: linear-gradient(90deg, #1E293B, #334155);
         }
 
-        /* Premium Button with Gradient */
+        /* Premium Button (Light Theme) */
         .premium-button {
             position: relative;
             height: 56px;
             width: 100%;
-            background: linear-gradient(135deg, #7e22ce 0%, #c026d3 100%);
-            border: 1px solid rgba(217, 70, 239, 0.3);
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            border: none;
             border-radius: 12px;
             color: white;
             font-size: 16px;
@@ -319,13 +321,17 @@
             cursor: pointer;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 8px 24px rgba(192, 38, 211, 0.4);
+            box-shadow:
+                0 8px 24px rgba(15, 23, 42, 0.2),
+                0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .premium-button:hover {
-            background: linear-gradient(135deg, #6b21a8 0%, #a855f7 100%);
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            box-shadow:
+                0 12px 40px rgba(15, 23, 42, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.15);
             transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 40px rgba(192, 38, 211, 0.6);
         }
 
         .premium-button:active {
@@ -380,7 +386,7 @@
             position: relative;
             width: 48px;
             height: 24px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(203, 213, 225, 0.5);
             border-radius: 12px;
             cursor: pointer;
             transition: background 0.3s ease;
@@ -400,7 +406,7 @@
         }
 
         input:checked+.toggle-switch {
-            background: linear-gradient(135deg, #7e22ce, #c026d3);
+            background: linear-gradient(135deg, #0F172A, #1E293B);
         }
 
         input:checked+.toggle-switch::after {
@@ -443,13 +449,13 @@
             width: 100%;
             height: 100%;
             border: 3px solid transparent;
-            border-top-color: #7e22ce;
+            border-top-color: #334155;
             border-radius: 50%;
             animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
         }
 
         .spinner-ring:nth-child(2) {
-            border-top-color: #a855f7;
+            border-top-color: #64748B;
             animation-delay: 0.3s;
             width: 70%;
             height: 70%;
@@ -458,7 +464,7 @@
         }
 
         .spinner-ring:nth-child(3) {
-            border-top-color: #c026d3;
+            border-top-color: #94A3B8;
             animation-delay: 0.6s;
             width: 40%;
             height: 40%;
@@ -611,7 +617,7 @@
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-bottom: 35px solid rgba(168, 85, 247, 0.12);
+            border-bottom: 35px solid rgba(15, 23, 42, 0.05);
             background: none !important;
             border-radius: 0;
         }
@@ -619,7 +625,7 @@
         .particle-hexagon {
             width: 40px;
             height: 23px;
-            background: rgba(168, 85, 247, 0.12);
+            background: rgba(15, 23, 42, 0.05);
             position: relative;
             border-radius: 0;
         }
@@ -633,7 +639,7 @@
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-bottom: 11.5px solid rgba(168, 85, 247, 0.12);
+            border-bottom: 11.5px solid rgba(15, 23, 42, 0.05);
         }
 
         .particle-hexagon::after {
@@ -645,13 +651,13 @@
             height: 0;
             border-left: 20px solid transparent;
             border-right: 20px solid transparent;
-            border-top: 11.5px solid rgba(168, 85, 247, 0.12);
+            border-top: 11.5px solid rgba(15, 23, 42, 0.05);
         }
 
         .particle-glow {
             box-shadow:
-                0 0 20px rgba(168, 85, 247, 0.2),
-                0 0 40px rgba(192, 38, 211, 0.15);
+                0 0 20px rgba(100, 116, 139, 0.1),
+                0 0 40px rgba(148, 163, 184, 0.05);
         }
 
         .particle-interactive {
@@ -674,12 +680,15 @@
             left: -2px;
             right: -2px;
             bottom: -2px;
-            background: linear-gradient(45deg, #7e22ce, #a855f7, #c026d3, #9333ea, #7e22ce);
+            background: linear-gradient(45deg,
+                    rgba(255, 255, 255, 0.1),
+                    rgba(148, 163, 184, 0.2),
+                    rgba(255, 255, 255, 0.1));
             background-size: 400% 400%;
             border-radius: 24px;
             z-index: -1;
-            animation: border-flow 8s ease infinite;
-            opacity: 0.3;
+            animation: border-flow 12s ease infinite;
+            opacity: 0.4;
             filter: blur(8px);
         }
 
@@ -731,7 +740,7 @@
             left: 50%;
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, #7e22ce, #c026d3);
+            background: linear-gradient(90deg, #94A3B8, #475569);
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             transform: translateX(-50%);
             z-index: 10;
