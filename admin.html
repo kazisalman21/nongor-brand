@@ -771,43 +771,88 @@
             color: #0F172A !important;
         }
 
-        .password-requirements {
-            margin-top: 12px;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            /* Darker for better contrast */
+        /* Security Badge */
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: 12px;
+            margin-top: 16px;
+            animation: badge-slide-in 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .badge-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(16, 185, 129, 0.1);
             border-radius: 8px;
-            opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            color: #10B981;
+        }
+
+        .badge-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .badge-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .badge-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #059669;
+        }
+
+        .badge-subtitle {
+            font-size: 11px;
+            color: #64748B;
+        }
+
+        @keyframes badge-slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .security-badge {
+                padding: 12px 14px;
+                gap: 10px;
+            }
+
+            .badge-icon {
+                width: 32px;
+                height: 32px;
+            }
+
+            .badge-title {
+                font-size: 12px;
+            }
+
+            .badge-subtitle {
+                font-size: 10px;
+            }
         }
 
         .password-requirements.visible {
             opacity: 1;
             max-height: 200px;
             margin-bottom: 12px;
-        }
-
-        .requirement {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 0;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 13px;
-            transition: color 0.3s ease;
-        }
-
-        .requirement.met {
-            color: #10B981;
-        }
-
-        .requirement-icon {
-            font-size: 16px;
-            min-width: 16px;
-            transition: all 0.3s ease;
-            font-family: monospace;
         }
 
         /* 5. BUTTON LOADING & PROGRESS */
@@ -1104,23 +1149,17 @@
                         </button>
                     </div>
 
-                    <!-- Password Requirements (Phase 1) -->
-                    <div class="password-requirements" id="password-requirements">
-                        <div class="requirement" data-requirement="length">
-                            <span class="requirement-icon">○</span>
-                            <span class="requirement-text">At least 8 characters</span>
+                    <!-- Security Badge -->
+                    <div class="security-badge">
+                        <div class="badge-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
                         </div>
-                        <div class="requirement" data-requirement="uppercase">
-                            <span class="requirement-icon">○</span>
-                            <span class="requirement-text">One uppercase letter</span>
-                        </div>
-                        <div class="requirement" data-requirement="number">
-                            <span class="requirement-icon">○</span>
-                            <span class="requirement-text">One number</span>
-                        </div>
-                        <div class="requirement" data-requirement="special">
-                            <span class="requirement-icon">○</span>
-                            <span class="requirement-text">One special character</span>
+                        <div class="badge-text">
+                            <span class="badge-title">Secure Login</span>
+                            <span class="badge-subtitle">Protected by 256-bit encryption</span>
                         </div>
                     </div>
 
@@ -2554,7 +2593,7 @@
             initParticles();
             initFloatingLabels();
             initPasswordStrength(); // Original checker
-            initPasswordRequirements(); // New Phase 1 Checklist
+            // initPasswordRequirements(); // REMOVED: Replaced with Security Badge
             init3DTilt();
             initButtonEffects();
             initFormValidation();
