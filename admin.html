@@ -1878,7 +1878,20 @@
             // Show loading
             const btn = document.getElementById('login-button');
             const loadingOverlay = document.getElementById('loading-overlay');
-            const originalBtnText = btn ? btn.innerHTML : '';
+            // Hardcoded restore state to prevent "dirty" reads
+            const pristineBtnHtml = `
+                    <span class="button-text">Sign in to Dashboard</span>
+                    <svg class="w-5 h-5 transition-transform group-hover:translate-x-1 button-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                    <div class="button-loading hidden absolute inset-0 flex items-center justify-center bg-transparent">
+                        <div class="loading-dots"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="button-progress"></div>
+            `;
+
             let spinner = null;
 
             if (btn) {
@@ -1929,15 +1942,8 @@
                     setTimeout(() => {
                         checkAuth();
                         if (btn) {
-                            // Reset button state
-                            if (spinner) {
-                                spinner.classList.add('hidden');
-                                btn.querySelector('.button-text').classList.remove('opacity-0');
-                                btn.querySelector('.button-icon').classList.remove('opacity-0');
-                            } else {
-                                btn.innerHTML = originalBtnText; // Use innerHTML to restore icon
-                                btn.disabled = false;
-                            }
+                            btn.innerHTML = pristineBtnHtml;
+                            btn.disabled = false;
                         }
                     }, 1500);
 
@@ -2004,6 +2010,24 @@
             // Reset UI state
             document.getElementById('admin-email').value = '';
             document.getElementById('admin-password').value = '';
+
+            // Force reset login button
+            const btn = document.getElementById('login-button');
+            if (btn && btn.querySelector('.button-loading')) {
+                btn.innerHTML = `
+                    <span class="button-text">Sign in to Dashboard</span>
+                    <svg class="w-5 h-5 transition-transform group-hover:translate-x-1 button-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                    <div class="button-loading hidden absolute inset-0 flex items-center justify-center bg-transparent">
+                        <div class="loading-dots"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="button-progress"></div>
+                `;
+                btn.disabled = false;
+            }
         }
 
         function togglePasswordVisibility() {
