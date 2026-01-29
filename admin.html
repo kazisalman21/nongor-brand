@@ -3366,8 +3366,14 @@
             }
 
             // Shake inputs
-            document.getElementById('admin-email').classList.add('error');
-            document.getElementById('admin-password').classList.add('error');
+            const emailInput = document.getElementById('admin-email');
+            const passInput = document.getElementById('admin-password');
+            emailInput.classList.add('error');
+            passInput.classList.add('error');
+
+            // Force icons to show error state (X)
+            showValidationIcon(emailInput, false);
+            showValidationIcon(passInput, false);
 
             // Auto hide after 5s
             setTimeout(() => {
