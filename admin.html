@@ -3180,9 +3180,9 @@
 
             if (!form) return;
 
-            // Add validation icons
-            addValidationIcon(emailInput);
-            addValidationIcon(passwordInput);
+            // Add validation icons - REMOVED for minimalist design
+            // addValidationIcon(emailInput);
+            // addValidationIcon(passwordInput);
 
             // Real-time email validation
             emailInput.addEventListener('blur', function () {
@@ -3192,7 +3192,7 @@
             emailInput.addEventListener('input', function () {
                 if (this.classList.contains('error-shake')) {
                     this.classList.remove('error-shake');
-                    hideValidationIcon(this);
+                    // hideValidationIcon(this);
                 }
             });
 
@@ -3204,7 +3204,7 @@
             passwordInput.addEventListener('input', function () {
                 if (this.classList.contains('error-shake')) {
                     this.classList.remove('error-shake');
-                    hideValidationIcon(this);
+                    // hideValidationIcon(this);
                 }
             });
 
@@ -3230,29 +3230,12 @@
             });
         }
 
-        function addValidationIcon(input) {
-            if (!input) return;
-
-            const icon = document.createElement('span');
-            icon.className = 'validation-icon';
-            icon.innerHTML = '✓'; // Can be replaced with SVG icons
-
-            input.parentNode.appendChild(icon);
-        }
-
-        function showValidationIcon(input, isValid) {
-            const icon = input.parentNode.querySelector('.validation-icon');
-            if (!icon) return;
-
-            icon.classList.remove('success', 'error', 'show');
-            icon.classList.add(isValid ? 'success' : 'error', 'show');
-            icon.innerHTML = isValid ? '✓' : '✗';
-        }
-
-        function hideValidationIcon(input) {
-            const icon = input.parentNode.querySelector('.validation-icon');
-            if (icon) icon.classList.remove('show');
-        }
+        // Helper functions removed or commented out for minimalist design
+        /*
+        function addValidationIcon(input) { ... }
+        function showValidationIcon(input, isValid) { ... }
+        function hideValidationIcon(input) { ... }
+        */
 
         function validateEmail(input) {
             const email = input.value.trim();
@@ -3261,10 +3244,10 @@
 
             if (email) {
                 input.style.borderColor = isValid ? '#10B981' : '#EF4444';
-                showValidationIcon(input, isValid);
+                // showValidationIcon(input, isValid);
             } else {
                 input.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                hideValidationIcon(input);
+                // hideValidationIcon(input);
             }
 
             return isValid;
@@ -3276,10 +3259,10 @@
 
             if (password) {
                 input.style.borderColor = isValid ? '#10B981' : '#EF4444';
-                showValidationIcon(input, isValid);
+                // showValidationIcon(input, isValid);
             } else {
                 input.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                hideValidationIcon(input);
+                // hideValidationIcon(input);
             }
 
             return isValid;
@@ -3371,9 +3354,9 @@
             emailInput.classList.add('error');
             passInput.classList.add('error');
 
-            // Force icons to show error state (X)
-            showValidationIcon(emailInput, false);
-            showValidationIcon(passInput, false);
+            // Force icons to show error state (X) - REMOVED
+            // showValidationIcon(emailInput, false);
+            // showValidationIcon(passInput, false);
 
             // Auto hide after 5s
             setTimeout(() => {
