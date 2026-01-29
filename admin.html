@@ -1879,10 +1879,11 @@
             const btn = document.getElementById('login-button');
             const loadingOverlay = document.getElementById('loading-overlay');
             const originalBtnText = btn ? btn.innerHTML : '';
+            let spinner = null;
 
             if (btn) {
                 // Add loading spinner to button if supported
-                const spinner = btn.querySelector('.button-loading');
+                spinner = btn.querySelector('.button-loading');
                 if (spinner) {
                     spinner.classList.remove('hidden');
                     btn.querySelector('.button-text').classList.add('opacity-0');
@@ -1934,7 +1935,7 @@
                                 btn.querySelector('.button-text').classList.remove('opacity-0');
                                 btn.querySelector('.button-icon').classList.remove('opacity-0');
                             } else {
-                                btn.textContent = originalBtnText; // might be lost if we didn't save HTML
+                                btn.innerHTML = originalBtnText; // Use innerHTML to restore icon
                                 btn.disabled = false;
                             }
                         }
