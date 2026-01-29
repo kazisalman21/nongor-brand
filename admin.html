@@ -1868,22 +1868,43 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('admin-email').value;
-            const password = document.getElementById('admin-password').value; // Keep raw
-            const errorDiv = document.getElementById('login-error');
+
+            // Clear previous errors
+            document.getElementById('admin-email').classList.remove('error');
+            document.getElementById('admin-password').classList.remove('error');
+            const errorBox = document.getElementById('error-message');
+            if (errorBox) errorBox.classList.remove('show');
+
+            // Show loading
             const btn = document.getElementById('login-button');
             const loadingOverlay = document.getElementById('loading-overlay');
+            const originalBtnText = btn ? btn.innerHTML : '';
 
-            errorDiv.classList.add('hidden');
-            // Show loading overlay
-            if (loadingOverlay) loadingOverlay.classList.add('active');
+            if (btn) {
+                // Add loading spinner to button if supported
+                const spinner = btn.querySelector('.button-loading');
+                if (spinner) {
+                    spinner.classList.remove('hidden');
+                    btn.querySelector('.button-text').classList.add('opacity-0');
+                    btn.querySelector('.button-icon').classList.add('opacity-0');
+                } else {
+                    btn.disabled = true;
+                    btn.textContent = 'Signing in...';
+                }
+            }
+
+            // Also show global overlay if preferred, or just button
+            // if (loadingOverlay) loadingOverlay.classList.add('active'); 
 
             try {
+                const email = document.getElementById('admin-email').value;
+                const password = document.getElementById('admin-password').value;
+
                 const response = await fetch(AUTH_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'login', // Action added
+                        action: 'login',
                         email: email,
                         password: password
                     })
@@ -1894,26 +1915,65 @@
                 if (data.success) {
                     localStorage.setItem('nongor_session_token', data.sessionToken);
 
-                    // Show success animation logic could go here
-
-                    checkAuth();
+                    // Success Animation
+                    if (typeof showSuccessAnimation === 'function') {
+                        showSuccessAnimation();
+                    }
 
                     // Reset form
                     document.getElementById('admin-email').value = '';
                     document.getElementById('admin-password').value = '';
+
+                    // Delay slightly for animation then check auth
+                    setTimeout(() => {
+                        checkAuth();
+                        if (btn) {
+                            // Reset button state
+                            if (spinner) {
+                                spinner.classList.add('hidden');
+                                btn.querySelector('.button-text').classList.remove('opacity-0');
+                                btn.querySelector('.button-icon').classList.remove('opacity-0');
+                            } else {
+                                btn.textContent = originalBtnText; // might be lost if we didn't save HTML
+                                btn.disabled = false;
+                            }
+                        }
+                    }, 1500);
+
                 } else {
                     throw new Error(data.message || 'Login failed');
                 }
             } catch (error) {
                 console.error('Login Error:', error);
-                errorDiv.textContent = error.message;
-                errorDiv.classList.remove('hidden');
-                // Shake animation for error
-                const card = document.getElementById('login-card');
-                if (card) {
-                    card.style.animation = 'none';
-                    card.offsetHeight; /* trigger reflow */
-                    card.style.animation = 'shake 0.5s';
+
+                if (typeof showErrorMessage === 'function') {
+                    showErrorMessage(error.message || 'Invalid email or password.');
+                } else {
+                    alert(error.message); // Fallback
+                }
+
+                // Reset button
+                if (btn) {
+                    const spinner = btn.querySelector('.button-loading');
+                    if (spinner) {
+                        spinner.classList.add('hidden');
+                        btn.querySelector('.button-text').classList.remove('opacity-0');
+                        btn.querySelector('.button-icon').classList.remove('opacity-0');
+                    } else {
+                        btn.disabled = false;
+                        btn.innerHTML = `
+                            <span class="button-text">Sign in to Dashboard</span>
+                            <svg class="w-5 h-5 transition-transform group-hover:translate-x-1 button-icon" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                            <div class="button-loading hidden absolute inset-0 flex items-center justify-center bg-transparent">
+                                <div class="loading-dots"><span></span><span></span><span></span></div>
+                            </div>
+                            <div class="button-progress"></div>
+                         `;
+                    }
                 }
             } finally {
                 if (loadingOverlay) loadingOverlay.classList.remove('active');
@@ -3237,38 +3297,7 @@
         }
 
         // Update existing login function (if exists)
-        // Update existing login function (if exists)
-        const originalLogin = window.handleLogin;
-        if (originalLogin) {
-            window.handleLogin = async function (event) {
-                if (event) event.preventDefault();
-
-                // Clear previous errors
-                document.getElementById('admin-email').classList.remove('error');
-                document.getElementById('admin-password').classList.remove('error');
-                const errorBox = document.getElementById('error-message');
-                if (errorBox) errorBox.classList.remove('show');
-
-                setButtonLoading(true);
-
-                try {
-                    // Call original function
-                    // Note: originalLogin was async, so we await it
-                    const result = await originalLogin.apply(this, arguments);
-
-                    // If originalLogin doesn't throw but returns success/fail, we assume success if it reaches here.
-                    // However, if the original function used alerts or console errors without throwing, we might miss it.
-                    // Assuming standard async/await behavior here.
-
-                    showSuccessAnimation();
-                    // Redirect is likely handled in originalLogin
-
-                } catch (error) {
-                    setButtonLoading(false);
-                    showErrorMessage(error.message || 'Invalid email or password.');
-                }
-            };
-        }
+        // Validated: handleLogin is defined in strict mode above.
 
         // Error Handling Helper Functions
         function showErrorMessage(message) {
