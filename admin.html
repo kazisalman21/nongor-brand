@@ -968,6 +968,12 @@
             opacity: 0.7;
         }
 
+        /* Fix Input Icons */
+        .input-icon {
+            color: #64748B !important;
+            /* Slate 500 */
+        }
+
         /* Error message box */
         .error-message-box {
             display: none;
@@ -1247,7 +1253,7 @@
 
                         <!-- Password Toggle -->
                         <button type="button" onclick="togglePasswordVisibility()"
-                            class="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors z-20">
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors z-20">
                             <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1961,25 +1967,10 @@
 
                 // Reset button
                 if (btn) {
-                    const spinner = btn.querySelector('.button-loading');
-                    if (spinner) {
-                        spinner.classList.add('hidden');
-                        btn.querySelector('.button-text').classList.remove('opacity-0');
-                        btn.querySelector('.button-icon').classList.remove('opacity-0');
-                    } else {
+                    // Reset button
+                    if (btn) {
+                        btn.innerHTML = pristineBtnHtml;
                         btn.disabled = false;
-                        btn.innerHTML = `
-                            <span class="button-text">Sign in to Dashboard</span>
-                            <svg class="w-5 h-5 transition-transform group-hover:translate-x-1 button-icon" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                            <div class="button-loading hidden absolute inset-0 flex items-center justify-center bg-transparent">
-                                <div class="loading-dots"><span></span><span></span><span></span></div>
-                            </div>
-                            <div class="button-progress"></div>
-                         `;
                     }
                 }
             } finally {
