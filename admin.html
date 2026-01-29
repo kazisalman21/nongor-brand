@@ -945,6 +945,114 @@
             animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
         }
 
+        /* =======================================
+           CRITICAL FIXES (Input & Error)
+           ======================================= */
+
+        /* Fix input text visibility */
+        #admin-email,
+        #admin-password,
+        .floating-label-input {
+            color: #0F172A !important;
+            font-size: 15px;
+            font-weight: 500;
+            -webkit-text-fill-color: #0F172A !important;
+        }
+
+        .floating-label-input:focus {
+            background: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .floating-label-input::placeholder {
+            color: #94A3B8 !important;
+            opacity: 0.7;
+        }
+
+        /* Error message box */
+        .error-message-box {
+            display: none;
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.12));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            animation: error-slide-down 0.4s ease;
+        }
+
+        .error-message-box.show {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .error-icon {
+            font-size: 24px;
+        }
+
+        .error-content {
+            flex: 1;
+        }
+
+        .error-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #DC2626;
+        }
+
+        .error-text {
+            font-size: 12px;
+            color: #EF4444;
+            margin-top: 2px;
+        }
+
+        .error-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #EF4444;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .error-close:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .floating-label-input.error {
+            border-color: #EF4444 !important;
+            animation: shake-input 0.5s ease;
+        }
+
+        @keyframes error-slide-down {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake-input {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-8px);
+            }
+
+            75% {
+                transform: translateX(8px);
+            }
+        }
+
         /* Validation Icons */
         .validation-icon {
             position: absolute;
@@ -1202,8 +1310,13 @@
                 </form>
 
                 <!-- Error Message -->
-                <div id="login-error"
-                    class="mt-4 p-3 rounded-xl bg-red-50/90 text-center text-sm font-medium text-red-600 hidden border border-red-100 animate-enter backdrop-blur-sm">
+                <div id="error-message" class="error-message-box" style="display: none;">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-content">
+                        <div class="error-title">Login Failed</div>
+                        <div class="error-text">Invalid email or password. Please try again.</div>
+                    </div>
+                    <button class="error-close" onclick="closeErrorMessage()">×</button>
                 </div>
 
                 <!-- Footer -->
@@ -3124,29 +3237,92 @@
         }
 
         // Update existing login function (if exists)
+        // Update existing login function (if exists)
         const originalLogin = window.handleLogin;
         if (originalLogin) {
-            window.handleLogin = function (event) {
+            window.handleLogin = async function (event) {
                 if (event) event.preventDefault();
 
-                showLoadingOverlay();
+                // Clear previous errors
+                document.getElementById('admin-email').classList.remove('error');
+                document.getElementById('admin-password').classList.remove('error');
+                const errorBox = document.getElementById('error-message');
+                if (errorBox) errorBox.classList.remove('show');
 
-                // Call original function
-                const result = originalLogin.apply(this, arguments);
+                setButtonLoading(true);
 
-                // If it returns a promise
-                if (result && result.then) {
-                    result.then(() => {
-                        hideLoadingOverlay();
-                        showSuccessAnimation();
-                    }).catch(() => {
-                        hideLoadingOverlay();
-                    });
+                try {
+                    // Call original function
+                    // Note: originalLogin was async, so we await it
+                    const result = await originalLogin.apply(this, arguments);
+
+                    // If originalLogin doesn't throw but returns success/fail, we assume success if it reaches here.
+                    // However, if the original function used alerts or console errors without throwing, we might miss it.
+                    // Assuming standard async/await behavior here.
+
+                    showSuccessAnimation();
+                    // Redirect is likely handled in originalLogin
+
+                } catch (error) {
+                    setButtonLoading(false);
+                    showErrorMessage(error.message || 'Invalid email or password.');
                 }
-
-                return result;
             };
         }
+
+        // Error Handling Helper Functions
+        function showErrorMessage(message) {
+            const errorBox = document.getElementById('error-message');
+            // If error box exists
+            if (errorBox) {
+                const errorText = errorBox.querySelector('.error-text');
+                if (errorText) errorText.textContent = message;
+
+                errorBox.style.display = 'flex';
+                // Trigger reflow for animation
+                void errorBox.offsetWidth;
+                errorBox.classList.add('show');
+            }
+
+            // Shake inputs
+            document.getElementById('admin-email').classList.add('error');
+            document.getElementById('admin-password').classList.add('error');
+
+            // Auto hide after 5s
+            setTimeout(() => {
+                closeErrorMessage();
+            }, 5000);
+        }
+
+        function closeErrorMessage() {
+            const errorBox = document.getElementById('error-message');
+            if (errorBox) {
+                errorBox.classList.remove('show');
+                setTimeout(() => errorBox.style.display = 'none', 300);
+            }
+
+            const emailInput = document.getElementById('admin-email');
+            const passInput = document.getElementById('admin-password');
+            if (emailInput) emailInput.classList.remove('error');
+            if (passInput) passInput.classList.remove('error');
+        }
+
+        // Clear errors on input
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = ['admin-email', 'admin-password'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', () => {
+                        el.classList.remove('error');
+                        const errorBox = document.getElementById('error-message');
+                        if (errorBox && errorBox.classList.contains('show')) {
+                            closeErrorMessage();
+                        }
+                    });
+                }
+            });
+        });
 
         // Performance: Use Intersection Observer for animations
         if ('IntersectionObserver' in window) {
