@@ -974,6 +974,42 @@
             /* Slate 500 */
         }
 
+        /* Validation Icons - Hidden by default */
+        .validation-icon {
+            position: absolute;
+            right: 48px;
+            /* Position to the left of eye icon */
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            opacity: 0;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            z-index: 15;
+            font-weight: bold;
+        }
+
+        /* Adjust for inputs without eye icon (like email) if needed, 
+           but consistently placing it left of where eye would be is safer for alignment */
+        #admin-email~.validation-icon {
+            right: 16px;
+        }
+
+        .validation-icon.show {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+        }
+
+        .validation-icon.success {
+            color: #10B981;
+            /* Emerald 500 */
+        }
+
+        .validation-icon.error {
+            color: #EF4444;
+            /* Red 500 */
+        }
+
         /* Error message box */
         .error-message-box {
             display: none;
