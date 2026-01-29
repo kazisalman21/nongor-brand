@@ -608,58 +608,203 @@
            PREMIUM UI V2.0 UPGRADES
            =================================== */
 
-        /* 1. ADVANCED PARTICLES */
-        .particle-triangle {
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 35px solid rgba(15, 23, 42, 0.05);
-            background: none !important;
-            border-radius: 0;
+        /* ========================================
+           PERFECT PARTICLE SYSTEM - ALL SHAPES
+           ======================================== */
+
+        /* Base particle container */
+        .particles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .particle-hexagon {
-            width: 40px;
-            height: 23px;
+        /* ===== CIRCLES ===== */
+
+        /* Medium circles */
+        .particle-circle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(15, 23, 42, 0.06);
+            border-radius: 50%;
+            animation: float-gentle 15s ease-in-out infinite;
+        }
+
+        /* Small circles */
+        .particle-circle-small {
+            position: absolute;
+            width: 18px;
+            height: 18px;
             background: rgba(15, 23, 42, 0.05);
-            position: relative;
-            border-radius: 0;
+            border-radius: 50%;
+            animation: float-gentle 12s ease-in-out infinite;
         }
 
-        .particle-hexagon::before {
-            content: "";
+        /* Tiny dots */
+        .particle-dot {
             position: absolute;
-            top: -11.5px;
-            left: 0;
+            width: 6px;
+            height: 6px;
+            background: rgba(15, 23, 42, 0.08);
+            border-radius: 50%;
+            animation: float-gentle 10s ease-in-out infinite;
+        }
+
+        /* ===== TRIANGLES ===== */
+
+        /* Standard triangles (pointing up) */
+        .particle-triangle {
+            position: absolute;
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 11.5px solid rgba(15, 23, 42, 0.05);
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 26px solid rgba(15, 23, 42, 0.05);
+            animation: float-rotate 18s ease-in-out infinite;
         }
 
-        .particle-hexagon::after {
-            content: "";
+        /* Small triangles */
+        .particle-triangle-small {
             position: absolute;
-            bottom: -11.5px;
-            left: 0;
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 11.5px solid rgba(15, 23, 42, 0.05);
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 17px solid rgba(15, 23, 42, 0.06);
+            animation: float-rotate 14s ease-in-out infinite;
         }
 
+        /* ===== SQUARES & DIAMONDS ===== */
+
+        /* Rounded squares */
+        .particle-square {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: rgba(15, 23, 42, 0.05);
+            border-radius: 4px;
+            animation: float-rotate 16s ease-in-out infinite;
+        }
+
+        /* Diamonds (rotated squares) */
+        .particle-diamond {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: rgba(15, 23, 42, 0.06);
+            transform: rotate(45deg);
+            animation: float-gentle 14s ease-in-out infinite;
+        }
+
+        /* ===== HEXAGONS ===== */
+
+        /* Hexagon outlines (using clip-path) */
+        .particle-hexagon {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: 2px solid rgba(15, 23, 42, 0.06);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+            animation: float-rotate 20s ease-in-out infinite;
+        }
+
+        /* ===== LINES ===== */
+
+        /* Horizontal lines */
+        .particle-line {
+            position: absolute;
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(15, 23, 42, 0.08),
+                    transparent);
+            animation: float-gentle 13s ease-in-out infinite;
+        }
+
+        /* Diagonal lines */
+        .particle-line-diagonal {
+            position: absolute;
+            width: 45px;
+            height: 2px;
+            background: rgba(15, 23, 42, 0.06);
+            transform: rotate(45deg);
+            animation: float-gentle 15s ease-in-out infinite;
+        }
+
+        /* ===== ANIMATIONS ===== */
+
+        /* Gentle floating (for circles, dots, diamonds, lines) */
+        @keyframes float-gentle {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+                opacity: 0.4;
+            }
+
+            25% {
+                transform: translate(20px, -25px);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: translate(-15px, -40px);
+                opacity: 0.5;
+            }
+
+            75% {
+                transform: translate(-30px, 15px);
+                opacity: 0.55;
+            }
+        }
+
+        /* Floating with rotation (for triangles, squares, hexagons) */
+        @keyframes float-rotate {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0.4;
+            }
+
+            25% {
+                transform: translate(25px, -30px) rotate(90deg);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: translate(-20px, -45px) rotate(180deg);
+                opacity: 0.5;
+            }
+
+            75% {
+                transform: translate(-35px, 20px) rotate(270deg);
+                opacity: 0.55;
+            }
+        }
+
+        /* Optional: Glow effect for some particles */
         .particle-glow {
-            box-shadow:
-                0 0 20px rgba(100, 116, 139, 0.1),
-                0 0 40px rgba(148, 163, 184, 0.05);
+            box-shadow: 0 0 15px rgba(100, 116, 139, 0.15);
         }
 
-        .particle-interactive {
-            transition: transform 0.3s ease-out;
-            will-change: transform;
+        /* Responsive - reduce on mobile */
+        @media (max-width: 768px) {
+
+            .particle-hexagon,
+            .particle-line,
+            .particle-line-diagonal {
+                display: none;
+                /* Hide complex shapes on mobile */
+            }
         }
 
         /* 2. ENHANCED CARD EFFECTS */
@@ -2815,7 +2960,7 @@
 
         // Initialize Premium Features
         document.addEventListener('DOMContentLoaded', function () {
-            initParticles();
+            createPerfectParticles();
             initFloatingLabels();
             initPasswordStrength(); // Original checker
             // initPasswordRequirements(); // REMOVED: Replaced with Security Badge
@@ -2825,6 +2970,99 @@
         });
 
         // ... [Existing code] ...
+
+        /* ========================================
+           PERFECT PARTICLE GENERATOR
+           ======================================== */
+
+        function createPerfectParticles() {
+            const loginScreen = document.getElementById('login-screen');
+            if (!loginScreen) return;
+
+            // Remove old particles if they exist
+            const oldContainer = loginScreen.querySelector('.particles-container');
+            if (oldContainer) oldContainer.remove();
+
+            // Create new container
+            const container = document.createElement('div');
+            container.className = 'particles-container';
+            loginScreen.insertBefore(container, loginScreen.firstChild);
+
+            // Detect mobile
+            const isMobile = window.innerWidth < 768;
+
+            // Perfect particle configuration
+            const particleConfig = isMobile ? {
+                // Mobile: Fewer particles for performance
+                'particle-circle': 10,
+                'particle-circle-small': 8,
+                'particle-dot': 6,
+                'particle-triangle': 5,
+                'particle-triangle-small': 4,
+                'particle-square': 4,
+                'particle-diamond': 3,
+            } : {
+                // Desktop: Full experience
+                'particle-circle': 15,
+                'particle-circle-small': 12,
+                'particle-dot': 8,
+                'particle-triangle': 8,
+                'particle-triangle-small': 6,
+                'particle-square': 6,
+                'particle-diamond': 5,
+                'particle-hexagon': 4,
+                'particle-line': 3,
+                'particle-line-diagonal': 2,
+            };
+
+            // Create all particles
+            Object.entries(particleConfig).forEach(([className, count]) => {
+                for (let i = 0; i < count; i++) {
+                    createParticle(container, className);
+                }
+            });
+        }
+
+        function createParticle(container, className) {
+            const particle = document.createElement('div');
+            particle.className = className;
+
+            // Random position
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+
+            // Random animation delay (0-15 seconds)
+            particle.style.animationDelay = Math.random() * 15 + 's';
+
+            // Random animation duration (10-25 seconds for slow, elegant movement)
+            const baseDuration = 10 + Math.random() * 15;
+            particle.style.animationDuration = baseDuration + 's';
+
+            // Random size variation (70% to 130%)
+            const scale = 0.7 + Math.random() * 0.6;
+            const currentTransform = particle.style.transform || '';
+            particle.style.transform = currentTransform + ` scale(${scale})`;
+
+            // Random opacity variation (30% to 70%)
+            const opacity = 0.3 + Math.random() * 0.4;
+            particle.style.opacity = opacity;
+
+            // 15% chance of glow effect
+            if (Math.random() < 0.15) {
+                particle.classList.add('particle-glow');
+            }
+
+            container.appendChild(particle);
+        }
+
+        // Optional: Recreate particles on window resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                createPerfectParticles();
+            }, 500);
+        });
 
         // NEW: Password Requirements Checklist Logic
         function initPasswordRequirements() {
