@@ -167,7 +167,7 @@
             <a href="#collection"
                 class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Collection</a>
             <button onclick="openTrackingModal()"
-                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Track
+                class="relative hover:text-brand-sand transition-colors outline-none focus:outline-none after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full tracking-wide">Track
                 Order</button>
 
             <!-- Search Bar -->
@@ -457,10 +457,10 @@
             <h3 class="text-2xl font-serif font-bold text-brand-deep mb-6 text-center">Track Your Parcel</h3>
 
             <input type="text" id="track-id-input" placeholder="Enter Order ID (e.g., #NG-1234)"
-                class="w-full p-3 mb-4 border rounded-lg text-center font-mono focus:outline-brand-terracotta uppercase">
+                class="w-full py-3 mb-6 bg-transparent border-b-2 border-gray-200 text-center font-mono focus:outline-none focus:border-brand-terracotta uppercase transition-colors placeholder-gray-400">
 
             <button onclick="trackOrder()" id="btn-track-submit"
-                class="w-full bg-brand-deep text-white py-3 rounded-lg font-bold hover:bg-brand-terracotta transition mb-6 flex justify-center items-center gap-2">
+                class="w-full bg-brand-deep text-white py-3 rounded-lg font-bold hover:bg-brand-terracotta transition-all duration-300 hover-lift shadow-lg mb-6 flex justify-center items-center gap-2">
                 <span>TRACK NOW</span>
             </button>
 
