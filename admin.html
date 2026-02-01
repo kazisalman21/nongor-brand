@@ -2113,7 +2113,7 @@
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (data.result === 'success') {
                     localStorage.setItem('nongor_session_token', data.sessionToken);
 
                     // Success Animation
