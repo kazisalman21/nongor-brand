@@ -94,7 +94,7 @@
     <link href="./assets/styles.css" rel="stylesheet">
 
     <!-- Preload Critical Images -->
-    <link rel="preload" href="./assets/hero-bg.jpg" as="image" fetchpriority="high">
+    <link rel="preload" href="./assets/hero-bg.webp" as="image" type="image/webp" fetchpriority="high">
 
     <style>
         /* Custom scrollbar for premium feel */
@@ -482,7 +482,7 @@
     <!-- Hero Section -->
     <header id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden w-full">
         <div class="absolute inset-0 z-0">
-            <img src="./assets/hero-bg.jpg" alt="Background" class="w-full h-full object-cover blur-[2px] scale-105"
+            <img src="./assets/hero-bg.webp" alt="Background" class="w-full h-full object-cover blur-[2px] scale-105"
                 width="1920" height="1080" fetchpriority="high" loading="eager" decoding="sync"
                 onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#3D405B'">
             <!-- Subtle gradient only at the very bottom for smooth transition, mostly clear -->
