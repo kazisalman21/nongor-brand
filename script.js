@@ -399,20 +399,21 @@ function renderProducts(products) {
         }
 
         return `
-        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-gray-100 flex flex-col h-full animate-fade-in relative hover-lift hover-glow" 
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm group border border-gray-100 flex flex-col h-full animate-fade-in relative hover-lift" 
              onmouseenter="startCardSlideshow(${product.id}, this)"
              onmouseleave="stopCardSlideshow(${product.id}, this)">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
                 <!-- Main Image -->
                 <img src="${optimizedSrc}" alt="${product.name}"  
                      data-original-src="${originalSrc}"
-                     class="product-main-image w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out will-animate relative z-0"
+                     class="product-main-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out relative z-0"
                      loading="lazy"
                      decoding="async"
+                     style="will-change: transform;"
                      onerror="this.onerror=null; this.src='${originalSrc}';">
                 
                 <!-- Overlay Gradient (z-20 to stay on top) -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none"></div>
 
                 <!-- Badges (z-30) -->
                 <div class="absolute top-4 left-4 flex flex-col gap-2 z-30 pointer-events-none">
