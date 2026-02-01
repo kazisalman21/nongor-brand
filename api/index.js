@@ -6,6 +6,7 @@
  */
 const pool = require('./db');
 const { cache, CACHE_KEYS, invalidateProductCache } = require('./cache');
+const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
 
 module.exports = async (req, res) => {
     // Enable CORS
@@ -169,8 +170,8 @@ module.exports = async (req, res) => {
                 data.description = (data.description || '').trim();
 
                 const insertQuery = `
-                    INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured, stock_quantity)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     RETURNING *
                 `;
                 const values = [
@@ -181,7 +182,9 @@ module.exports = async (req, res) => {
                     data.description || '',
                     data.category_slug || '',
                     data.category_name || '',
-                    data.is_featured || false
+
+                    data.is_featured || false,
+                    parseInt(data.stock_quantity) || 0
                 ];
 
                 const result = await client.query(insertQuery, values);
@@ -205,8 +208,9 @@ module.exports = async (req, res) => {
 
             const insertQuery = `
                 INSERT INTO orders 
-                (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                RETURNING *
             `;
 
             const values = [
@@ -224,13 +228,43 @@ module.exports = async (req, res) => {
                 data.deliveryDate,
                 data.size,
                 data.quantity,
-                data.senderNumber || ''
+                data.senderNumber || '',
+                data.customerEmail || null
             ];
 
-            await client.query(insertQuery, values);
+            const result = await client.query(insertQuery, values);
+
+            // Update Stock
+            if (data.items && Array.isArray(data.items)) {
+                for (const item of data.items) {
+                    if (item.id && item.quantity) {
+                        await client.query(
+                            'UPDATE products SET stock_quantity = GREATEST(stock_quantity - $1, 0) WHERE id = $2',
+                            [item.quantity, item.id]
+                        );
+                    }
+                }
+                // Invalidate cache as stock changed
+                invalidateProductCache();
+            }
+
             client.release();
 
-            return res.status(200).json({ result: 'success', message: 'Order Placed' });
+            // Send Email Confirmation (Async - don't block response)
+            if (data.customerEmail) {
+                // We don't await this to keep API fast, but we log errors inside the function
+                sendOrderConfirmation({
+                    orderId: data.orderId,
+                    customerName: data.customerName,
+                    customerEmail: data.customerEmail,
+                    products: data.productName, // passing string description for now 
+                    totalPrice: data.totalPrice,
+                    address: data.address,
+                    deliveryDate: data.deliveryDate
+                }).catch(err => console.error('Email trigger failed:', err));
+            }
+
+            return res.status(200).json({ result: 'success', message: 'Order Placed', orderId: data.orderId });
         }
 
         // --- 3. PUT REQUESTS ---
@@ -253,8 +287,8 @@ module.exports = async (req, res) => {
                     UPDATE products 
                     SET name = $1, price = $2, image = $3, images = $4, description = $5, 
                     category_slug = $6, category_name = $7, is_featured = $8, 
-                    is_active = $9, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = $10
+                    is_active = $9, stock_quantity = $10, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $11
                     RETURNING *
                 `;
                 const values = [
@@ -267,6 +301,7 @@ module.exports = async (req, res) => {
                     data.category_name || '',
                     data.is_featured || false,
                     data.is_active !== false,
+                    parseInt(data.stock_quantity) || 0,
                     data.id
                 ];
 
@@ -294,16 +329,31 @@ module.exports = async (req, res) => {
                 return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
             }
 
+
+            let updatedOrder;
             if (data.type === 'delivery') {
-                await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3', [data.status, data.status, data.orderId]);
+                const res = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                updatedOrder = res.rows[0];
             } else if (data.type === 'payment') {
-                await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2', [data.status, data.orderId]);
+                const res = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
+                updatedOrder = res.rows[0];
             } else {
-                await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3', [data.status, data.status, data.orderId]);
+                const res = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                updatedOrder = res.rows[0];
             }
 
             client.release();
-            return res.status(200).json({ result: 'success' });
+
+            if (updatedOrder) {
+                // Trigger Status Email Async
+                // Only for main status updates, skipping payment-only for now unless desired
+                if (data.type !== 'payment') {
+                    sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error("Email Fail:", e));
+                }
+                return res.status(200).json({ result: 'success', data: updatedOrder });
+            } else {
+                return res.status(404).json({ result: 'error', message: 'Order not found' });
+            }
         }
 
         // --- 4. DELETE REQUESTS ---

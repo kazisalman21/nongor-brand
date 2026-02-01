@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Size Guide | নোঙর - Nongor</title>
+    <meta name="description"
+        content="Find your perfect fit with Nongor's size guide. Comprehensive measurements for Men's Panjabi and Women's Kurtis/Three-pieces.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS (Local) -->
+    <link href="./assets/styles.css" rel="stylesheet">
+
+    <!-- Animations -->
+    <link rel="stylesheet" href="./assets/animations.css">
+
+    <script>
+        // Copy toggleMobileMenu from index.html for simplicity
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.getElementById('mobile-menu-btn');
+
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('translate-x-full');
+                btn.innerHTML = '&times;';
+                btn.classList.add('fixed', 'right-6', 'text-white');
+            } else {
+                menu.classList.add('translate-x-full');
+                btn.innerHTML = '&#9776;';
+                btn.classList.remove('fixed', 'right-6', 'text-white');
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 text-brand-deep font-sans antialiased">
+
+    <!-- Navbar (Consistent with Index) -->
+    <nav id="navbar"
+        class="fixed w-full z-50 bg-brand-deep py-4 px-6 md:px-12 flex justify-between items-center text-brand-light shadow-md transition-all duration-300">
+        <!-- Brand Logo & Name -->
+        <a href="index.html" class="flex items-center gap-3 group">
+            <img src="./assets/logo.jpeg" alt="Nongor"
+                class="h-10 rounded-lg shadow-sm group-hover:scale-105 transition-transform duration-500">
+            <div class="flex flex-col justify-center">
+                <span
+                    class="text-xl font-bold tracking-wide font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
+                <span class="text-[0.6rem] tracking-[0.2em] font-sans uppercase opacity-80 mt-1">The Clothing
+                    Brand</span>
+            </div>
+        </a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide font-medium">
+            <a href="index.html" class="relative hover:text-brand-sand transition-colors">Home</a>
+            <a href="about.html" class="relative hover:text-brand-sand transition-colors">Story</a>
+            <a href="index.html#collection" class="relative hover:text-brand-sand transition-colors">Collection</a>
+            <a href="index.html#contact"
+                class="glass px-5 py-2 rounded-full hover:bg-brand-terracotta hover:text-white transition-all duration-300 border border-white/20">Contact
+                Us</a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden text-2xl z-50 relative focus:outline-none"
+            onclick="toggleMobileMenu()">&#9776;</button>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu"
+            class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
+            <a href="index.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Home</a>
+            <a href="about.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Story</a>
+            <a href="index.html#collection"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Collection</a>
+            <a href="index.html#contact"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Contact Us</a>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="relative h-[40vh] flex items-center justify-center overflow-hidden w-full bg-brand-deep">
+        <div class="absolute inset-0 z-0">
+            <!-- Using hero-bg with heavy overlay -->
+            <img src="./assets/hero-bg.webp" alt="Background" class="w-full h-full object-cover blur-sm opacity-40">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-deep to-brand-deep/60"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in-up">
+            <h1
+                class="text-4xl md:text-6xl font-serif font-bold text-brand-light mb-4 leading-tight drop-shadow-xl text-shadow">
+                Size Guide
+            </h1>
+            <p class="text-white/80 text-lg font-light tracking-wide">Find your perfect fit with our detailed
+                measurements</p>
+            <div class="w-24 h-1 bg-brand-terracotta mx-auto rounded-full shadow-lg mt-6"></div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-16">
+
+        <!-- Size Calculator Section -->
+        <section class="mb-20 animate-fade-in-up" style="animation-delay: 0.1s;">
+            <div
+                class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 flex flex-col md:flex-row">
+                <div
+                    class="md:w-1/3 bg-brand-deep text-white p-10 flex flex-col justify-center relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h2 class="text-3xl font-serif font-bold mb-4">Size Calculator</h2>
+                        <p class="opacity-80 mb-6 leading-relaxed">Not sure about your size? Enter your height and
+                            weight, and we'll recommend the best fit for you.</p>
+                        <ul class="space-y-2 text-sm opacity-70">
+                            <li class="flex items-center gap-2">✓ Based on standard fittings</li>
+                            <li class="flex items-center gap-2">✓ optimized for Bangladeshi body types</li>
+                        </ul>
+                    </div>
+                    <!-- Decorative blobs -->
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-terracotta/20 rounded-full blur-2xl">
+                    </div>
+                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-brand-sand/20 rounded-full blur-2xl"></div>
+                </div>
+
+                <div class="md:w-2/3 p-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Height (Feet.Inches)</label>
+                            <input type="number" id="height-input" placeholder="e.g. 5.6" step="0.1"
+                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition bg-gray-50 focus:bg-white font-mono text-lg">
+                            <p class="text-xs text-gray-400 mt-1">Example: 5.5 for 5 feet 5 inches</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Weight (KG)</label>
+                            <input type="number" id="weight-input" placeholder="e.g. 70"
+                                class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition bg-gray-50 focus:bg-white font-mono text-lg">
+                        </div>
+                    </div>
+
+                    <button onclick="calculateSize()"
+                        class="w-full bg-brand-deep text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-terracotta transition-all shadow-lg hover:shadow-xl hover:shadow-brand-terracotta/20 transform hover:-translate-y-1 active:scale-95">
+                        Calculate My Size
+                    </button>
+
+                    <div id="size-result"
+                        class="hidden mt-8 bg-green-50 border border-green-200 rounded-xl p-6 text-center animate-fade-in">
+                        <p class="text-green-800 font-medium mb-1 uppercase tracking-wide text-xs">Recommended Size</p>
+                        <p id="recommended-size" class="text-5xl font-bold text-brand-deep mb-2">L</p>
+                        <p class="text-green-600 text-sm">Based on your measurements, this size should provide a
+                            comfortable fit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Grid -->
+        <div class="grid md:grid-cols-2 gap-12">
+
+            <!-- Women's Chart -->
+            <section class="animate-fade-in-up" style="animation-delay: 0.2s;">
+                <div class="flex items-center gap-4 mb-6">
+                    <div
+                        class="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center font-bold text-xl">
+                        W</div>
+                    <h2 class="text-3xl font-serif font-bold text-brand-deep">Women's Collection</h2>
+                </div>
+
+                <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-700">Kurti & Three-Piece Guide</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-center">
+                            <thead class="bg-gray-50/50 text-gray-500 font-medium uppercase text-xs tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3 border-b">Size</th>
+                                    <th class="px-4 py-3 border-b">Bust (in)</th>
+                                    <th class="px-4 py-3 border-b">Waist (in)</th>
+                                    <th class="px-4 py-3 border-b">Hips (in)</th>
+                                    <th class="px-4 py-3 border-b">Length (in)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">S</td>
+                                    <td class="px-4 py-4">32-34"</td>
+                                    <td class="px-4 py-4">26-28"</td>
+                                    <td class="px-4 py-4">34-36"</td>
+                                    <td class="px-4 py-4">42-44"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">M</td>
+                                    <td class="px-4 py-4">36-38"</td>
+                                    <td class="px-4 py-4">30-32"</td>
+                                    <td class="px-4 py-4">38-40"</td>
+                                    <td class="px-4 py-4">44-46"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">L</td>
+                                    <td class="px-4 py-4">40-42"</td>
+                                    <td class="px-4 py-4">34-36"</td>
+                                    <td class="px-4 py-4">42-44"</td>
+                                    <td class="px-4 py-4">46-48"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">XL</td>
+                                    <td class="px-4 py-4">44-46"</td>
+                                    <td class="px-4 py-4">38-40"</td>
+                                    <td class="px-4 py-4">46-48"</td>
+                                    <td class="px-4 py-4">48-50"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">XXL</td>
+                                    <td class="px-4 py-4">48-50"</td>
+                                    <td class="px-4 py-4">42-44"</td>
+                                    <td class="px-4 py-4">50-52"</td>
+                                    <td class="px-4 py-4">50-52"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-6">
+                    <h4 class="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Saree Size Info
+                    </h4>
+                    <p class="text-sm text-blue-800 leading-relaxed">
+                        Our sarees are standard 12-13.5 hands (6-6.75 meters) in length and come with a running blouse
+                        piece unless otherwise specified in the product description. Width is standard 44-47 inches
+                        appropriate for all heights.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Men's Chart -->
+            <section class="animate-fade-in-up" style="animation-delay: 0.3s;">
+                <div class="flex items-center gap-4 mb-6">
+                    <div
+                        class="w-12 h-12 bg-brand-deep text-white rounded-full flex items-center justify-center font-bold text-xl">
+                        M</div>
+                    <h2 class="text-3xl font-serif font-bold text-brand-deep">Men's Collection</h2>
+                </div>
+
+                <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-700">Panjabi Guide</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-center">
+                            <thead class="bg-gray-50/50 text-gray-500 font-medium uppercase text-xs tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3 border-b">Size</th>
+                                    <th class="px-4 py-3 border-b">Chest (in)</th>
+                                    <th class="px-4 py-3 border-b">Shoulder (in)</th>
+                                    <th class="px-4 py-3 border-b">Length (in)</th>
+                                    <th class="px-4 py-3 border-b">Sleeve (in)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">S</td>
+                                    <td class="px-4 py-4">36-38"</td>
+                                    <td class="px-4 py-4">16-17"</td>
+                                    <td class="px-4 py-4">42-44"</td>
+                                    <td class="px-4 py-4">23-24"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">M</td>
+                                    <td class="px-4 py-4">38-40"</td>
+                                    <td class="px-4 py-4">17-18"</td>
+                                    <td class="px-4 py-4">44-46"</td>
+                                    <td class="px-4 py-4">24-25"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">L</td>
+                                    <td class="px-4 py-4">40-42"</td>
+                                    <td class="px-4 py-4">18-19"</td>
+                                    <td class="px-4 py-4">46-48"</td>
+                                    <td class="px-4 py-4">25-26"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">XL</td>
+                                    <td class="px-4 py-4">42-44"</td>
+                                    <td class="px-4 py-4">19-20"</td>
+                                    <td class="px-4 py-4">48-50"</td>
+                                    <td class="px-4 py-4">26-27"</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-4 py-4 font-bold text-brand-terracotta">XXL</td>
+                                    <td class="px-4 py-4">44-46"</td>
+                                    <td class="px-4 py-4">20-21"</td>
+                                    <td class="px-4 py-4">50-52"</td>
+                                    <td class="px-4 py-4">27-28"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="font-bold text-gray-800 mb-4">How to Measure</h3>
+                    <div class="space-y-4">
+                        <div
+                            class="flex items-start gap-4 p-4 border rounded-xl hover:border-brand-sand transition-colors">
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-sm shrink-0">
+                                1</div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-800">Chest</h4>
+                                <p class="text-xs text-gray-500 leading-relaxed mt-1">Measure around the fullest part of
+                                    your chest, keeping the tape horizontal.</p>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-start gap-4 p-4 border rounded-xl hover:border-brand-sand transition-colors">
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-sm shrink-0">
+                                2</div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-800">Length</h4>
+                                <p class="text-xs text-gray-500 leading-relaxed mt-1">Measure from the highest point of
+                                    shoulder to your desired hemline.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Footer (Consistent with Index) -->
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <img src="./assets/logo.jpeg" alt="Nongor" class="h-14 rounded-lg mix-blend-multiply opacity-90">
+                    <div>
+                        <h4 class="text-3xl font-serif font-bold tracking-wider text-brand-deep leading-none">নোঙর</h4>
+                        <p class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-60 mt-1">The Clothing
+                            Brand</p>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-wrap justify-center gap-6 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    <a href="about.html" class="hover:text-brand-terracotta transition">About Us</a>
+                    <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
+                    <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
+                    <a href="size-guide.html"
+                        class="hover:text-brand-terracotta transition text-brand-terracotta font-bold">Size Guide</a>
+                    <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-10">
+
+            <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <p>&copy; 2025 নোঙর Brand. All Rights Reserved. Made in Bangladesh.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Calculator Logic -->
+    <script>
+        function calculateSize() {
+            const height = document.getElementById('height-input').value;
+            const weight = document.getElementById('weight-input').value;
+
+            if (!height || !weight) {
+                alert('অনুগ্রহ করে উচ্চতা এবং ওজন উভয়ই দিন (Please select both height and weight)');
+                return;
+            }
+
+            let size = 'M';
+
+            // Logic based on standard Bangladeshi sizing
+            if (weight <= 50) {
+                size = height < 5.5 ? 'S' : 'M';
+            } else if (weight <= 60) {
+                size = height < 5 ? 'S' : (height < 5.5 ? 'M' : 'L');
+            } else if (weight <= 70) {
+                size = height < 5.5 ? 'M' : 'L';
+            } else if (weight <= 80) {
+                size = height < 5.5 ? 'L' : 'XL';
+            } else {
+                size = weight >= 90 ? 'XXL' : 'XL';
+            }
+
+            const resultDiv = document.getElementById('size-result');
+            document.getElementById('recommended-size').textContent = size;
+
+            resultDiv.classList.remove('hidden');
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+
+</html>

@@ -398,10 +398,14 @@ function renderProducts(products) {
             }
         }
 
+        const stock = product.stock_quantity !== undefined ? parseInt(product.stock_quantity) : 100; // Default to available if not set
+        const isOutOfStock = stock <= 0;
+        const lowStock = stock > 0 && stock <= 5;
+
         return `
-        <div class="bg-white rounded-3xl overflow-hidden shadow-sm group border border-gray-100 flex flex-col h-full animate-fade-in relative hover-lift" 
-             onmouseenter="startCardSlideshow(${product.id}, this)"
-             onmouseleave="stopCardSlideshow(${product.id}, this)">
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm group border border-gray-100 flex flex-col h-full animate-fade-in relative hover-lift ${isOutOfStock ? 'opacity-75 grayscale-[0.5]' : ''}" 
+             onmouseenter="${!isOutOfStock ? `startCardSlideshow(${product.id}, this)` : ''}"
+             onmouseleave="${!isOutOfStock ? `stopCardSlideshow(${product.id}, this)` : ''}">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
                 <!-- Main Image -->
                 <img src="${optimizedSrc}" alt="${product.name}"  
@@ -413,11 +417,13 @@ function renderProducts(products) {
                      onerror="this.onerror=null; this.src='${originalSrc}';">
                 
                 <!-- Overlay Gradient (z-20 to stay on top) -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none"></div>
+                ${!isOutOfStock ? '<div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none"></div>' : ''}
 
                 <!-- Badges (z-30) -->
                 <div class="absolute top-4 left-4 flex flex-col gap-2 z-30 pointer-events-none">
                     ${product.is_featured ? '<span class="bg-white/90 backdrop-blur-sm text-brand-deep text-xs font-bold px-3 py-1.5 rounded-full shadow-sm font-bengali">🔥 জনপ্রিয়</span>' : ''}
+                    ${isOutOfStock ? '<span class="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Out of Stock</span>' : ''}
+                    ${lowStock ? `<span class="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Only ${stock} Left</span>` : ''}
                 </div>
             </div>
             
@@ -440,11 +446,8 @@ function renderProducts(products) {
                         <span class="text-xs text-gray-400 font-medium">মূল্য</span>
                         <span class="text-2xl font-bold text-brand-deep">৳${(product.price || 0).toLocaleString('bn-BD')}</span>
                     </div>
-                    <button onclick="openModal(${product.id})" class="flex-1 bg-brand-deep text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-deep/20 hover:bg-brand-terracotta hover:shadow-[0_8px_30px_rgba(224,122,95,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 font-bengali flex items-center justify-center gap-2">
-                        <span>অর্ডার করুন</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
+                    <button onclick="openModal(${product.id})" class="flex-1 bg-brand-deep text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-deep/20 hover:bg-brand-terracotta hover:shadow-[0_8px_30px_rgba(224,122,95,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 font-bengali flex items-center justify-center gap-2 ${isOutOfStock ? 'cursor-not-allowed opacity-80' : ''}">
+                        ${isOutOfStock ? ' স্টক আউট' : 'বিস্তারিত দেখুন'} <svg class="w-4 h-4 ${isOutOfStock ? 'hidden' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                 </div>
             </div>
@@ -539,7 +542,7 @@ window.openModal = (productId) => {
     // Optimized Main Image
     const mainImgData = images[0];
     const mainImgSrc = getOptimizedImage(mainImgData, 'main');
-    const mainImgOriginal = mainImgData && mainImgData.startsWith('http') ? mainImgData : `./assets/${(mainImgData || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
+    const mainImgOriginal = mainImgData && mainImgData.startsWith('http') ? mainImgData : `./ assets / ${(mainImgData || 'logo.jpeg').replace(/^\.?\/?assets\//, '')} `;
 
     const modalImgEl = document.getElementById('modal-image');
     modalImgEl.src = mainImgSrc;
@@ -547,7 +550,7 @@ window.openModal = (productId) => {
     modalImgEl.onerror = function () { this.src = mainImgOriginal; };
 
     document.getElementById('modal-title').textContent = product.name;
-    document.getElementById('modal-price').textContent = `৳${product.price}`;
+    document.getElementById('modal-price').textContent = `৳${product.price} `;
     document.getElementById('modal-category').textContent = product.category.name;
     document.getElementById('modal-description').textContent = product.description;
 
@@ -561,7 +564,7 @@ window.openModal = (productId) => {
     if (galleryContainer && images.length > 1) {
         galleryContainer.innerHTML = images.map((img, index) => {
             const thumbSrc = getOptimizedImage(img, 'thumb');
-            const originalSrc = img && img.startsWith('http') ? img : `./assets/${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
+            const originalSrc = img && img.startsWith('http') ? img : `./ assets / ${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')} `;
 
             // For click, we want the high-res version (optimized main)
             const mainSwapSrc = getOptimizedImage(img, 'main');
@@ -587,10 +590,10 @@ window.openModal = (productId) => {
     // Render sizes
     const sizeContainer = document.getElementById('size-selector');
     sizeContainer.innerHTML = availableSizes.map(size => `
-        <button onclick="selectSize('${size}')" 
-            class="size-btn w-10 h-10 rounded-full border border-brand-deep flex items-center justify-center font-bold text-sm transition ${size === 'M' ? 'bg-brand-deep text-white' : 'text-brand-deep hover:bg-gray-100'}">
-            ${size}
-        </button>
+    < button onclick = "selectSize('${size}')"
+class="size-btn w-10 h-10 rounded-full border border-brand-deep flex items-center justify-center font-bold text-sm transition ${size === 'M' ? 'bg-brand-deep text-white' : 'text-brand-deep hover:bg-gray-100'}" >
+    ${size}
+        </button >
     `).join('');
 
     // Actions reset
@@ -602,6 +605,37 @@ window.openModal = (productId) => {
 
     const orderSuccess = document.getElementById('order-success');
     if (orderSuccess) orderSuccess.classList.add('hidden');
+
+    // Stock Logic
+    const stock = product.stock_quantity !== undefined ? parseInt(product.stock_quantity) : 100;
+    const isOutOfStock = stock <= 0;
+
+    const addToCartBtn = document.getElementById('modal-add-to-cart-btn');
+    const orderBtn = document.getElementById('modal-order-btn');
+
+    if (isOutOfStock) {
+        if (addToCartBtn) {
+            addToCartBtn.disabled = true;
+            addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+            addToCartBtn.textContent = 'Out of Stock';
+        }
+        if (orderBtn) {
+            orderBtn.disabled = true;
+            orderBtn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+            orderBtn.textContent = 'Restocking Soon';
+        }
+    } else {
+        if (addToCartBtn) {
+            addToCartBtn.disabled = false;
+            addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
+            addToCartBtn.textContent = 'Add to Cart';
+        }
+        if (orderBtn) {
+            orderBtn.disabled = false;
+            orderBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
+            orderBtn.textContent = 'Order Now';
+        }
+    }
 
     // Show modal
     document.getElementById('product-modal').classList.remove('hidden');
@@ -782,15 +816,15 @@ window.updateCartUI = () => {
 
     if (cart.length === 0) {
         container.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-64 text-gray-400">
+    < div class="flex flex-col items-center justify-center h-64 text-gray-400" >
                 <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 <p>Your cart is empty</p>
                 <button onclick="closeCart()" class="text-brand-terracotta text-sm font-bold mt-2">Start Shopping</button>
-            </div>
-        `;
+            </div >
+    `;
     } else {
         container.innerHTML = cart.map((item, index) => `
-            <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
+    < div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden" >
                 <div class="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
                     <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='./assets/logo.jpeg'">
                 </div>
@@ -814,14 +848,14 @@ window.updateCartUI = () => {
                 <button onclick="removeFromCart(${index})" class="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="Remove">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
-            </div>
-        `).join('');
+            </div >
+    `).join('');
     }
 
     // 3. Subtotal
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const subtotalEl = document.getElementById('cart-subtotal');
-    if (subtotalEl) subtotalEl.textContent = `৳${subtotal.toLocaleString()}`;
+    if (subtotalEl) subtotalEl.textContent = `৳${subtotal.toLocaleString()} `;
 };
 
 function saveCart() {
@@ -872,7 +906,7 @@ window.showCheckout = (fromCart = false) => {
             qty: currentQuantity,
             size: selectedSize
         });
-        window.location.href = `checkout.html?${params.toString()}`;
+        window.location.href = `checkout.html ? ${params.toString()} `;
     }
 };
 
@@ -912,8 +946,8 @@ window.initCheckout = () => {
     // Render Items
     const container = document.getElementById('checkout-items-container');
     container.innerHTML = checkoutItems.map(item => `
-        <div class="flex gap-4 items-start bg-gray-50/50 p-2 rounded-lg">
-            <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
+    < div class="flex gap-4 items-start bg-gray-50/50 p-2 rounded-lg" >
+        <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
             <div class="flex-grow">
                 <div class="flex justify-between items-start">
                     <div>
@@ -927,11 +961,11 @@ window.initCheckout = () => {
                 </div>
             </div>
         </div>
-    `).join('');
+`).join('');
 
     // Calculate Totals (ensure price is numeric)
     const total = checkoutItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1), 0);
-    document.getElementById('checkout-subtotal').textContent = `৳${total.toLocaleString()}`;
+    document.getElementById('checkout-subtotal').textContent = `৳${total.toLocaleString()} `;
     // Initial total will be updated by updateTotalWithShipping() below
 
     // Store globally for submission
@@ -959,7 +993,7 @@ window.initCheckout = () => {
                 div.id = 'manual-payment-info';
                 div.className = 'mt-6 p-6 bg-pink-50/50 border border-pink-100 rounded-xl text-sm animate-fade-in ring-1 ring-pink-200';
                 div.innerHTML = `
-                    <div class="flex items-start gap-4 mb-4">
+    < div class="flex items-start gap-4 mb-4" >
                         <div class="bg-pink-100 p-2 rounded-full">
                             <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
@@ -970,19 +1004,19 @@ window.initCheckout = () => {
                                 <br><span class="font-mono font-bold text-lg select-all text-brand-deep mt-1 inline-block">01872647323</span> <span class="text-xs text-gray-400 font-medium ml-1">(Personal)</span>
                             </p>
                         </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your bKash Number</label>
-                            <input type="tel" id="manual-sender" placeholder="e.g. 017XXXXXXXX" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all bg-white font-mono text-gray-700 placeholder-gray-300 shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Transaction ID (TrxID)</label>
-                            <input type="text" id="manual-trx" placeholder="e.g. 8X3D7..." class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all bg-white font-mono uppercase text-gray-700 placeholder-gray-300 shadow-sm">
-                        </div>
-                    </div>
-                `;
+                    </div >
+
+    <div class="space-y-4">
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Your bKash Number</label>
+            <input type="tel" id="manual-sender" placeholder="e.g. 017XXXXXXXX" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all bg-white font-mono text-gray-700 placeholder-gray-300 shadow-sm">
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Transaction ID (TrxID)</label>
+            <input type="text" id="manual-trx" placeholder="e.g. 8X3D7..." class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all bg-white font-mono uppercase text-gray-700 placeholder-gray-300 shadow-sm">
+        </div>
+    </div>
+`;
                 // Insert after options
                 container.parentNode.insertBefore(div, container.nextSibling);
             }
@@ -1000,10 +1034,10 @@ function updateTotalWithShipping() {
     const deliveryEl = document.getElementById('checkout-delivery');
     const totalEl = document.getElementById('checkout-total');
 
-    if (deliveryEl) deliveryEl.textContent = `৳${window.shippingFee}`;
+    if (deliveryEl) deliveryEl.textContent = `৳${window.shippingFee} `;
 
     const finalTotal = (window.checkoutTotal || 0) + (window.shippingFee || 0);
-    if (totalEl) totalEl.textContent = `৳${finalTotal.toLocaleString()}`;
+    if (totalEl) totalEl.textContent = `৳${finalTotal.toLocaleString()} `;
 
     // Re-render bKash instructions to show new total
     const manualInfo = document.getElementById('manual-payment-info');
@@ -1024,6 +1058,7 @@ window.confirmOrderFromPage = async () => {
     const name = document.getElementById('cust-name').value.trim();
     let phone = document.getElementById('cust-phone').value.trim(); // cleaned up below
     const address = document.getElementById('cust-address').value.trim();
+    const email = document.getElementById('cust-email')?.value.trim();
 
     if (!name || !phone || !address) {
         alert("Please fill all fields");
@@ -1055,15 +1090,17 @@ window.confirmOrderFromPage = async () => {
     }
 
     // Prepare Payload
-    const itemsDescription = window.checkoutPayload.map(i => `${i.name} (${i.size}) x${i.quantity}`).join(', ');
+    const itemsDescription = window.checkoutPayload.map(i => `${i.name} (${i.size}) x${i.quantity} `).join(', ');
     const finalTotal = window.checkoutTotal + window.shippingFee; // Include Shipping
 
     const orderData = {
         orderId: '#NG-' + Math.floor(10000 + Math.random() * 90000),
         customerName: name,
+        customerEmail: email,
         customerPhone: fullPhone,
         address: address,
         productName: itemsDescription,
+        items: window.checkoutPayload, // Send full items array for backend inventory update
         price: '0',
         size: 'Mixed',
         quantity: window.checkoutPayload.reduce((s, i) => s + i.quantity, 0),
@@ -1222,12 +1259,12 @@ window.confirmOrder = async () => {
     // Show loading
     const originalHTML = confirmBtn.innerHTML;
     confirmBtn.innerHTML = `
-        <svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    < svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns = "http://www.w3.org/2000/svg" fill = "none" viewBox = "0 0 24 24" >
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        অর্ডার প্রসেস হচ্ছে...
-    `;
+        </svg >
+    অর্ডার প্রসেস হচ্ছে...
+`;
     confirmBtn.disabled = true;
 
     try {
@@ -1304,16 +1341,16 @@ window.trackOrder = async () => {
         // Show loading state
         const originalText = trackBtn.innerHTML;
         trackBtn.innerHTML = `
-            <svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    < svg class="animate-spin h-5 w-5 text-white inline-block" xmlns = "http://www.w3.org/2000/svg" fill = "none" viewBox = "0 0 24 24" >
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>খোঁজা হচ্ছে...</span>
-        `;
+            </svg >
+    <span>খোঁজা হচ্ছে...</span>
+`;
         trackBtn.disabled = true;
 
         // Fetch from Netlify Function (GET request)
-        const response = await fetch(`${API_URL}?orderId=${encodeURIComponent(idInput)}`);
+        const response = await fetch(`${API_URL}?orderId = ${encodeURIComponent(idInput)} `);
         const result = await response.json();
 
         if (result.result === "success") {
@@ -1322,12 +1359,12 @@ window.trackOrder = async () => {
             document.getElementById('track-id-display').textContent = order.order_id; // DB column: order_id
 
             // Populate Payment Details
-            document.getElementById('track-amount').textContent = `৳${parseFloat(order.total_price || 0).toLocaleString('bn-BD')}`;
+            document.getElementById('track-amount').textContent = `৳${parseFloat(order.total_price || 0).toLocaleString('bn-BD')} `;
             const paymentStatusEl = document.getElementById('track-payment-status');
             if (order.status === 'Paid') {
-                paymentStatusEl.innerHTML = `<span class="text-green-600 bg-green-100 px-2 py-1 rounded text-xs">Paid ✅</span>`;
+                paymentStatusEl.innerHTML = `< span class="text-green-600 bg-green-100 px-2 py-1 rounded text-xs" > Paid ✅</span > `;
             } else {
-                paymentStatusEl.innerHTML = `<span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs">Due ⚠️</span>`;
+                paymentStatusEl.innerHTML = `< span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs" > Due ⚠️</span > `;
             }
 
             const statusContainer = document.getElementById('track-status-container');
@@ -1337,16 +1374,16 @@ window.trackOrder = async () => {
             const statusColor = getStatusColor(deliveryStatus);
 
             statusContainer.innerHTML = `
-                <div class="flex flex-col gap-1">
+    < div class="flex flex-col gap-1" >
                     <span class="text-2xl font-bold ${statusColor} block">${deliveryStatus}</span>
                     <span class="text-gray-400 text-xs text-left block mt-1"><span class="font-bold">Items:</span> ${order.product_name}</span>
-                </div>
-            `;
+                </div >
+    `;
 
             // Separate Payment Status Box Update
             const paymentBox = document.getElementById('track-payment-status');
             const paymentColor = getPaymentColor(paymentStatus);
-            paymentBox.innerHTML = `<span class="${paymentColor}">${paymentStatus}</span>`;
+            paymentBox.innerHTML = `< span class="${paymentColor}" > ${paymentStatus}</span > `;
 
             // DB column: delivery_date
             document.getElementById('track-delivery-date').textContent = order.delivery_date || 'Processing...';
@@ -1360,7 +1397,7 @@ window.trackOrder = async () => {
         console.error("Tracking Error:", e);
         alert("Tracking Failed: " + e.message);
     } finally {
-        trackBtn.innerHTML = `<span>TRACK NOW</span>`;
+        trackBtn.innerHTML = `< span > TRACK NOW</span > `;
         trackBtn.disabled = false;
     }
 };

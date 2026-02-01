@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frequently Asked Questions | নোঙর - Nongor</title>
+    <meta name="description"
+        content="Common questions and answers about Nongor products, ordering, shipping, and returns.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS (Local) -->
+    <link href="./assets/styles.css" rel="stylesheet">
+
+    <!-- Animations -->
+    <link rel="stylesheet" href="./assets/animations.css">
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.getElementById('mobile-menu-btn');
+
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('translate-x-full');
+                btn.innerHTML = '&times;';
+                btn.classList.add('fixed', 'right-6', 'text-white');
+            } else {
+                menu.classList.add('translate-x-full');
+                btn.innerHTML = '&#9776;';
+                btn.classList.remove('fixed', 'right-6', 'text-white');
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 text-brand-deep font-sans antialiased">
+
+    <!-- Navbar -->
+    <nav id="navbar"
+        class="fixed w-full z-50 bg-brand-deep py-4 px-6 md:px-12 flex justify-between items-center text-brand-light shadow-md transition-all duration-300">
+        <a href="index.html" class="flex items-center gap-3 group">
+            <img src="./assets/logo.jpeg" alt="Nongor"
+                class="h-10 rounded-lg shadow-sm group-hover:scale-105 transition-transform duration-500">
+            <div class="flex flex-col justify-center">
+                <span
+                    class="text-xl font-bold tracking-wide font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
+                <span class="text-[0.6rem] tracking-[0.2em] font-sans uppercase opacity-80 mt-1">The Clothing
+                    Brand</span>
+            </div>
+        </a>
+
+        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide font-medium">
+            <a href="index.html" class="relative hover:text-brand-sand transition-colors">Home</a>
+            <a href="about.html" class="relative hover:text-brand-sand transition-colors">Story</a>
+            <a href="index.html#collection" class="relative hover:text-brand-sand transition-colors">Collection</a>
+            <a href="index.html#contact"
+                class="glass px-5 py-2 rounded-full hover:bg-brand-terracotta hover:text-white transition-all duration-300 border border-white/20">Contact
+                Us</a>
+        </div>
+
+        <button id="mobile-menu-btn" class="md:hidden text-2xl z-50 relative focus:outline-none"
+            onclick="toggleMobileMenu()">&#9776;</button>
+
+        <div id="mobile-menu"
+            class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
+            <a href="index.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Home</a>
+            <a href="about.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Story</a>
+            <a href="index.html#collection"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Collection</a>
+            <a href="index.html#contact"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Contact Us</a>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="relative h-[40vh] flex items-center justify-center overflow-hidden w-full bg-brand-deep">
+        <div class="absolute inset-0 z-0">
+            <img src="./assets/hero-bg.webp" alt="Background" class="w-full h-full object-cover blur-sm opacity-40">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-deep to-brand-deep/60"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in-up">
+            <h1
+                class="text-4xl md:text-6xl font-serif font-bold text-brand-light mb-4 leading-tight drop-shadow-xl text-shadow">
+                Have Questions?
+            </h1>
+            <p class="text-white/80 text-lg font-light tracking-wide">We're here to help. Find answers to common
+                questions below.</p>
+            <div class="w-24 h-1 bg-brand-terracotta mx-auto rounded-full shadow-lg mt-6"></div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-6 py-16">
+
+        <!-- Ordering Questions -->
+        <section class="mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+            <h2 class="text-2xl font-serif font-bold text-brand-deep mb-6 flex items-center gap-3">
+                <span
+                    class="w-8 h-8 rounded-full bg-brand-terracotta text-white flex items-center justify-center text-sm">1</span>
+                Ordering
+            </h2>
+            <div class="space-y-4">
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>How do I place an order?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        Ordering is simple! Browse our collection, select your desired size and quantity, and click
+                        "Order Now". Fill in your delivery details in the form and submit. You'll receive a confirmation
+                        with your Order ID instantly.
+                    </div>
+                </details>
+
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>Can I modify my order after placing it?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        Please contact us immediately via our <a href="https://m.me/857107060814707" target="_blank"
+                            class="text-brand-terracotta hover:underline">Facebook Messenger</a> with your Order ID if
+                        you need to make changes. We can modify orders before they are dispatched.
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Shipping Questions -->
+        <section class="mb-12 animate-fade-in-up" style="animation-delay: 0.2s;">
+            <h2 class="text-2xl font-serif font-bold text-brand-deep mb-6 flex items-center gap-3">
+                <span
+                    class="w-8 h-8 rounded-full bg-brand-terracotta text-white flex items-center justify-center text-sm">2</span>
+                Shipping & Delivery
+            </h2>
+            <div class="space-y-4">
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>How long will delivery take?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        Inside Dhaka, delivery usually takes 2-3 business days. For outside Dhaka, it takes 4-7 business
+                        days depending on your location.
+                    </div>
+                </details>
+
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>Do you ship outside Bangladesh?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        Currently, we only ship within Bangladesh. We are working on international shipping options for
+                        the future.
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Returns Questions -->
+        <section class="mb-12 animate-fade-in-up" style="animation-delay: 0.3s;">
+            <h2 class="text-2xl font-serif font-bold text-brand-deep mb-6 flex items-center gap-3">
+                <span
+                    class="w-8 h-8 rounded-full bg-brand-terracotta text-white flex items-center justify-center text-sm">3</span>
+                Returns & Exchanges
+            </h2>
+            <div class="space-y-4">
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>What is your return policy?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        You can return products within 3 days if there is a defect or size issue. The item must be
+                        unused, unwashed, and with original tags. Please check our <a href="return-policy.html"
+                            class="text-brand-terracotta underline">Return Policy</a> page for full details.
+                    </div>
+                </details>
+
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>Can I exchange for a different size?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        Yes! If the size doesn't fit, we are happy to exchange it for the correct size, provided
+                        standard stock is available. Delivery charges for exchanges may apply.
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        <!-- Payments Questions -->
+        <section class="mb-12 animate-fade-in-up" style="animation-delay: 0.4s;">
+            <h2 class="text-2xl font-serif font-bold text-brand-deep mb-6 flex items-center gap-3">
+                <span
+                    class="w-8 h-8 rounded-full bg-brand-terracotta text-white flex items-center justify-center text-sm">4</span>
+                Payments
+            </h2>
+            <div class="space-y-4">
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>Do you accept Cash on Delivery?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        Yes, we offer Cash on Delivery (COD) nationwide. You pay when you receive the product.
+                    </div>
+                </details>
+
+                <details
+                    class="group border border-gray-100 rounded-xl bg-white shadow-sm open:shadow-md transition-all duration-300 overflow-hidden">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-5 font-semibold hover:text-brand-terracotta transition bg-gray-50/50 group-open:bg-white text-gray-800">
+                        <span>Is advance payment required?</span>
+                        <svg class="w-5 h-5 transition-transform group-open:rotate-180 text-gray-400" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </summary>
+                    <div class="p-5 pt-0 text-gray-600 leading-relaxed text-sm">
+                        Usually, no partial advance is needed for standard deliveries. However, for large orders or
+                        customized items, we may request a small security deposit via bKash/Nagad.
+                    </div>
+                </details>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <img src="./assets/logo.jpeg" alt="Nongor" class="h-14 rounded-lg mix-blend-multiply opacity-90">
+                    <div>
+                        <h4 class="text-3xl font-serif font-bold tracking-wider text-brand-deep leading-none">নোঙর</h4>
+                        <p class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-60 mt-1">The Clothing
+                            Brand</p>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-wrap justify-center gap-6 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    <a href="about.html" class="hover:text-brand-terracotta transition">About Us</a>
+                    <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
+                    <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
+                    <a href="shipping-info.html" class="hover:text-brand-terracotta transition">Shipping Info</a>
+                    <a href="faq.html"
+                        class="hover:text-brand-terracotta transition text-brand-terracotta font-bold">FAQ</a>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-10">
+
+            <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <p>&copy; 2025 নোঙর Brand. All Rights Reserved. Made in Bangladesh.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

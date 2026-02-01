@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipping Information | নোঙর - Nongor</title>
+    <meta name="description" content="Shipping details, delivery rates, and processing times for Nongor orders.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS (Local) -->
+    <link href="./assets/styles.css" rel="stylesheet">
+
+    <!-- Animations -->
+    <link rel="stylesheet" href="./assets/animations.css">
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const btn = document.getElementById('mobile-menu-btn');
+
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('translate-x-full');
+                btn.innerHTML = '&times;';
+                btn.classList.add('fixed', 'right-6', 'text-white');
+            } else {
+                menu.classList.add('translate-x-full');
+                btn.innerHTML = '&#9776;';
+                btn.classList.remove('fixed', 'right-6', 'text-white');
+            }
+        }
+
+        // Open Tracking Modal logic reused
+        window.openTrackingModal = () => {
+            // Check if on index page or navigate
+            window.location.href = 'index.html?action=track';
+        };
+    </script>
+</head>
+
+<body class="bg-gray-50 text-brand-deep font-sans antialiased">
+
+    <!-- Navbar -->
+    <nav id="navbar"
+        class="fixed w-full z-50 bg-brand-deep py-4 px-6 md:px-12 flex justify-between items-center text-brand-light shadow-md transition-all duration-300">
+        <a href="index.html" class="flex items-center gap-3 group">
+            <img src="./assets/logo.jpeg" alt="Nongor"
+                class="h-10 rounded-lg shadow-sm group-hover:scale-105 transition-transform duration-500">
+            <div class="flex flex-col justify-center">
+                <span
+                    class="text-xl font-bold tracking-wide font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
+                <span class="text-[0.6rem] tracking-[0.2em] font-sans uppercase opacity-80 mt-1">The Clothing
+                    Brand</span>
+            </div>
+        </a>
+
+        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide font-medium">
+            <a href="index.html" class="relative hover:text-brand-sand transition-colors">Home</a>
+            <a href="about.html" class="relative hover:text-brand-sand transition-colors">Story</a>
+            <a href="index.html#collection" class="relative hover:text-brand-sand transition-colors">Collection</a>
+            <a href="index.html#contact"
+                class="glass px-5 py-2 rounded-full hover:bg-brand-terracotta hover:text-white transition-all duration-300 border border-white/20">Contact
+                Us</a>
+        </div>
+
+        <button id="mobile-menu-btn" class="md:hidden text-2xl z-50 relative focus:outline-none"
+            onclick="toggleMobileMenu()">&#9776;</button>
+
+        <div id="mobile-menu"
+            class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
+            <a href="index.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Home</a>
+            <a href="about.html" class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Story</a>
+            <a href="index.html#collection"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Collection</a>
+            <a href="index.html#contact"
+                class="text-xl text-brand-light hover:text-brand-terracotta font-serif font-medium"
+                onclick="toggleMobileMenu()">Contact Us</a>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="relative h-[40vh] flex items-center justify-center overflow-hidden w-full bg-brand-deep">
+        <div class="absolute inset-0 z-0">
+            <!-- Using about-bg or hero-bg -->
+            <img src="./assets/hero-bg.webp" alt="Background relative"
+                class="w-full h-full object-cover blur-sm opacity-40">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-deep to-brand-deep/60"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in-up">
+            <h1
+                class="text-4xl md:text-6xl font-serif font-bold text-brand-light mb-4 leading-tight drop-shadow-xl text-shadow">
+                Shipping & Delivery
+            </h1>
+            <p class="text-white/80 text-lg font-light tracking-wide">Fast, reliable delivery to your doorstep</p>
+            <div class="w-24 h-1 bg-brand-terracotta mx-auto rounded-full shadow-lg mt-6"></div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-6 py-16 space-y-16">
+
+        <!-- Delivery Rates -->
+        <section class="animate-fade-in-up" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-serif font-bold text-brand-deep">Delivery Coverage & Rates</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div
+                    class="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow group">
+                    <h3
+                        class="font-bold text-xl text-gray-800 mb-2 group-hover:text-brand-terracotta transition-colors">
+                        Inside Dhaka</h3>
+                    <p class="text-4xl font-bold text-brand-deep font-serif mb-4">৳70</p>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            Delivery: <strong>2-3 Business Days</strong>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            Home Delivery Available
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            Cash on Delivery
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                    class="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow group">
+                    <h3
+                        class="font-bold text-xl text-gray-800 mb-2 group-hover:text-brand-terracotta transition-colors">
+                        Outside Dhaka</h3>
+                    <p class="text-4xl font-bold text-brand-deep font-serif mb-4">৳130</p>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            Delivery: <strong>4-7 Business Days</strong>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            Courier Pickup Point / Home Delivery
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            Cash on Delivery
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Processing Time -->
+        <section class="animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-8 flex flex-col md:flex-row gap-8 items-start">
+                <div class="md:w-1/3">
+                    <h3 class="text-2xl font-serif font-bold text-brand-deep mb-2">Order Processing</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">We strive to ship your order as quickly as
+                        possible. Here is our processing schedule.</p>
+                </div>
+                <div class="md:w-2/3">
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <div
+                                class="mt-1 w-5 h-5 rounded-full bg-white flex items-center justify-center text-blue-600 shadow-sm text-xs font-bold">
+                                1</div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">Same Day Processing</h4>
+                                <p class="text-xs text-gray-600">Orders placed before 2:00 PM are usually processed the
+                                    same day.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div
+                                class="mt-1 w-5 h-5 rounded-full bg-white flex items-center justify-center text-blue-600 shadow-sm text-xs font-bold">
+                                2</div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">Next Day Processing</h4>
+                                <p class="text-xs text-gray-600">Orders placed after 2:00 PM are processed the next
+                                    business day.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div
+                                class="mt-1 w-5 h-5 rounded-full bg-white flex items-center justify-center text-blue-600 shadow-sm text-xs font-bold">
+                                3</div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">Friday & Holidays</h4>
+                                <p class="text-xs text-gray-600">Orders placed on Fridays or public holidays will be
+                                    processed on the next working day.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Courier Partners -->
+        <section class="animate-fade-in-up" style="animation-delay: 0.3s;">
+            <div class="text-center mb-10">
+                <h3 class="text-2xl font-serif font-bold text-brand-deep mb-2">Trusted Courier Partners</h3>
+                <p class="text-sm text-gray-500">We ship via Bangladesh's most reliable courier services</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div
+                    class="bg-gray-50 rounded-xl p-6 text-center font-bold text-gray-400 grayscale hover:grayscale-0 hover:bg-white hover:shadow-lg transition-all cursor-default">
+                    Pathao</div>
+                <div
+                    class="bg-gray-50 rounded-xl p-6 text-center font-bold text-gray-400 grayscale hover:grayscale-0 hover:bg-white hover:shadow-lg transition-all cursor-default">
+                    Steadfast</div>
+                <div
+                    class="bg-gray-50 rounded-xl p-6 text-center font-bold text-gray-400 grayscale hover:grayscale-0 hover:bg-white hover:shadow-lg transition-all cursor-default">
+                    Sundarban</div>
+                <div
+                    class="bg-gray-50 rounded-xl p-6 text-center font-bold text-gray-400 grayscale hover:grayscale-0 hover:bg-white hover:shadow-lg transition-all cursor-default">
+                    RedX</div>
+            </div>
+        </section>
+
+        <!-- FAQ/Issues -->
+        <section class="animate-fade-in-up mb-12" style="animation-delay: 0.4s;">
+            <h3 class="text-2xl font-serif font-bold text-brand-deep mb-6">Common Delivery Questions</h3>
+            <div class="space-y-4">
+                <details
+                    class="group bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm open:shadow-md transition-shadow">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-4 font-bold text-gray-700 hover:text-brand-terracotta bg-gray-50 group-open:bg-white transition-colors">
+                        <span>How do I track my order?</span>
+                        <span class="transition-transform group-open:rotate-180">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </span>
+                    </summary>
+                    <div class="p-4 pt-0 text-sm text-gray-600 leading-relaxed">
+                        Once your order is shipped, you will receive an Order ID via text/email. You can use this ID on
+                        our <a href="index.html" class="text-brand-terracotta underline">Track Order</a> page to see
+                        real-time updates.
+                    </div>
+                </details>
+
+                <details
+                    class="group bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm open:shadow-md transition-shadow">
+                    <summary
+                        class="flex justify-between items-center cursor-pointer p-4 font-bold text-gray-700 hover:text-brand-terracotta bg-gray-50 group-open:bg-white transition-colors">
+                        <span>What if I'm not home during delivery?</span>
+                        <span class="transition-transform group-open:rotate-180">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </span>
+                    </summary>
+                    <div class="p-4 pt-0 text-sm text-gray-600 leading-relaxed">
+                        The courier representative will call you before delivery. If you miss it, they will attempt
+                        delivery one more time the next day. Please ensure your provided phone number is active.
+                    </div>
+                </details>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <img src="./assets/logo.jpeg" alt="Nongor" class="h-14 rounded-lg mix-blend-multiply opacity-90">
+                    <div>
+                        <h4 class="text-3xl font-serif font-bold tracking-wider text-brand-deep leading-none">নোঙর</h4>
+                        <p class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-60 mt-1">The Clothing
+                            Brand</p>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-wrap justify-center gap-6 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    <a href="about.html" class="hover:text-brand-terracotta transition">About Us</a>
+                    <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
+                    <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
+                    <a href="shipping-info.html"
+                        class="hover:text-brand-terracotta transition text-brand-terracotta font-bold">Shipping Info</a>
+                    <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-10">
+
+            <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <p>&copy; 2025 নোঙর Brand. All Rights Reserved. Made in Bangladesh.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
