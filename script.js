@@ -81,13 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initCategories();
     initProducts();
 
-    // Hide Loading Overlay with Premium Delay
+    // Hide Loading Overlay
     const overlay = document.getElementById('app-loading-overlay');
     if (overlay) {
-        setTimeout(() => {
-            overlay.classList.add('opacity-0', 'scale-105', 'pointer-events-none');
-            setTimeout(() => overlay.remove(), 700);
-        }, 800);
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => overlay.remove(), 300);
     }
 
     // Mobile Menu Logic
@@ -401,8 +399,7 @@ function renderProducts(products) {
         }
 
         return `
-        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in-up opacity-0 relative" 
-             style="animation-delay: ${index * 100}ms"
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in relative" 
              onmouseenter="startCardSlideshow(${product.id}, this)"
              onmouseleave="stopCardSlideshow(${product.id}, this)">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
@@ -499,10 +496,10 @@ window.startCardSlideshow = (productId, card) => {
                     img.src = nextSrc;
                 }
             };
-        }, 1200);
+        }, 1500);
 
         card.dataset.slideshowInterval = interval;
-    }, 400); // 400ms Delay before starting slideshow
+    }, 500); // 500ms Delay before starting slideshow
 };
 
 window.stopCardSlideshow = (productId, card) => {
