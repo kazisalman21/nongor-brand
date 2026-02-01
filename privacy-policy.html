@@ -39,8 +39,17 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #E07A5F;
+            background: linear-gradient(180deg, #E07A5F, #3D405B);
             border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #3D405B, #E07A5F);
+        }
+
+        ::selection {
+            background: rgba(224, 122, 95, 0.3);
+            color: #3D405B;
         }
 
         .text-shadow {
@@ -51,6 +60,7 @@
             text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
+        /* Premium Animations */
         @keyframes subtle-zoom {
             0% {
                 transform: scale(1);
@@ -64,7 +74,7 @@
         @keyframes fade-in-up {
             0% {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
 
             100% {
@@ -89,8 +99,91 @@
             }
         }
 
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(224, 122, 95, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(224, 122, 95, 0.5);
+            }
+        }
+
+        @keyframes slide-in {
+            0% {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
         .animate-fade-in-up {
             animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+
+        .animate-slide-in {
+            animation: slide-in 0.6s ease-out forwards;
+        }
+
+        /* Premium Hover Effects */
+        .hover-lift {
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 0 30px rgba(224, 122, 95, 0.4);
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Stagger animations */
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-300 {
+            animation-delay: 0.3s;
         }
     </style>
 </head>
@@ -156,7 +249,7 @@
     <header class="relative h-[50vh] flex items-center justify-center overflow-hidden w-full">
         <div class="absolute inset-0 z-0">
             <!-- Using a neutral part of the hero bg or about bg -->
-            <img src="./assets/hero-bg.jpg" alt="Background" class="w-full h-full object-cover blur-sm opacity-80"
+            <img src="./assets/hero-bg.webp" alt="Background" class="w-full h-full object-cover blur-sm opacity-80"
                 onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#3D405B'">
             <div class="absolute inset-0 bg-brand-deep/60"></div>
         </div>
