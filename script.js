@@ -399,7 +399,7 @@ function renderProducts(products) {
         }
 
         return `
-        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group border border-gray-100 flex flex-col h-full animate-fade-in relative" 
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-gray-100 flex flex-col h-full animate-fade-in relative hover-lift hover-glow" 
              onmouseenter="startCardSlideshow(${product.id}, this)"
              onmouseleave="stopCardSlideshow(${product.id}, this)">
             <div class="relative h-80 bg-gray-100 overflow-hidden">
