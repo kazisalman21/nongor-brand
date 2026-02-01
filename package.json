@@ -7,12 +7,16 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
+    "node-cache": "^5.1.2",
     "pg": "^8.11.3",
     "tailwindcss": "^3.4.1"
   },
   "scripts": {
     "build": "npm run build:css",
     "build:css": "node node_modules/tailwindcss/lib/cli.js -i ./src/input.css -o ./assets/styles.css --minify",
-    "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./src/input.css -o ./assets/styles.css --watch"
+    "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./src/input.css -o ./assets/styles.css --watch",
+    "optimize:images": "node scripts/optimize-images.js",
+    "setup:db": "node scripts/setup_auth_pg.js",
+    "test:db": "node test-fixes.js"
   }
 }

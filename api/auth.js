@@ -1,7 +1,8 @@
-const { Client } = require('pg');
-
-// Initialize DB connection string
-const connectionString = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
+/**
+ * Authentication API - Optimized Version
+ * Uses connection pooling for faster responses
+ */
+const pool = require('./db');
 
 module.exports = async (req, res) => {
     // CORS headers
@@ -23,13 +24,11 @@ module.exports = async (req, res) => {
 
     const { action, email, password, sessionToken } = req.body;
 
-    const client = new Client({
-        connectionString,
-        ssl: { rejectUnauthorized: false }
-    });
+    let client;
 
     try {
-        await client.connect();
+        // Get connection from pool (FAST!)
+        client = await pool.connect();
 
         // ============================================
         // ACTION: LOGIN
@@ -68,7 +67,7 @@ module.exports = async (req, res) => {
             const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
             // Get IP and User Agent
-            const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            const ipAddress = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '';
             const userAgent = req.headers['user-agent'] || '';
 
             // Create session
@@ -175,7 +174,7 @@ module.exports = async (req, res) => {
 
             const user = sessionResult.rows[0];
 
-            // Verify current password - use user.res_email
+            // Verify current password
             const verifyResult = await client.query('SELECT * FROM auth.verify_user_v3($1::TEXT, $2::TEXT)', [user.res_email, currentPassword]);
 
             if (verifyResult.rows.length === 0) {
@@ -212,7 +211,10 @@ module.exports = async (req, res) => {
             message: 'Server error: ' + error.message
         });
     } finally {
-        await client.end();
+        // Always release connection back to pool
+        if (client) {
+            client.release();
+        }
     }
 };
 
