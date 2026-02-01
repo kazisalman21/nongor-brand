@@ -1,6 +1,14 @@
+require('dotenv').config();
 const { Client } = require('pg');
 
-const connectionString = "postgresql://neondb_owner:npg_aXlrxhuS9GR8@ep-plain-art-aez29oyf-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+// Use environment variable instead of hardcoded credentials
+const connectionString = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
+
+if (!connectionString) {
+    console.error('❌ ERROR: DATABASE_URL environment variable is not set!');
+    console.error('Please create a .env file with your database credentials.');
+    process.exit(1);
+}
 
 const client = new Client({
     connectionString,
@@ -32,7 +40,7 @@ async function check() {
         const funcNames = functions.rows.map(r => r.routine_name);
         console.log('Functions found:', funcNames);
 
-        const requiredFuncs = ['create_user', 'verify_user', 'create_session', 'verify_session', 'delete_session'];
+        const requiredFuncs = ['create_user', 'verify_user_v3', 'create_session', 'verify_session_v3', 'delete_session'];
         const missingFuncs = requiredFuncs.filter(f => !funcNames.includes(f));
 
         if (!hasUsers || !hasSessions || missingFuncs.length > 0) {

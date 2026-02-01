@@ -1,7 +1,14 @@
+require('dotenv').config();
 const { Client } = require('pg');
 
-// Hardcoded connection string to avoid dotenv issues in manual run
-const connectionString = "postgresql://neondb_owner:npg_aXlrxhuS9GR8@ep-plain-art-aez29oyf-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+// Use environment variable instead of hardcoded credentials
+const connectionString = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
+
+if (!connectionString) {
+    console.error('❌ ERROR: DATABASE_URL environment variable is not set!');
+    console.error('Please create a .env file with your database credentials.');
+    process.exit(1);
+}
 
 const client = new Client({
     connectionString,

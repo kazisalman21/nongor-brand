@@ -1,7 +1,14 @@
+require('dotenv').config();
 const { Client } = require('pg');
 
-// Hardcoded to ensure it works
-const connectionString = "postgresql://neondb_owner:npg_aXlrxhuS9GR8@ep-plain-art-aez29oyf-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+// Use environment variable instead of hardcoded credentials
+const connectionString = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
+
+if (!connectionString) {
+    console.error('❌ ERROR: DATABASE_URL environment variable is not set!');
+    console.error('Please create a .env file with your database credentials.');
+    process.exit(1);
+}
 
 const client = new Client({
     connectionString,
@@ -9,7 +16,7 @@ const client = new Client({
 });
 
 async function setup() {
-    console.log('Starting Full Neon Auth Setup (Fixing Ambiguity)...');
+    console.log('Starting Full Neon Auth Setup...');
 
     try {
         await client.connect();
@@ -50,9 +57,14 @@ async function setup() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON auth.sessions(session_token)');
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON auth.sessions(user_id)');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON auth.sessions(expires_at)');
 
-        // 4. Create Helper Functions
-        console.log('Recreating helper functions...');
+        // 4. Add images column to products table if it doesn't exist
+        console.log('Adding images column to products table...');
+        await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb`);
+
+        // 5. Create Helper Functions
+        console.log('Creating helper functions...');
 
         // auth.create_user
         await client.query(`
@@ -84,7 +96,7 @@ async function setup() {
             $$ LANGUAGE plpgsql;
         `);
 
-        // auth.verify_user - DROP first to allow return type change
+        // auth.verify_user (original) - DROP first to allow return type change
         await client.query('DROP FUNCTION IF EXISTS auth.verify_user(VARCHAR, TEXT)');
         await client.query(`
             CREATE OR REPLACE FUNCTION auth.verify_user(
@@ -105,6 +117,25 @@ async function setup() {
                     SET last_login = NOW()
                     WHERE LOWER(auth.users.email) = LOWER(p_email);
                 END IF;
+            END;
+            $$ LANGUAGE plpgsql;
+        `);
+
+        // auth.verify_user_v3 (used by API)
+        console.log('Creating auth.verify_user_v3...');
+        await client.query(`
+            CREATE OR REPLACE FUNCTION auth.verify_user_v3(
+                p_email TEXT,
+                p_password TEXT
+            )
+            RETURNS TABLE(user_id UUID, res_email VARCHAR, res_role VARCHAR, res_full_name VARCHAR) AS $$
+            BEGIN
+                RETURN QUERY
+                UPDATE auth.users
+                SET last_login = NOW()
+                WHERE LOWER(email) = LOWER(p_email)
+                AND password_hash = crypt(p_password, password_hash)
+                RETURNING id AS user_id, email AS res_email, role AS res_role, full_name AS res_full_name;
             END;
             $$ LANGUAGE plpgsql;
         `);
@@ -131,7 +162,7 @@ async function setup() {
             $$ LANGUAGE plpgsql;
         `);
 
-        // auth.verify_session - DROP first
+        // auth.verify_session (original) - DROP first
         await client.query('DROP FUNCTION IF EXISTS auth.verify_session(TEXT)');
         await client.query(`
             CREATE OR REPLACE FUNCTION auth.verify_session(p_session_token TEXT)
@@ -139,6 +170,26 @@ async function setup() {
             BEGIN
                 RETURN QUERY
                 SELECT u.id, u.email, u.role, u.full_name
+                FROM auth.sessions s
+                JOIN auth.users u ON s.user_id = u.id
+                WHERE s.session_token = p_session_token
+                AND s.expires_at > NOW();
+            END;
+            $$ LANGUAGE plpgsql;
+        `);
+
+        // auth.verify_session_v3 (used by API)
+        console.log('Creating auth.verify_session_v3...');
+        await client.query(`
+            CREATE OR REPLACE FUNCTION auth.verify_session_v3(p_session_token TEXT)
+            RETURNS TABLE(user_id UUID, res_email VARCHAR, res_role VARCHAR, res_full_name VARCHAR) AS $$
+            BEGIN
+                RETURN QUERY
+                SELECT 
+                    u.id AS user_id, 
+                    u.email AS res_email, 
+                    u.role AS res_role, 
+                    u.full_name AS res_full_name
                 FROM auth.sessions s
                 JOIN auth.users u ON s.user_id = u.id
                 WHERE s.session_token = p_session_token
@@ -172,8 +223,39 @@ async function setup() {
             $$ LANGUAGE plpgsql;
         `);
 
+        // 6. Create performance indexes for products and orders
+        console.log('Creating performance indexes...');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_slug)');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_products_featured ON products(is_featured) WHERE is_active = true');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active)');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_products_created ON products(created_at DESC)');
+
+        // Orders indexes (if table exists)
+        try {
+            await client.query('CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON orders(phone)');
+            await client.query('CREATE INDEX IF NOT EXISTS idx_orders_delivery_status ON orders(delivery_status)');
+            await client.query('CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON orders(payment_status)');
+            await client.query('CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC)');
+            await client.query('CREATE INDEX IF NOT EXISTS idx_orders_order_id ON orders(order_id)');
+        } catch (e) {
+            console.log('Note: Orders table indexes skipped (table may not exist yet)');
+        }
+
+        // 7. Create admin user if not exists
+        console.log('Ensuring admin user exists...');
+        await client.query(`
+            INSERT INTO auth.users (email, password_hash, role, full_name)
+            VALUES ('admin@nongor.com', crypt('nongor@2025', gen_salt('bf', 10)), 'admin', 'Nongor Administrator')
+            ON CONFLICT (email) DO NOTHING
+        `);
+
         console.log('\n==================================================');
-        console.log('✅ RE-SETUP COMPLETE: Functions updated with new return names.');
+        console.log('✅ FULL SETUP COMPLETE');
+        console.log('   - Auth schema and tables created');
+        console.log('   - Helper functions (v1, v3) created');
+        console.log('   - Images column added to products');
+        console.log('   - Performance indexes created');
+        console.log('   - Admin user ensured');
         console.log('==================================================');
 
     } catch (error) {

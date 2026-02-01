@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
 
     if (req.method !== 'POST') {
         return res.status(405).json({
-            success: false,
+            result: 'error',
             message: 'Method not allowed'
         });
     }
@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
             // Validate input
             if (!email || !password) {
                 return res.status(400).json({
-                    success: false,
+                    result: 'error',
                     message: 'Email and password are required'
                 });
             }
@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
 
             if (userResult.rows.length === 0) {
                 return res.status(401).json({
-                    success: false,
+                    result: 'error',
                     message: 'Invalid email or password'
                 });
             }
@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
             // Check if user is admin
             if (user.res_role !== 'admin') {
                 return res.status(403).json({
-                    success: false,
+                    result: 'error',
                     message: 'Access denied: Admin only'
                 });
             }
@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
             ]);
 
             return res.status(200).json({
-                success: true,
+                result: 'success',
                 message: 'Login successful',
                 sessionToken: newSessionToken,
                 user: {
@@ -100,7 +100,7 @@ module.exports = async (req, res) => {
         if (action === 'verify') {
             if (!sessionToken) {
                 return res.status(400).json({
-                    success: false,
+                    result: 'error',
                     message: 'Session token is required'
                 });
             }
@@ -110,7 +110,7 @@ module.exports = async (req, res) => {
 
             if (sessionResult.rows.length === 0) {
                 return res.status(401).json({
-                    success: false,
+                    result: 'error',
                     valid: false,
                     message: 'Invalid or expired session'
                 });
@@ -119,7 +119,7 @@ module.exports = async (req, res) => {
             const user = sessionResult.rows[0];
 
             return res.status(200).json({
-                success: true,
+                result: 'success',
                 valid: true,
                 user: {
                     id: user.user_id,
@@ -136,7 +136,7 @@ module.exports = async (req, res) => {
         if (action === 'logout') {
             if (!sessionToken) {
                 return res.status(400).json({
-                    success: false,
+                    result: 'error',
                     message: 'Session token is required'
                 });
             }
@@ -145,7 +145,7 @@ module.exports = async (req, res) => {
             await client.query('SELECT auth.delete_session($1::TEXT)', [sessionToken]);
 
             return res.status(200).json({
-                success: true,
+                result: 'success',
                 message: 'Logged out successfully'
             });
         }
@@ -158,7 +158,7 @@ module.exports = async (req, res) => {
 
             if (!sessionToken || !currentPassword || !newPassword) {
                 return res.status(400).json({
-                    success: false,
+                    result: 'error',
                     message: 'Missing required fields'
                 });
             }
@@ -168,7 +168,7 @@ module.exports = async (req, res) => {
 
             if (sessionResult.rows.length === 0) {
                 return res.status(401).json({
-                    success: false,
+                    result: 'error',
                     message: 'Invalid session'
                 });
             }
@@ -180,7 +180,7 @@ module.exports = async (req, res) => {
 
             if (verifyResult.rows.length === 0) {
                 return res.status(401).json({
-                    success: false,
+                    result: 'error',
                     message: 'Current password is incorrect'
                 });
             }
@@ -194,21 +194,21 @@ module.exports = async (req, res) => {
             `, [newPassword, user.user_id]);
 
             return res.status(200).json({
-                success: true,
+                result: 'success',
                 message: 'Password changed successfully'
             });
         }
 
         // Unknown action
         return res.status(400).json({
-            success: false,
+            result: 'error',
             message: 'Invalid action'
         });
 
     } catch (error) {
         console.error('Auth API error:', error);
         return res.status(500).json({
-            success: false,
+            result: 'error',
             message: 'Server error: ' + error.message
         });
     } finally {

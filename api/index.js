@@ -1,5 +1,5 @@
 const { Client } = require('pg');
-const jwt = require('jsonwebtoken');
+// Note: JWT removed - using session-based auth
 
 // Vercel Serverless Function (Standard Node.js HTTP)
 module.exports = async (req, res) => {
@@ -185,6 +185,27 @@ module.exports = async (req, res) => {
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     );
                 `);
+
+                // Validate product data
+                if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+                    await client.end();
+                    return res.status(400).json({ result: 'error', message: 'Product name is required' });
+                }
+                if (data.name.length > 255) {
+                    await client.end();
+                    return res.status(400).json({ result: 'error', message: 'Product name too long (maximum 255 characters)' });
+                }
+                if (!data.price || isNaN(data.price) || parseFloat(data.price) <= 0) {
+                    await client.end();
+                    return res.status(400).json({ result: 'error', message: 'Valid price greater than 0 is required' });
+                }
+                if (!data.category_slug || !data.category_name) {
+                    await client.end();
+                    return res.status(400).json({ result: 'error', message: 'Product category is required' });
+                }
+                // Sanitize
+                data.name = data.name.trim();
+                data.description = (data.description || '').trim();
 
                 const insertQuery = `
                     INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured)
@@ -404,16 +425,7 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ result: 'error', message: 'Product ID required' });
             }
 
-            if (!client) {
-                if (!process.env.NETLIFY_DATABASE_URL) {
-                    throw new Error("Missing NETLIFY_DATABASE_URL");
-                }
-                client = new Client({
-                    connectionString: process.env.NETLIFY_DATABASE_URL,
-                    ssl: { rejectUnauthorized: false }
-                });
-                await client.connect();
-            }
+            // Client already connected above at line 381-390
 
             // Soft delete by setting is_active to false
             const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
