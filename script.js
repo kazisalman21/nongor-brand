@@ -824,15 +824,15 @@ window.updateCartUI = () => {
 
     if (cart.length === 0) {
         container.innerHTML = `
-    < div class="flex flex-col items-center justify-center h-64 text-gray-400" >
+    <div class="flex flex-col items-center justify-center h-64 text-gray-400">
                 <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 <p>Your cart is empty</p>
                 <button onclick="closeCart()" class="text-brand-terracotta text-sm font-bold mt-2">Start Shopping</button>
-            </div >
+            </div>
     `;
     } else {
         container.innerHTML = cart.map((item, index) => `
-    < div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden" >
+    <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
                 <div class="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
                     <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='./assets/logo.jpeg'">
                 </div>
@@ -954,7 +954,7 @@ window.initCheckout = () => {
     // Render Items
     const container = document.getElementById('checkout-items-container');
     container.innerHTML = checkoutItems.map(item => `
-    < div class="flex gap-4 items-start bg-gray-50/50 p-2 rounded-lg" >
+    <div class="flex gap-4 items-start bg-gray-50/50 p-2 rounded-lg">
         <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
             <div class="flex-grow">
                 <div class="flex justify-between items-start">
