@@ -1,0 +1,33 @@
+{
+    "name": "Nongor | Premium Clothing",
+    "short_name": "Nongor",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#3D405B",
+    "theme_color": "#3D405B",
+    "description": "Premium Bangladeshi clothing brand with handcrafted heritage.",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "./assets/logo.jpeg",
+            "sizes": "192x192",
+            "type": "image/jpeg"
+        },
+        {
+            "src": "./assets/logo.jpeg",
+            "sizes": "512x512",
+            "type": "image/jpeg"
+        },
+        {
+            "src": "./assets/logo.jpeg",
+            "sizes": "180x180",
+            "type": "image/jpeg",
+            "purpose": "maskable"
+        }
+    ],
+    "categories": [
+        "shopping",
+        "lifestyle",
+        "fashion"
+    ]
+}
