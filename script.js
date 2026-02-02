@@ -1001,7 +1001,7 @@ window.initCheckout = () => {
                 div.id = 'manual-payment-info';
                 div.className = 'mt-6 p-6 bg-pink-50/50 border border-pink-100 rounded-xl text-sm animate-fade-in ring-1 ring-pink-200';
                 div.innerHTML = `
-    < div class="flex items-start gap-4 mb-4" >
+    <div class="flex items-start gap-4 mb-4">
                         <div class="bg-pink-100 p-2 rounded-full">
                             <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
