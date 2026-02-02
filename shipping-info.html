@@ -246,23 +246,43 @@
                     <h3 class="text-2xl font-bold text-brand-deep mb-4 flex items-center gap-2 font-bengali-display">
                         <span class="text-brand-terracotta">04.</span> পেমেন্ট অপশন
                     </h3>
-                    <div class="grid md:grid-cols-2 gap-4 not-prose">
-                        <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+                    <div class="grid md:grid-cols-2 gap-6 not-prose">
+                        <!-- Cash on Delivery -->
+                        <div
+                            class="group bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                             <div
-                                class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl">
-                                💵</div>
-                            <div>
-                                <p class="font-bold text-brand-deep">ক্যাশ অন ডেলিভারি</p>
-                                <p class="text-sm text-gray-500">পণ্য হাতে পেয়ে পেমেন্ট করুন</p>
+                                class="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110">
+                            </div>
+                            <div class="relative z-10 flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                    💵
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-brand-deep text-lg mb-1">ক্যাশ অন ডেলিভারি</h4>
+                                    <p class="text-sm text-gray-500 group-hover:text-green-600 transition-colors">পণ্য
+                                        হাতে পেয়ে পেমেন্ট করুন</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center gap-4">
+
+                        <!-- bKash / Nagad -->
+                        <div
+                            class="group bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                             <div
-                                class="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xl">
-                                📱</div>
-                            <div>
-                                <p class="font-bold text-brand-deep">bKash / Nagad</p>
-                                <p class="text-sm text-gray-500">অ্যাডভান্স পেমেন্ট</p>
+                                class="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110">
+                            </div>
+                            <div class="relative z-10 flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300 overflow-hidden p-3">
+                                    <img src="./assets/bkash_logo.webp" alt="bKash"
+                                        class="w-full h-full object-contain">
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-brand-deep text-lg mb-1">bKash / Nagad / Bank</h4>
+                                    <p class="text-sm text-gray-500 group-hover:text-pink-600 transition-colors">সিকিউরড
+                                        অনলাইন পেমেন্ট</p>
+                                </div>
                             </div>
                         </div>
                     </div>
