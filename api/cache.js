@@ -27,4 +27,37 @@ function invalidateProductCache() {
     console.log('🗑️ Product cache invalidated');
 }
 
-module.exports = { cache, CACHE_KEYS, invalidateProductCache };
+// Rate Limiting Maps (In-Memory)
+const rateLimits = {
+    login: new Map(), // IP -> { count, expires }
+    order: new Map()  // IP -> { count, expires }
+};
+
+// Rate Limit Checker
+function checkRateLimit(type, ip) {
+    const limit = type === 'login' ? 5 : 10; // 5 attempts for login, 10 for orders
+    const window = type === 'login' ? 15 * 60 * 1000 : 60 * 60 * 1000; // 15 mins vs 60 mins
+
+    const now = Date.now();
+    const record = rateLimits[type].get(ip);
+
+    // Clean up expired or invalid records
+    if (record && now > record.expires) {
+        rateLimits[type].delete(ip);
+    }
+
+    if (!rateLimits[type].has(ip)) {
+        rateLimits[type].set(ip, { count: 1, expires: now + window });
+        return { allowed: true };
+    }
+
+    const current = rateLimits[type].get(ip);
+    if (current.count >= limit) {
+        return { allowed: false, retryAfter: Math.ceil((current.expires - now) / 1000) };
+    }
+
+    current.count++;
+    return { allowed: true };
+}
+
+module.exports = { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit };

@@ -3,6 +3,8 @@
  * Uses connection pooling for faster responses
  */
 const pool = require('./db');
+const { checkRateLimit } = require('./cache');
+const { sanitizeObject } = require('./utils/sanitize');
 
 module.exports = async (req, res) => {
     // CORS headers
@@ -22,7 +24,14 @@ module.exports = async (req, res) => {
         });
     }
 
-    const { action, email, password, sessionToken } = req.body;
+    // --- SECURITY: INPUT SANITIZATION ---
+    // Parse body if it's a string
+    if (typeof req.body === 'string') {
+        try { req.body = JSON.parse(req.body); } catch (e) { }
+    }
+    const body = sanitizeObject(req.body || {});
+    // Destructure sanitized body
+    const { action, email, password, sessionToken } = body;
 
     let client;
 
@@ -34,6 +43,18 @@ module.exports = async (req, res) => {
         // ACTION: LOGIN
         // ============================================
         if (action === 'login') {
+            // --- SECURITY: RATE LIMITING (Priority 1) ---
+            const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '';
+            const rateLimit = checkRateLimit('login', ip);
+
+            if (!rateLimit.allowed) {
+                client.release();
+                return res.status(429).json({
+                    result: 'error',
+                    message: `Too many login attempts. Please try again in ${rateLimit.retryAfter} seconds.`
+                });
+            }
+
             // Validate input
             if (!email || !password) {
                 return res.status(400).json({
@@ -67,7 +88,6 @@ module.exports = async (req, res) => {
             const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
             // Get IP and User Agent
-            const ipAddress = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '';
             const userAgent = req.headers['user-agent'] || '';
 
             // Create session
@@ -75,7 +95,7 @@ module.exports = async (req, res) => {
                 user.user_id,
                 newSessionToken,
                 expiresAt.toISOString(),
-                ipAddress,
+                ip,
                 userAgent
             ]);
 
@@ -153,7 +173,8 @@ module.exports = async (req, res) => {
         // ACTION: CHANGE PASSWORD
         // ============================================
         if (action === 'changePassword') {
-            const { currentPassword, newPassword } = req.body;
+            // Note: req.body is already sanitized above, so use sanitized `body` const instead
+            const { currentPassword, newPassword } = body;
 
             if (!sessionToken || !currentPassword || !newPassword) {
                 return res.status(400).json({

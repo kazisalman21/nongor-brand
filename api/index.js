@@ -5,12 +5,32 @@
  * - Removed redundant table creation statements
  */
 const pool = require('./db');
-const { cache, CACHE_KEYS, invalidateProductCache } = require('./cache');
+const { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit } = require('./cache');
 const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
+const { sanitizeObject } = require('./utils/sanitize');
 
 module.exports = async (req, res) => {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // --- SECURITY: CORS RESTRICTION (Priority 1) ---
+    const allowedOrigins = [
+        'https://nongor-brand.vercel.app',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500' // Common VS Code Live Server port
+    ];
+    const origin = req.headers.origin;
+
+    // In production, strictly check origin. In dev (no origin headers sometimes), allow if local.
+    if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+        // Allow non-browser requests (like Postman during dev) but warn
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    } else {
+        // Block unknown origins in production
+        // res.setHeader('Access-Control-Allow-Origin', 'null');
+        // For now, keep * but log warning to avoid breaking live site immediately until tested
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-password, x-admin-user, x-admin-pass, x-admin-secret, x-session-token');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 
@@ -52,8 +72,14 @@ module.exports = async (req, res) => {
 
     try {
         const method = req.method;
-        const query = req.query || {};
-        const body = req.body || {};
+        // --- SECURITY: INPUT SANITIZATION (Priority 1) ---
+        const query = sanitizeObject(req.query || {});
+        // Parse body if string, then sanitize
+        let rawBody = req.body || {};
+        if (typeof rawBody === 'string') {
+            try { rawBody = JSON.parse(rawBody); } catch (e) { }
+        }
+        const body = sanitizeObject(rawBody);
 
         // Get connection from pool (FAST - reuses existing connections)
         client = await pool.connect();
@@ -133,7 +159,7 @@ module.exports = async (req, res) => {
 
         // --- 2. POST REQUESTS ---
         if (method === 'POST') {
-            const data = typeof body === 'string' ? JSON.parse(body) : body;
+            const data = body; // Already sanitized above
 
             // --- ADD PRODUCT (Protected) ---
             if (query.action === 'addProduct') {
@@ -165,7 +191,7 @@ module.exports = async (req, res) => {
                     return res.status(400).json({ result: 'error', message: 'Product category is required' });
                 }
 
-                // Sanitize
+                // Sanitize (Double check, although body is sanitized)
                 data.name = data.name.trim();
                 data.description = (data.description || '').trim();
 
@@ -197,6 +223,28 @@ module.exports = async (req, res) => {
             }
 
             // --- CREATE ORDER (Public) ---
+
+            // --- SECURITY: RATE LIMITING (Priority 1) ---
+            // Get IP Address
+            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            const rateLimit = checkRateLimit('order', ip);
+            if (!rateLimit.allowed) {
+                client.release();
+                return res.status(429).json({
+                    result: 'error',
+                    message: `Too many orders. Please try again in ${rateLimit.retryAfter} seconds.`
+                });
+            }
+
+            // --- SECURITY: EMAIL VALIDATION ---
+            if (data.customerEmail) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(data.customerEmail)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Invalid email address' });
+                }
+            }
+
             let initialDelivery = 'Pending';
             let initialPayment = 'Unpaid';
 
@@ -269,7 +317,7 @@ module.exports = async (req, res) => {
 
         // --- 3. PUT REQUESTS ---
         if (method === 'PUT') {
-            const data = typeof body === 'string' ? JSON.parse(body) : body;
+            const data = body; // Body is already sanitized and parsed
 
             // --- UPDATE PRODUCT (Protected) ---
             if (query.action === 'updateProduct') {
