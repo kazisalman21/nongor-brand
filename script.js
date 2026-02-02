@@ -589,13 +589,7 @@ window.openModal = (productId) => {
 
     // Render sizes
     const sizeContainer = document.getElementById('size-selector');
-    sizeContainer.innerHTML = availableSizes.map(size => `
-    < button onclick = "selectSize('${size}')"
-class="size-btn w-10 h-10 rounded-full border border-brand-deep flex items-center justify-center font-bold text-sm transition ${size === 'M' ? 'bg-brand-deep text-white' : 'text-brand-deep hover:bg-gray-100'}" >
-    ${size}
-        </button >
-    `).join('');
-
+    sizeContainer.innerHTML = availableSizes.map(size => `<button onclick="selectSize('${size}')" class="size-btn w-10 h-10 rounded-full border border-brand-deep flex items-center justify-center font-bold text-sm transition ${size === 'M' ? 'bg-brand-deep text-white' : 'text-brand-deep hover:bg-gray-100'}">${size}</button>`).join('');
     // Actions reset
     document.getElementById('modal-actions').classList.remove('hidden');
 
