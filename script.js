@@ -587,9 +587,18 @@ window.openModal = (productId) => {
     selectedSize = 'M';
     document.getElementById('quantity-display').textContent = currentQuantity;
 
-    // Render sizes
+    // Render sizes with premium styling
     const sizeContainer = document.getElementById('size-selector');
-    sizeContainer.innerHTML = availableSizes.map(size => `<button onclick="selectSize('${size}')" class="size-btn w-10 h-10 rounded-full border border-brand-deep flex items-center justify-center font-bold text-sm transition ${size === 'M' ? 'bg-brand-deep text-white' : 'text-brand-deep hover:bg-gray-100'}">${size}</button>`).join('');
+    sizeContainer.innerHTML = availableSizes.map(size => `
+        <button onclick="selectSize('${size}')" 
+            class="size-btn w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 transform hover:scale-110 
+            ${size === 'M'
+            ? 'bg-gradient-to-br from-brand-deep to-brand-terracotta text-white shadow-lg shadow-brand-deep/30 ring-2 ring-brand-deep/20 ring-offset-2'
+            : 'bg-white text-brand-deep border-2 border-gray-200 hover:border-brand-terracotta hover:text-brand-terracotta hover:shadow-lg hover:shadow-brand-terracotta/20'
+        }">
+            ${size}
+        </button>
+    `).join('');
     // Actions reset
     document.getElementById('modal-actions').classList.remove('hidden');
 
@@ -739,12 +748,17 @@ window.updateQuantity = (change) => {
 window.selectSize = (size) => {
     selectedSize = size;
     document.querySelectorAll('.size-btn').forEach(btn => {
-        if (btn.innerText === size) {
-            btn.classList.add('bg-brand-deep', 'text-white');
-            btn.classList.remove('text-brand-deep', 'hover:bg-gray-100');
+        const btnSize = btn.innerText.trim();
+        // Premium selected state
+        const selectedClasses = ['bg-gradient-to-br', 'from-brand-deep', 'to-brand-terracotta', 'text-white', 'shadow-lg', 'shadow-brand-deep/30', 'ring-2', 'ring-brand-deep/20', 'ring-offset-2'];
+        const unselectedClasses = ['bg-white', 'text-brand-deep', 'border-2', 'border-gray-200'];
+
+        if (btnSize === size) {
+            btn.classList.remove(...unselectedClasses, 'hover:border-brand-terracotta', 'hover:text-brand-terracotta', 'hover:shadow-brand-terracotta/20');
+            btn.classList.add(...selectedClasses);
         } else {
-            btn.classList.remove('bg-brand-deep', 'text-white');
-            btn.classList.add('text-brand-deep', 'hover:bg-gray-100');
+            btn.classList.remove(...selectedClasses);
+            btn.classList.add(...unselectedClasses);
         }
     });
 };
