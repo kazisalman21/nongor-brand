@@ -914,7 +914,7 @@ window.showCheckout = (fromCart = false) => {
             qty: currentQuantity,
             size: selectedSize
         });
-        window.location.href = `checkout.html ? ${params.toString()} `;
+        window.location.href = `checkout.html?${params.toString()}`;
     }
 };
 
