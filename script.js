@@ -1267,10 +1267,10 @@ window.confirmOrder = async () => {
     // Show loading
     const originalHTML = confirmBtn.innerHTML;
     confirmBtn.innerHTML = `
-    < svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns = "http://www.w3.org/2000/svg" fill = "none" viewBox = "0 0 24 24" >
+    <svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg >
+        </svg>
     অর্ডার প্রসেস হচ্ছে...
 `;
     confirmBtn.disabled = true;
@@ -1349,16 +1349,16 @@ window.trackOrder = async () => {
         // Show loading state
         const originalText = trackBtn.innerHTML;
         trackBtn.innerHTML = `
-    < svg class="animate-spin h-5 w-5 text-white inline-block" xmlns = "http://www.w3.org/2000/svg" fill = "none" viewBox = "0 0 24 24" >
+    <svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg >
+            </svg>
     <span>খোঁজা হচ্ছে...</span>
 `;
         trackBtn.disabled = true;
 
         // Fetch from Netlify Function (GET request)
-        const response = await fetch(`${API_URL}?orderId = ${encodeURIComponent(idInput)} `);
+        const response = await fetch(`${API_URL}?orderId=${encodeURIComponent(idInput)}`);
         const result = await response.json();
 
         if (result.result === "success") {
@@ -1370,9 +1370,9 @@ window.trackOrder = async () => {
             document.getElementById('track-amount').textContent = `৳${parseFloat(order.total_price || 0).toLocaleString('bn-BD')} `;
             const paymentStatusEl = document.getElementById('track-payment-status');
             if (order.status === 'Paid') {
-                paymentStatusEl.innerHTML = `< span class="text-green-600 bg-green-100 px-2 py-1 rounded text-xs" > Paid ✅</span > `;
+                paymentStatusEl.innerHTML = `<span class="text-green-600 bg-green-100 px-2 py-1 rounded text-xs">Paid ✅</span>`;
             } else {
-                paymentStatusEl.innerHTML = `< span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs" > Due ⚠️</span > `;
+                paymentStatusEl.innerHTML = `<span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs">Due ⚠️</span>`;
             }
 
             const statusContainer = document.getElementById('track-status-container');
@@ -1382,16 +1382,16 @@ window.trackOrder = async () => {
             const statusColor = getStatusColor(deliveryStatus);
 
             statusContainer.innerHTML = `
-    < div class="flex flex-col gap-1" >
+    <div class="flex flex-col gap-1">
                     <span class="text-2xl font-bold ${statusColor} block">${deliveryStatus}</span>
                     <span class="text-gray-400 text-xs text-left block mt-1"><span class="font-bold">Items:</span> ${order.product_name}</span>
-                </div >
+                </div>
     `;
 
             // Separate Payment Status Box Update
             const paymentBox = document.getElementById('track-payment-status');
             const paymentColor = getPaymentColor(paymentStatus);
-            paymentBox.innerHTML = `< span class="${paymentColor}" > ${paymentStatus}</span > `;
+            paymentBox.innerHTML = `<span class="${paymentColor}">${paymentStatus}</span>`;
 
             // DB column: delivery_date
             document.getElementById('track-delivery-date').textContent = order.delivery_date || 'Processing...';
@@ -1405,7 +1405,7 @@ window.trackOrder = async () => {
         console.error("Tracking Error:", e);
         alert("Tracking Failed: " + e.message);
     } finally {
-        trackBtn.innerHTML = `< span > TRACK NOW</span > `;
+        trackBtn.innerHTML = `<span>TRACK NOW</span>`;
         trackBtn.disabled = false;
     }
 };
