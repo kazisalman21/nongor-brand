@@ -171,12 +171,12 @@
                 Order</button>
 
             <!-- Search Bar -->
-            <div class="relative flex items-center">
+            <div class="relative flex items-center group">
                 <input type="text" id="desktop-search" placeholder="Search..."
-                    class="bg-white/10 border border-white/40 rounded-full py-2 px-4 pr-10 text-sm text-white placeholder-white/70 focus:border-brand-terracotta focus:bg-white focus:text-brand-deep focus:placeholder-gray-400 w-40 focus:w-52 transition-all duration-300 outline-none backdrop-blur-md"
+                    class="bg-transparent border-b border-gray-300 py-1 px-2 pr-8 text-sm text-brand-deep placeholder-gray-400 focus:border-brand-terracotta focus:w-48 w-32 transition-all duration-300 outline-none"
                     oninput="handleSearch(this.value)">
-                <svg class="w-4 h-4 text-white/70 absolute right-3 pointer-events-none" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none group-hover:text-brand-terracotta transition-colors"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
