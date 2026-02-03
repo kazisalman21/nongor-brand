@@ -19,6 +19,7 @@
     "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./src/input.css -o ./assets/styles.css --watch",
     "optimize:images": "node scripts/optimize-images.js",
     "setup:db": "node scripts/setup_auth_pg.js",
-    "test:db": "node test-fixes.js"
+    "test:db": "node test-fixes.js",
+    "db:backup": "node scripts/backup_db.js"
   }
 }

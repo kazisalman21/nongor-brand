@@ -48,6 +48,7 @@ module.exports = async (req, res) => {
             const rateLimit = checkRateLimit('login', ip);
 
             if (!rateLimit.allowed) {
+                console.warn(`⚠️ Login Rate Limit Exceeded for IP: ${ip}`);
                 client.release();
                 return res.status(429).json({
                     result: 'error',

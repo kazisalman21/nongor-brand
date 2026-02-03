@@ -1264,12 +1264,12 @@ window.confirmOrder = async () => {
     // Show loading
     const originalHTML = confirmBtn.innerHTML;
     confirmBtn.innerHTML = `
-    <svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-    অর্ডার প্রসেস হচ্ছে...
-`;
+        অর্ডার প্রসেস হচ্ছে...
+    `;
     confirmBtn.disabled = true;
 
     try {
@@ -1346,177 +1346,174 @@ window.trackOrder = async () => {
         // Show loading state
         const originalText = trackBtn.innerHTML;
         trackBtn.innerHTML = `
-    <svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin h-5 w-5 text-white inline-block mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-    <span>খোঁজা হচ্ছে...</span>
-`;
+            <span>Searching...</span>
+        `;
         trackBtn.disabled = true;
 
-        // Fetch from Netlify Function (GET request) - Added timestamp to prevent caching
+        // Fetch (GET request with cache busting)
         const response = await fetch(`${API_URL}?orderId=${encodeURIComponent(idInput)}&_t=${Date.now()}`);
         const result = await response.json();
 
         if (result.result === "success") {
             const order = result.data;
             document.getElementById('track-result').classList.remove('hidden');
-            document.getElementById('track-id-display').textContent = order.order_id; // DB column: order_id
+            document.getElementById('track-id-display').textContent = order.order_id;
 
             // Populate Payment Details
             document.getElementById('track-amount').textContent = `৳${parseFloat(order.total_price || 0).toLocaleString('bn-BD')} `;
             const paymentStatusEl = document.getElementById('track-payment-status');
+
             if (order.status === 'Paid') {
                 paymentStatusEl.innerHTML = `<span class="text-green-600 bg-green-100 px-2 py-1 rounded text-xs">Paid ✅</span>`;
             } else {
                 paymentStatusEl.innerHTML = `<span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs">Due ⚠️</span>`;
             }
 
+            // Status Container
             const statusContainer = document.getElementById('track-status-container');
             const deliveryStatus = order.delivery_status || order.status || 'Pending';
             const paymentStatus = order.payment_status || 'Unpaid';
-
             const statusColor = getStatusColor(deliveryStatus);
 
             statusContainer.innerHTML = `
-    <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1">
                     <span class="text-2xl font-bold ${statusColor} block">${deliveryStatus}</span>
                     <span class="text-gray-400 text-xs text-left block mt-1"><span class="font-bold">Items:</span> ${order.product_name}</span>
                 </div>
-    `;
+            `;
 
-            // Separate Payment Status Box Update
+            // Separate Payment Status Box
             const paymentBox = document.getElementById('track-payment-status');
             const paymentColor = getPaymentColor(paymentStatus);
             paymentBox.innerHTML = `<span class="${paymentColor}">${paymentStatus}</span>`;
 
-            // DB column: delivery_date
+            // Delivery Date
             document.getElementById('track-delivery-date').textContent = order.delivery_date || 'Processing...';
 
-            if (result.result === "success") {
-                const order = result.data;
-                document.getElementById('track-result').classList.remove('hidden');
-                // ... (rest of logic)
-            } else {
-                showToast("Order not found! (অর্ডারটি পাওয়া যায়নি)", 'error');
-                document.getElementById('track-result').classList.add('hidden');
-            }
-
-        } catch (e) {
-            console.error("Tracking Error:", e);
-            showToast("Tracking Failed: " + e.message, 'error');
-        } finally {
-            trackBtn.innerHTML = `<span>TRACK NOW</span>`;
-            trackBtn.disabled = false;
-        }
-    };
-
-    function getPaymentColor(status) {
-        status = status.toLowerCase();
-        if (status === 'paid') return 'text-green-600 bg-green-50 px-2 py-0.5 rounded';
-        if (status === 'due') return 'text-orange-600 bg-orange-50 px-2 py-0.5 rounded';
-        if (status === 'unpaid') return 'text-red-500';
-        if (status === 'refunded') return 'text-purple-600';
-        return 'text-gray-600';
-    }
-
-    function getStatusColor(status) {
-        status = status.toLowerCase();
-        if (status.includes('pending')) return 'text-orange-600';
-        if (status.includes('processing')) return 'text-blue-600';
-        if (status.includes('shipped')) return 'text-purple-600';
-        if (status.includes('delivered')) return 'text-green-600';
-        if (status.includes('cancel')) return 'text-red-600';
-        return 'text-gray-600';
-    }
-
-    function showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
-        const toastIcon = document.getElementById('toast-icon');
-
-        // Safety check
-        if (!toast || !toastMessage) return;
-
-        toastMessage.textContent = message;
-
-        // Reset Icon
-        if (toastIcon) {
-            if (type === 'error') {
-                toastIcon.className = 'w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]';
-            } else if (type === 'processing') {
-                toastIcon.className = 'w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]';
-            } else {
-                // Default Success
-                toastIcon.className = 'w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]';
-            }
+        } else {
+            showToast("Order not found! (অর্ডারটি পাওয়া যায়নি)", 'error');
+            document.getElementById('track-result').classList.add('hidden');
         }
 
-        toast.classList.remove('hidden');
-        // Trigger reflow
-        void toast.offsetWidth;
-        toast.classList.remove('opacity-0', 'translate-y-20');
+    } catch (e) {
+        console.error("Tracking Error:", e);
+        showToast("Tracking Failed: " + e.message, 'error');
+    } finally {
+        trackBtn.innerHTML = `<span>TRACK NOW</span>`;
+        trackBtn.disabled = false;
+    }
+};
 
-        // Auto hide
+function getPaymentColor(status) {
+    status = status.toLowerCase();
+    if (status === 'paid') return 'text-green-600 bg-green-50 px-2 py-0.5 rounded';
+    if (status === 'due') return 'text-orange-600 bg-orange-50 px-2 py-0.5 rounded';
+    if (status === 'unpaid') return 'text-red-500';
+    if (status === 'refunded') return 'text-purple-600';
+    return 'text-gray-600';
+}
+
+function getStatusColor(status) {
+    status = status.toLowerCase();
+    if (status.includes('pending')) return 'text-orange-600';
+    if (status.includes('processing')) return 'text-blue-600';
+    if (status.includes('shipped')) return 'text-purple-600';
+    if (status.includes('delivered')) return 'text-green-600';
+    if (status.includes('cancel')) return 'text-red-600';
+    return 'text-gray-600';
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
+
+    // Safety check
+    if (!toast || !toastMessage) return;
+
+    toastMessage.textContent = message;
+
+    // Reset Icon
+    if (toastIcon) {
+        if (type === 'error') {
+            toastIcon.className = 'w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]';
+        } else if (type === 'processing') {
+            toastIcon.className = 'w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]';
+        } else {
+            // Default Success
+            toastIcon.className = 'w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]';
+        }
+    }
+
+    toast.classList.remove('hidden');
+    // Trigger reflow
+    void toast.offsetWidth;
+    toast.classList.remove('opacity-0', 'translate-y-20');
+
+    // Auto hide
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-20');
         setTimeout(() => {
-            toast.classList.add('opacity-0', 'translate-y-20');
+            toast.classList.add('hidden');
+        }, 300);
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Cart everywhere
+    if (typeof initCart === 'function') initCart();
+
+    // Initialize Products on Home Page
+    const grid = document.getElementById('products-grid');
+    if (grid) {
+        if (typeof initProducts === 'function') initProducts();
+        if (typeof initCategories === 'function') initCategories();
+    }
+});
+// Copy Order ID
+function copyOrderId() {
+    const orderId = document.getElementById('success-order-id').innerText;
+    if (!orderId) return;
+
+    // Remove fallback #NG-XXXX placeholder if copied
+    const textToCopy = orderId.includes('XXXX') ? '' : orderId;
+    if (!textToCopy) return;
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        // Show Toast
+        showToast('Order ID Copied!', 'green');
+
+        // Visual Feedback (Toggle Icons) - For Index Modal
+        const copyIcon = document.getElementById('copy-icon');
+        const checkIcon = document.getElementById('check-icon');
+        if (copyIcon && checkIcon) {
+            copyIcon.classList.add('hidden');
+            checkIcon.classList.remove('hidden');
             setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 300);
-        }, 3000);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        // Initialize Cart everywhere
-        if (typeof initCart === 'function') initCart();
-
-        // Initialize Products on Home Page
-        const grid = document.getElementById('products-grid');
-        if (grid) {
-            if (typeof initProducts === 'function') initProducts();
-            if (typeof initCategories === 'function') initCategories();
+                copyIcon.classList.remove('hidden');
+                checkIcon.classList.add('hidden');
+            }, 2000);
         }
+
+        // Visual Feedback (Toggle Icons) - For Checkout Page
+        const copyIconCk = document.getElementById('copy-icon-checkout');
+        const checkIconCk = document.getElementById('check-icon-checkout');
+        if (copyIconCk && checkIconCk) {
+            copyIconCk.classList.add('hidden');
+            checkIconCk.classList.remove('hidden');
+            setTimeout(() => {
+                copyIconCk.classList.remove('hidden');
+                checkIconCk.classList.add('hidden');
+            }, 2000);
+        }
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy', 'red');
     });
-    // Copy Order ID
-    function copyOrderId() {
-        const orderId = document.getElementById('success-order-id').innerText;
-        if (!orderId) return;
-
-        // Remove fallback #NG-XXXX placeholder if copied
-        const textToCopy = orderId.includes('XXXX') ? '' : orderId;
-        if (!textToCopy) return;
-
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            // Show Toast
-            showToast('Order ID Copied!', 'green');
-
-            // Visual Feedback (Toggle Icons) - For Index Modal
-            const copyIcon = document.getElementById('copy-icon');
-            const checkIcon = document.getElementById('check-icon');
-            if (copyIcon && checkIcon) {
-                copyIcon.classList.add('hidden');
-                checkIcon.classList.remove('hidden');
-                setTimeout(() => {
-                    copyIcon.classList.remove('hidden');
-                    checkIcon.classList.add('hidden');
-                }, 2000);
-            }
-
-            // Visual Feedback (Toggle Icons) - For Checkout Page
-            const copyIconCk = document.getElementById('copy-icon-checkout');
-            const checkIconCk = document.getElementById('check-icon-checkout');
-            if (copyIconCk && checkIconCk) {
-                copyIconCk.classList.add('hidden');
-                checkIconCk.classList.remove('hidden');
-                setTimeout(() => {
-                    copyIconCk.classList.remove('hidden');
-                    checkIconCk.classList.add('hidden');
-                }, 2000);
-            }
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-            showToast('Failed to copy', 'red');
-        });
-    }
+}
 
 

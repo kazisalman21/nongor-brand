@@ -232,6 +232,7 @@ module.exports = async (req, res) => {
             const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
             const rateLimit = checkRateLimit('order', ip);
             if (!rateLimit.allowed) {
+                console.warn(`⚠️ Order Rate Limit Exceeded for IP: ${ip}`);
                 client.release();
                 return res.status(429).json({
                     result: 'error',
