@@ -25,10 +25,9 @@ module.exports = async (req, res) => {
         // Allow non-browser requests (like Postman during dev) but warn
         res.setHeader('Access-Control-Allow-Origin', '*');
     } else {
-        // Block unknown origins in production
-        // res.setHeader('Access-Control-Allow-Origin', 'null');
-        // For now, keep * but log warning to avoid breaking live site immediately until tested
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        // PRODUCTION MODE: Block unknown origins
+        console.warn(`⚠️ Blocked Request from unauthorized origin: ${origin}`);
+        return res.status(403).json({ error: 'CORS policy violation' });
     }
 
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-password, x-admin-user, x-admin-pass, x-admin-secret, x-session-token');

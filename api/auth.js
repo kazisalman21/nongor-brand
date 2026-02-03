@@ -8,7 +8,22 @@ const { sanitizeObject } = require('./utils/sanitize');
 
 module.exports = async (req, res) => {
     // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // --- SECURITY: CORS RESTRICTION ---
+    const allowedOrigins = [
+        'https://nongor-brand.vercel.app',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+
+    if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (!origin) {
+        // Allow server-to-server or non-browser tools (e.g., Postman dev)
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    } else {
+        return res.status(403).json({ error: 'CORS policy violation' });
+    }
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
