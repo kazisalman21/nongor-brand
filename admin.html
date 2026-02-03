@@ -2374,6 +2374,7 @@
             return `
                 <div class="relative group">
                     <select onchange="updateStatus('${orderId}', this.value, 'delivery', this)" 
+                        aria-label="Delivery status for order ${orderId}"
                         class="block w-32 text-xs py-1.5 pl-2 pr-6 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent appearance-none cursor-pointer transition-shadow ${colorClass}">
                         ${statuses.map(st => `<option value="${st}" ${st === currentStatus ? 'selected' : ''}>${st}</option>`).join('')}
                     </select>
@@ -2394,8 +2395,9 @@
             else if (s === 'due') colorClass = 'bg-orange-50 text-orange-700 border-orange-200 ring-1 ring-orange-100';
 
             return `
-                 <div class="relative group">
+                <div class="relative group">
                     <select onchange="updateStatus('${orderId}', this.value, 'payment', this)" 
+                        aria-label="Payment status for order ${orderId}"
                         class="block w-28 text-xs py-1.5 pl-2 pr-6 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent appearance-none cursor-pointer transition-shadow ${colorClass}">
                         ${statuses.map(st => `<option value="${st}" ${st === currentStatus ? 'selected' : ''}>${st}</option>`).join('')}
                     </select>
