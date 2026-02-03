@@ -248,6 +248,19 @@ module.exports = async (req, res) => {
                 }
             }
 
+            // --- SECURITY: PHONE VALIDATION ---
+            if (data.customerPhone) {
+                // Normalize: Remove +88 prefix if present
+                let cleanPhone = data.customerPhone.replace(/^\+88/, '');
+                // Regex: Starts with 01, follows by 3-9, strict 11 digits
+                const phoneRegex = /^01[3-9]\d{8}$/;
+
+                if (!phoneRegex.test(cleanPhone)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Invalid BD Phone Number' });
+                }
+            }
+
             let initialDelivery = 'Pending';
             let initialPayment = 'Unpaid';
 

@@ -1159,11 +1159,6 @@ window.validatePhoneRealtime = (input) => {
     // 1. Remove non-digits
     let cleanVal = input.value.replace(/[^0-9]/g, '');
 
-    // 2. Handle 11 digits (remove leading 0)
-    if (cleanVal.length === 11 && cleanVal.startsWith('0')) {
-        cleanVal = cleanVal.substring(1);
-    }
-
     const validIcon = document.getElementById('phone-valid-icon');
     const invalidIcon = document.getElementById('phone-invalid-icon');
     const feedback = document.getElementById('phone-feedback');
@@ -1171,18 +1166,21 @@ window.validatePhoneRealtime = (input) => {
     // Safety check if elements missing
     if (!feedback) return;
 
-    if (cleanVal.length === 10) {
+    // Strict BD Phone Regex: starts with 01, follows by 3-9, then 8 digits
+    const bdPhoneRegex = /^01[3-9]\d{8}$/;
+
+    if (bdPhoneRegex.test(cleanVal)) {
         // Valid
         if (validIcon) validIcon.classList.remove('hidden');
         if (invalidIcon) invalidIcon.classList.add('hidden');
         feedback.textContent = "নম্বর সঠিক আছে (Valid Number)";
         feedback.className = "text-xs font-bengali ml-1 mb-3 h-4 text-green-600 font-bold";
     } else {
-        // Invalid or incomplete
+        // Invalid
         if (cleanVal.length > 0) {
             if (validIcon) validIcon.classList.add('hidden');
             if (invalidIcon) invalidIcon.classList.remove('hidden');
-            feedback.textContent = "১১ সংখ্যার নম্বর প্রয়োজন (Must be 11 digits)";
+            feedback.textContent = "সঠিক মোবাইল নম্বর দিন (Example: 01712345678)";
             feedback.className = "text-xs font-bengali ml-1 mb-3 h-4 text-brand-terracotta";
         } else {
             // Empty
@@ -1205,21 +1203,20 @@ window.confirmOrder = async () => {
 
     // Validation
     if (!name || !phoneInput || !address) {
-        alert("অনুগ্রহ করে সব তথ্য দিন (Please fill all details)");
+        showToast("অনুগ্রহ করে সব তথ্য দিন (Please fill all details)", 'error');
         return;
     }
 
     // Phone validation
-    phoneInput = phoneInput.replace(/\D/g, '');
-    if (phoneInput.length === 11 && phoneInput.startsWith('0')) {
-        phoneInput = phoneInput.substring(1);
-    }
-    if (phoneInput.length !== 10) {
-        alert("মোবাইল নম্বরটি সঠিক নয়\nExample: 01712345678");
+    phoneInput = phoneInput.replace(/\D/g, ''); // Remove non-digits
+    const bdPhoneRegex = /^01[3-9]\d{8}$/;
+
+    if (!bdPhoneRegex.test(phoneInput)) {
+        showToast("মোবাইল নম্বরটি সঠিক নয় (Invalid Phone Number)", 'error');
         return;
     }
 
-    const phone = '+880' + phoneInput;
+    const phone = '+88' + phoneInput; // Add Country Code standard
     const orderId = '#NG-' + Math.floor(1000 + Math.random() * 9000);
 
     const date = new Date();
@@ -1318,7 +1315,7 @@ window.confirmOrder = async () => {
 
     } catch (e) {
         console.error("❌ Order failed:", e);
-        alert("Server Error: " + e.message); // Show the real error!
+        showToast("Order Failed: " + e.message, 'error'); // Show the real error!
         confirmBtn.innerHTML = originalHTML;
         confirmBtn.disabled = false;
     }
@@ -1339,7 +1336,7 @@ window.closeTrackingModal = () => {
 window.trackOrder = async () => {
     const idInput = document.getElementById('track-id-input').value.trim();
     if (!idInput) {
-        alert('অর্ডারের আইডি দিন (Enter Order ID)');
+        showToast('অর্ডারের আইডি দিন (Enter Order ID)', 'error');
         return;
     }
 
@@ -1396,104 +1393,130 @@ window.trackOrder = async () => {
             // DB column: delivery_date
             document.getElementById('track-delivery-date').textContent = order.delivery_date || 'Processing...';
 
-        } else {
-            alert("Order not found! (অর্ডারটি পাওয়া যায়নি)");
-            document.getElementById('track-result').classList.add('hidden');
+            if (result.result === "success") {
+                const order = result.data;
+                document.getElementById('track-result').classList.remove('hidden');
+                // ... (rest of logic)
+            } else {
+                showToast("Order not found! (অর্ডারটি পাওয়া যায়নি)", 'error');
+                document.getElementById('track-result').classList.add('hidden');
+            }
+
+        } catch (e) {
+            console.error("Tracking Error:", e);
+            showToast("Tracking Failed: " + e.message, 'error');
+        } finally {
+            trackBtn.innerHTML = `<span>TRACK NOW</span>`;
+            trackBtn.disabled = false;
+        }
+    };
+
+    function getPaymentColor(status) {
+        status = status.toLowerCase();
+        if (status === 'paid') return 'text-green-600 bg-green-50 px-2 py-0.5 rounded';
+        if (status === 'due') return 'text-orange-600 bg-orange-50 px-2 py-0.5 rounded';
+        if (status === 'unpaid') return 'text-red-500';
+        if (status === 'refunded') return 'text-purple-600';
+        return 'text-gray-600';
+    }
+
+    function getStatusColor(status) {
+        status = status.toLowerCase();
+        if (status.includes('pending')) return 'text-orange-600';
+        if (status.includes('processing')) return 'text-blue-600';
+        if (status.includes('shipped')) return 'text-purple-600';
+        if (status.includes('delivered')) return 'text-green-600';
+        if (status.includes('cancel')) return 'text-red-600';
+        return 'text-gray-600';
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+
+        // Safety check
+        if (!toast || !toastMessage) return;
+
+        toastMessage.textContent = message;
+
+        // Reset Icon
+        if (toastIcon) {
+            if (type === 'error') {
+                toastIcon.className = 'w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]';
+            } else if (type === 'processing') {
+                toastIcon.className = 'w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]';
+            } else {
+                // Default Success
+                toastIcon.className = 'w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]';
+            }
         }
 
-    } catch (e) {
-        console.error("Tracking Error:", e);
-        alert("Tracking Failed: " + e.message);
-    } finally {
-        trackBtn.innerHTML = `<span>TRACK NOW</span>`;
-        trackBtn.disabled = false;
-    }
-};
+        toast.classList.remove('hidden');
+        // Trigger reflow
+        void toast.offsetWidth;
+        toast.classList.remove('opacity-0', 'translate-y-20');
 
-function getPaymentColor(status) {
-    status = status.toLowerCase();
-    if (status === 'paid') return 'text-green-600 bg-green-50 px-2 py-0.5 rounded';
-    if (status === 'due') return 'text-orange-600 bg-orange-50 px-2 py-0.5 rounded';
-    if (status === 'unpaid') return 'text-red-500';
-    if (status === 'refunded') return 'text-purple-600';
-    return 'text-gray-600';
-}
-
-function getStatusColor(status) {
-    status = status.toLowerCase();
-    if (status.includes('pending')) return 'text-orange-600';
-    if (status.includes('processing')) return 'text-blue-600';
-    if (status.includes('shipped')) return 'text-purple-600';
-    if (status.includes('delivered')) return 'text-green-600';
-    if (status.includes('cancel')) return 'text-red-600';
-    return 'text-gray-600';
-}
-
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
-    toastMessage.textContent = message;
-    toast.classList.remove('hidden');
-    toast.classList.remove('opacity-0');
-    setTimeout(() => {
-        toast.classList.add('opacity-0');
+        // Auto hide
         setTimeout(() => {
-            toast.classList.add('hidden');
-        }, 300);
-    }, 3000);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Cart everywhere
-    if (typeof initCart === 'function') initCart();
-
-    // Initialize Products on Home Page
-    const grid = document.getElementById('products-grid');
-    if (grid) {
-        if (typeof initProducts === 'function') initProducts();
-        if (typeof initCategories === 'function') initCategories();
+            toast.classList.add('opacity-0', 'translate-y-20');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 300);
+        }, 3000);
     }
-});
-// Copy Order ID
-function copyOrderId() {
-    const orderId = document.getElementById('success-order-id').innerText;
-    if (!orderId) return;
 
-    // Remove fallback #NG-XXXX placeholder if copied
-    const textToCopy = orderId.includes('XXXX') ? '' : orderId;
-    if (!textToCopy) return;
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize Cart everywhere
+        if (typeof initCart === 'function') initCart();
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        // Show Toast
-        showToast('Order ID Copied!', 'green');
-
-        // Visual Feedback (Toggle Icons) - For Index Modal
-        const copyIcon = document.getElementById('copy-icon');
-        const checkIcon = document.getElementById('check-icon');
-        if (copyIcon && checkIcon) {
-            copyIcon.classList.add('hidden');
-            checkIcon.classList.remove('hidden');
-            setTimeout(() => {
-                copyIcon.classList.remove('hidden');
-                checkIcon.classList.add('hidden');
-            }, 2000);
+        // Initialize Products on Home Page
+        const grid = document.getElementById('products-grid');
+        if (grid) {
+            if (typeof initProducts === 'function') initProducts();
+            if (typeof initCategories === 'function') initCategories();
         }
-
-        // Visual Feedback (Toggle Icons) - For Checkout Page
-        const copyIconCk = document.getElementById('copy-icon-checkout');
-        const checkIconCk = document.getElementById('check-icon-checkout');
-        if (copyIconCk && checkIconCk) {
-            copyIconCk.classList.add('hidden');
-            checkIconCk.classList.remove('hidden');
-            setTimeout(() => {
-                copyIconCk.classList.remove('hidden');
-                checkIconCk.classList.add('hidden');
-            }, 2000);
-        }
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-        showToast('Failed to copy', 'red');
     });
-}
+    // Copy Order ID
+    function copyOrderId() {
+        const orderId = document.getElementById('success-order-id').innerText;
+        if (!orderId) return;
+
+        // Remove fallback #NG-XXXX placeholder if copied
+        const textToCopy = orderId.includes('XXXX') ? '' : orderId;
+        if (!textToCopy) return;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            // Show Toast
+            showToast('Order ID Copied!', 'green');
+
+            // Visual Feedback (Toggle Icons) - For Index Modal
+            const copyIcon = document.getElementById('copy-icon');
+            const checkIcon = document.getElementById('check-icon');
+            if (copyIcon && checkIcon) {
+                copyIcon.classList.add('hidden');
+                checkIcon.classList.remove('hidden');
+                setTimeout(() => {
+                    copyIcon.classList.remove('hidden');
+                    checkIcon.classList.add('hidden');
+                }, 2000);
+            }
+
+            // Visual Feedback (Toggle Icons) - For Checkout Page
+            const copyIconCk = document.getElementById('copy-icon-checkout');
+            const checkIconCk = document.getElementById('check-icon-checkout');
+            if (copyIconCk && checkIconCk) {
+                copyIconCk.classList.add('hidden');
+                checkIconCk.classList.remove('hidden');
+                setTimeout(() => {
+                    copyIconCk.classList.remove('hidden');
+                    checkIconCk.classList.add('hidden');
+                }, 2000);
+            }
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            showToast('Failed to copy', 'red');
+        });
+    }
 
 
