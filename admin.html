@@ -2426,7 +2426,10 @@
                     // update status in local mirror
                     const order = allOrders.find(o => o.order_id === orderId);
                     if (order) {
-                        if (type === 'delivery') order.delivery_status = newStatus;
+                        if (type === 'delivery') {
+                            order.delivery_status = newStatus;
+                            order.status = newStatus; // Sync generic status to match backend
+                        }
                         if (type === 'payment') order.payment_status = newStatus;
                         filterOrders(); // Re-filter (might move item if filtering by status)
                     }

@@ -1357,8 +1357,8 @@ window.trackOrder = async () => {
 `;
         trackBtn.disabled = true;
 
-        // Fetch from Netlify Function (GET request)
-        const response = await fetch(`${API_URL}?orderId=${encodeURIComponent(idInput)}`);
+        // Fetch from Netlify Function (GET request) - Added timestamp to prevent caching
+        const response = await fetch(`${API_URL}?orderId=${encodeURIComponent(idInput)}&_t=${Date.now()}`);
         const result = await response.json();
 
         if (result.result === "success") {
