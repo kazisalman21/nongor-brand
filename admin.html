@@ -3657,7 +3657,8 @@
             });
         });
 
-        // Performance: Use Intersection Observer for animations
+
+        // Initialize Animate on Scroll
         if ('IntersectionObserver' in window) {
             const animateOnScroll = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -3668,14 +3669,20 @@
                 });
             }, { threshold: 0.1 });
 
-            // Observe elements that should animate
             document.querySelectorAll('[data-animate]').forEach(el => {
                 animateOnScroll.observe(el);
             });
         }
-
-        console.log('✨ Premium Login Enhancements Loaded Successfully!');
     </script>
+
+    <!-- Toast Notification Container -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none data-[show=true]:translate-y-0 data-[show=true]:opacity-100">
+        <div class="bg-white rounded-lg shadow-xl border border-gray-100 p-4 flex items-center gap-3 min-w-[300px]">
+            <div id="toast-icon" class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+            <p id="toast-msg" class="text-sm font-semibold text-gray-800">Operation successful</p>
+        </div>
+    </div>
 </body>
 
 </html>
