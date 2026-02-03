@@ -1508,7 +1508,7 @@
 
                 <!-- Footer -->
                 <p class="mt-6 text-center text-xs text-white/60">
-                    © 2026 Nongor Brand. Secure System.
+                    © 2026 Nongor Brand. Secure System v2.1 (Patched).
                 </p>
             </div>
         </div>
@@ -1989,8 +1989,10 @@
 
         // --- AUTH & INIT ---
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Running Patched Admin v2.1');
             checkAuth();
             initPremiumUI(); // Init animations
+            setTimeout(() => showToast('System v2.1 Loaded', 'blue'), 1000);
         });
 
         // Helper: Authenticated Fetch
