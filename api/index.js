@@ -10,30 +10,9 @@ const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendE
 const { sanitizeObject } = require('./sanitize');
 
 module.exports = async (req, res) => {
-    // --- SECURITY: CORS RESTRICTION (Priority 1) ---
-    const allowedOrigins = [
-        'https://nongor-brand.vercel.app',
-        'http://localhost:3000',
-        'http://127.0.0.1:5500' // Common VS Code Live Server port
-    ];
-    const origin = req.headers.origin;
-
-    // In production, strictly check origin. In dev (no origin headers sometimes), allow if local.
-    if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else if (!origin) {
-        // SAME-ORIGIN / TOOLS: Allow requests without origin (e.g. same domain fetch, Postman, etc.)
-        // Vercel serverless calls might strip origin on same-domain
-        res.setHeader('Access-Control-Allow-Origin', '*');
-    } else {
-        // BLOCKED: Origin present but not in allowed list
-        console.warn(`⚠️ Blocked Request from unauthorized origin: ${origin}`);
-        return res.status(403).json({ error: 'CORS policy violation' });
-    }
-
-
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-password, x-admin-user, x-admin-pass, x-admin-secret, x-session-token');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    // --- SECURITY: CORS & HEADERS ---
+    const { setSecureCorsHeaders } = require('./cors');
+    setSecureCorsHeaders(req, res);
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
