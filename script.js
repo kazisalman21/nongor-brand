@@ -269,6 +269,12 @@ window.filterProducts = (category, event) => {
 // --- Search Logic ---
 let searchTimeout;
 window.handleSearch = (query) => {
+    // Sync Inputs Instantly
+    const desktopInput = document.getElementById('desktop-search');
+    const mobileInput = document.getElementById('mobile-search');
+    if (desktopInput && desktopInput.value !== query) desktopInput.value = query;
+    if (mobileInput && mobileInput.value !== query) mobileInput.value = query;
+
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         performSearch(query);
@@ -278,11 +284,7 @@ window.handleSearch = (query) => {
 function performSearch(query) {
     const q = query.toLowerCase().trim();
 
-    // Sync Inputs
-    const desktopInput = document.getElementById('desktop-search');
-    const mobileInput = document.getElementById('mobile-search');
-    if (desktopInput && desktopInput.value !== query) desktopInput.value = query;
-    if (mobileInput && mobileInput.value !== query) mobileInput.value = query;
+    // Sync Inputs (Moved to handleSearch for instant feedback)
 
     if (!q) {
         filterProducts('all');

@@ -177,7 +177,7 @@
 
             <!-- Search Bar -->
             <div class="relative flex items-center group">
-                <input type="text" id="desktop-search" placeholder="Search..." autocomplete="off"
+                <input type="text" id="desktop-search" placeholder="Search..." autocomplete="off" maxlength="50"
                     class="bg-transparent border-b border-gray-300 py-1 px-2 pr-8 text-sm text-brand-deep placeholder-gray-400 focus:border-brand-terracotta focus:w-48 w-32 transition-all duration-300 outline-none"
                     oninput="handleSearch(this.value)">
                 <svg class="w-4 h-4 text-gray-400 absolute right-2 pointer-events-none group-hover:text-brand-terracotta transition-colors"
@@ -219,6 +219,7 @@
                 <!-- Mobile Search -->
                 <div class="relative w-3/4 mb-4">
                     <input type="text" id="mobile-search" placeholder="Search products..." autocomplete="off"
+                        maxlength="50"
                         class="w-full bg-white/10 border border-white/20 rounded-full py-2 px-4 text-white placeholder-white/50 focus:border-brand-terracotta outline-none"
                         oninput="handleSearch(this.value)">
                     <svg class="w-5 h-5 text-white/50 absolute right-3 top-1/2 -translate-y-1/2" fill="none"
@@ -474,7 +475,7 @@
 
             <h3 class="text-2xl font-serif font-bold text-brand-deep mb-6 text-center">Track Your Parcel</h3>
 
-            <input type="text" id="track-id-input" placeholder="Enter Order ID (e.g., #NG-1234)"
+            <input type="text" id="track-id-input" placeholder="Enter Order ID (e.g., #NG-1234)" maxlength="30"
                 class="w-full py-3 mb-6 bg-transparent border-b-2 border-gray-200 text-center font-mono focus:outline-none focus:border-brand-terracotta uppercase transition-colors placeholder-gray-400">
 
             <button onclick="trackOrder()" id="btn-track-submit"
@@ -584,10 +585,10 @@
 
     <!-- Hidden Netlify Form -->
     <form name="orders" netlify netlify-honeypot="bot-field" hidden>
-        <input type="text" name="orderId" />
-        <input type="text" name="customerName" autocomplete="name" />
-        <input type="text" name="customerPhone" autocomplete="tel" />
-        <input type="text" name="address" autocomplete="street-address" />
+        <input type="text" name="orderId" maxlength="50" />
+        <input type="text" name="customerName" autocomplete="name" maxlength="100" />
+        <input type="text" name="customerPhone" autocomplete="tel" maxlength="20" />
+        <input type="text" name="address" autocomplete="street-address" maxlength="500" />
         <input type="text" name="productName" />
         <input type="text" name="price" />
         <input type="text" name="size" />
