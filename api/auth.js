@@ -4,7 +4,7 @@
  */
 const pool = require('./db');
 const { checkRateLimit } = require('./cache');
-const { sanitizeObject } = require('./utils/sanitize');
+const { sanitizeObject } = require('./sanitize');
 
 module.exports = async (req, res) => {
     // CORS headers
