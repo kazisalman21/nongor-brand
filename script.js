@@ -232,8 +232,17 @@ async function initProducts() {
                 showEmptyState(container);
             } else {
                 console.log(`✅ Got ${result.data.length} products, rendering...`);
-                allProducts = result.data;
-                renderProducts(result.data);
+                // Transform API data to match app structure
+                allProducts = result.data.map(p => ({
+                    ...p, // Keep all original props
+                    price: parseFloat(p.price),
+                    images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
+                    category: {
+                        name: p.category_name || 'অন্যান্য',
+                        slug: p.category_slug || 'other'
+                    }
+                }));
+                renderProducts(allProducts);
                 console.log('✅ Render complete');
             }
         } else {
@@ -486,12 +495,12 @@ function createProductCard(product, index) {
     button.textContent = 'বিস্তারিত';
     button.onclick = function (e) {
         e.stopPropagation();
-        openModal(product);
+        openModal(product.id);
     };
 
     // Also make card clickable
     card.onclick = function () {
-        openModal(product);
+        openModal(product.id);
     };
 
     // Assemble footer
