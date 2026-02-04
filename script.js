@@ -192,9 +192,8 @@ function initCategories() {
 }
 
 async function initProducts() {
-    // 1. Optimistic Render: Show fallback immediately (No loading spinner)
-    console.log("initProducts: Optimistic render");
-    renderProducts(fallbackProducts);
+    // 1. Show Skeleton immediately for premium feel
+    renderSkeleton();
 
     try {
         console.log("Fetching API background update...");
@@ -227,8 +226,8 @@ async function initProducts() {
             if (window.location.pathname.includes('checkout')) initCheckout();
         }
     } catch (error) {
-        console.warn('API Fetch failed or timed out. User is seeing fallback data.', error);
-        // No action needed, fallback is already visible
+        console.warn('API Fetch failed using Fallback.', error);
+        renderProducts(fallbackProducts);
     }
 }
 
@@ -361,6 +360,31 @@ window.getOptimizedImage = (url, type = 'main') => {
 
 // --- Product Logic ---
 // ... (initCategories, initProducts omitted for brevity) ...
+
+// --- Skeleton Loader ---
+function renderSkeleton() {
+    const grid = document.getElementById('products-grid');
+    if (!grid) return;
+
+    // Create 6 skeleton cards
+    const skeletons = Array(6).fill(0).map(() => `
+        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+            <!-- Image Skeleton -->
+            <div class="aspect-[3/4] w-full bg-gray-200"></div>
+            <!-- Content Skeleton -->
+            <div class="p-5 space-y-3">
+                <div class="h-4 bg-gray-200 rounded w-3/4"></div> <!-- Title -->
+                <div class="h-3 bg-gray-200 rounded w-1/2"></div> <!-- Subtitle -->
+                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
+                    <div class="h-6 bg-gray-200 rounded w-1/4"></div> <!-- Price -->
+                    <div class="h-8 bg-gray-200 rounded w-1/3"></div> <!-- Button -->
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    grid.innerHTML = skeletons;
+}
 
 function renderProducts(products) {
     const grid = document.getElementById('products-grid');
