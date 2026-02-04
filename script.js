@@ -14,7 +14,7 @@ const fallbackProducts = [
         "id": 1,
         "name": "টিউলিপ",
         "price": 1000.00,
-        "image": "tulip.jpg",
+        "image": "https://images.unsplash.com/photo-1581453723331-7788177df826?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", // Real Tulip Image
         "description": "আরামদায়ক কাপড়ে রঙিন টিউলিপ ফুলের নকশা।",
         "is_featured": true,
         "category_slug": "kurti",
@@ -24,7 +24,7 @@ const fallbackProducts = [
         "id": 2,
         "name": "একটা কমলা রঙের প্রজাপতি",
         "price": 900.00,
-        "image": "butterfly.jpg",
+        "image": "https://images.unsplash.com/photo-1559235311-58ac85458145?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", // Real Butterfly design lookalike
         "description": "কালো পোশাকে রঙিন প্রজাপতির ছোঁয়া।",
         "is_featured": true,
         "category_slug": "kurti",
