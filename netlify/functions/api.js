@@ -40,7 +40,8 @@ exports.handler = async (event, context) => {
         if (params.action === 'getAllOrders') {
             const adminPass = event.headers['x-admin-password'];
             // Simple hardcoded check for demo purposes
-            if (adminPass !== process.env.ADMIN_PASSWORD && adminPass !== 'nongor1234') {
+            // Secure Check: Only Env Var
+            if (adminPass !== process.env.ADMIN_PASSWORD) {
                 return { statusCode: 401, headers, body: JSON.stringify({ result: 'error', message: 'Unauthorized' }) };
             }
             try {
@@ -131,7 +132,7 @@ exports.handler = async (event, context) => {
         try {
             const data = JSON.parse(event.body);
             const adminPass = event.headers['x-admin-password'];
-            if (adminPass !== process.env.ADMIN_PASSWORD && adminPass !== 'nongor1234') {
+            if (adminPass !== process.env.ADMIN_PASSWORD) {
                 return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
             }
 
