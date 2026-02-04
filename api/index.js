@@ -275,6 +275,40 @@ try {
             initialPayment = 'Due';
         }
 
+        // --- TRANSACTION START ---
+        await client.query('BEGIN');
+
+        // 1. Update Stock & Validate Availability (Locking Rows)
+        if (data.items && Array.isArray(data.items)) {
+            for (const item of data.items) {
+                // Validation (Strict range check)
+                if (item.quantity < 1 || item.quantity > 1000) {
+                    throw new Error('Invalid quantity: Must be between 1 and 1000');
+                }
+
+                if (item.id && item.quantity) {
+                    // LOCK ROW: Check stock availability
+                    const stockRes = await client.query('SELECT stock_quantity FROM products WHERE id = $1 FOR UPDATE', [item.id]);
+
+                    if (stockRes.rows.length === 0) throw new Error(`Product ${item.id} not found`);
+
+                    const available = stockRes.rows[0].stock_quantity;
+                    if (available < item.quantity) {
+                        throw new Error(`Insufficient stock for Product ID ${item.id}. Available: ${available}, Requested: ${item.quantity}`);
+                    }
+
+                    // DEDUCT STOCK
+                    await client.query(
+                        'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
+                        [item.quantity, item.id]
+                    );
+                }
+            }
+            // Invalidate cache as stock changed
+            invalidateProductCache();
+        }
+
+        // 2. Insert Order
         const insertQuery = `
                 INSERT INTO orders 
                 (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email)
@@ -303,19 +337,8 @@ try {
 
         const result = await client.query(insertQuery, values);
 
-        // Update Stock
-        if (data.items && Array.isArray(data.items)) {
-            for (const item of data.items) {
-                if (item.id && item.quantity) {
-                    await client.query(
-                        'UPDATE products SET stock_quantity = GREATEST(stock_quantity - $1, 0) WHERE id = $2',
-                        [item.quantity, item.id]
-                    );
-                }
-            }
-            // Invalidate cache as stock changed
-            invalidateProductCache();
-        }
+        // --- TRANSACTION COMMIT ---
+        await client.query('COMMIT');
 
         client.release();
 
@@ -463,6 +486,7 @@ try {
 } catch (error) {
     console.error("API Error:", error);
     if (client) {
+        try { await client.query('ROLLBACK'); } catch (e) { } // Rollback any active transaction
         try { client.release(); } catch (e) { }
     }
     return res.status(500).json({
