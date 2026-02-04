@@ -7,7 +7,7 @@
 const pool = require('./db');
 const { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit } = require('./cache');
 const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
-const { sanitizeObject } = require('./utils/sanitize');
+const { sanitizeObject } = require('./sanitize');
 
 module.exports = async (req, res) => {
     // --- SECURITY: CORS RESTRICTION (Priority 1) ---
