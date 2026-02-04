@@ -21,14 +21,14 @@ module.exports = async (req, res) => {
     // In production, strictly check origin. In dev (no origin headers sometimes), allow if local.
     if (origin && allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
-    } else if (!origin && process.env.NODE_ENV === 'development') {
-        // DEV MODE: Allow Postman/cURL (tools without origin headers)
+    } else if (!origin) {
+        // SAME-ORIGIN / TOOLS: Allow requests without origin (e.g. same domain fetch, Postman, etc.)
+        // Vercel serverless calls might strip origin on same-domain
         res.setHeader('Access-Control-Allow-Origin', '*');
     } else {
-        // PRODUCTION: Block requests without origin (unless it's a known service, but safer to block)
-        // If you need server-to-server, whitelist that IP or use a shared secret instead of Origin
-        console.warn(`⚠️ Blocked Request (No Origin)`);
-        return res.status(403).json({ error: 'Origin header required' });
+        // BLOCKED: Origin present but not in allowed list
+        console.warn(`⚠️ Blocked Request from unauthorized origin: ${origin}`);
+        return res.status(403).json({ error: 'CORS policy violation' });
     }
 
 
