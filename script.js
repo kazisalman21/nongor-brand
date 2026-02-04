@@ -13,30 +13,27 @@ const fallbackProducts = [
     {
         "id": 1,
         "name": "টিউলিপ",
-        "price": 1000.00,
-        "image": "https://images.unsplash.com/photo-1581453723331-7788177df826?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", // Real Tulip Image
-        "description": "আরামদায়ক কাপড়ে রঙিন টিউলিপ ফুলের নকশা।",
-        "is_featured": true,
+        "price": "1000.00",
+        "image": "https://res.cloudinary.com/daalopsqn/image/upload/f_auto,q_auto/v1769523623/lsxxuqx26gef8ujbktm9.webp",
+        "description": "আরামদায়ক কাপড়ে রঙিন টিউলিপ ফুলের নকশা।",
         "category_slug": "kurti",
-        "category_name": "কুর্তি"
+        "category_name": "কুর্তি",
+        "is_featured": true
     },
     {
         "id": 2,
         "name": "একটা কমলা রঙের প্রজাপতি",
-        "price": 900.00,
-        "image": "https://images.unsplash.com/photo-1559235311-58ac85458145?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", // Real Butterfly design lookalike
-        "description": "কালো পোশাকে রঙিন প্রজাপতির ছোঁয়া।",
-        "is_featured": true,
+        "price": "900.00",
+        "image": "https://res.cloudinary.com/daalopsqn/image/upload/f_auto,q_auto/v1769523623/lsxxuqx26gef8ujbktm9.webp",
+        "description": "কালো পোশাকে রঙিন প্রজাপতির ছোঁয়া।",
         "category_slug": "kurti",
-        "category_name": "কুর্তি"
-    },
-
+        "category_name": "কুর্তি",
+        "is_featured": true
+    }
 ];
 
 let allProducts = [];
 let currentCategory = 'all';
-
-// 🔴 IMPORTANT: Paste your Web App URL here after deployment
 const API_URL = '/api';
 
 
@@ -201,124 +198,112 @@ function initCategories() {
     });
 }
 
+// ==============================================
+// FETCH AND INITIALIZE PRODUCTS
+// ==============================================
 async function initProducts() {
-    // 1. Show Skeleton immediately for premium feel
-    renderSkeleton();
+    console.log('🚀 initProducts() called');
+
+    const container = document.getElementById('products-grid');
+    if (!container) {
+        console.error('❌ Container not found');
+        return;
+    }
+
+    // Show loading spinner
+    showLoading(container);
 
     try {
-        console.log("Fetching API background update...");
+        console.log('📡 Fetching from:', `${API_URL}?action=getProducts`);
 
-        // Background Fetch (Silent update)
         const response = await fetch(`${API_URL}?action=getProducts`);
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        console.log('📥 Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
 
         const result = await response.json();
+        console.log('📦 API Result:', result);
 
-        if (result.result === 'success' && result.data && result.data.length > 0) {
-            // Transform API data
-            allProducts = result.data.map(p => ({
-                id: p.id,
-                name: p.name,
-                price: parseFloat(p.price),
-                image: p.image,
-                images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
-                description: p.description,
-                is_featured: p.is_featured,
-                category: {
-                    name: p.category_name || 'অন্যান্য',
-                    slug: p.category_slug || 'other'
-                }
-            }));
-
-            // 2. Update Render with real data
-            console.log("API Success: Updating products");
-            renderProducts(allProducts);
-            if (window.location.pathname.includes('checkout')) initCheckout();
+        if (result.result === 'success' && result.data && Array.isArray(result.data)) {
+            if (result.data.length === 0) {
+                console.warn('⚠️ API returned empty array');
+                showEmptyState(container);
+            } else {
+                console.log(`✅ Got ${result.data.length} products, rendering...`);
+                allProducts = result.data;
+                renderProducts(result.data);
+                console.log('✅ Render complete');
+            }
+        } else {
+            throw new Error('Invalid API response format');
         }
+
     } catch (error) {
-        console.warn('API Fetch failed using Fallback.', error);
+        console.error('❌ Error in initProducts:', error);
+        console.error('Stack:', error.stack);
+
+        // Show error to user
+        showError(container, error.message);
+
+        // Use fallback products as last resort
+        console.warn('⚠️ Using fallback products');
+        allProducts = fallbackProducts;
         renderProducts(fallbackProducts);
     }
 }
 
+// ==============================================
+// FILTER PRODUCTS BY CATEGORY
+// ==============================================
+window.filterProducts = function (category, event) {
+    console.log('🔍 Filtering by category:', category);
 
-
-window.filterProducts = (category, event) => {
     currentCategory = category;
 
-    // Clear Search Inputs when changing category
-    document.getElementById('desktop-search').value = '';
-    document.getElementById('mobile-search').value = '';
-
+    // Update active button
     if (event) {
         document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
+            btn.classList.remove('active', 'bg-brand-terracotta', 'text-white', 'shadow-lg');
+            btn.classList.add('text-gray-500');
         });
-
-        event.target.className = 'category-btn active px-8 py-3 rounded-full bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/30 transform scale-105 transition-all duration-300 font-medium border border-transparent';
+        event.target.classList.add('active', 'bg-brand-terracotta', 'text-white', 'shadow-lg');
+        event.target.classList.remove('text-gray-500');
     }
 
+    // Filter and render
     if (category === 'all') {
         renderProducts(allProducts);
     } else {
-        const filtered = allProducts.filter(p => p.category.slug === category);
+        const filtered = allProducts.filter(p => p.category_slug === category);
+        console.log(`  Found ${filtered.length} products in category`);
         renderProducts(filtered);
     }
 };
 
-// --- Search Logic ---
-let searchTimeout;
-window.handleSearch = (query) => {
-    // Sync Inputs Instantly
-    const desktopInput = document.getElementById('desktop-search');
-    const mobileInput = document.getElementById('mobile-search');
-    if (desktopInput && desktopInput.value !== query) desktopInput.value = query;
-    if (mobileInput && mobileInput.value !== query) mobileInput.value = query;
+// ==============================================
+// SEARCH PRODUCTS
+// ==============================================
+window.handleSearch = function (query) {
+    console.log('🔍 Searching for:', query);
 
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        performSearch(query);
-    }, 300);
-};
-
-function performSearch(query) {
     const q = query.toLowerCase().trim();
 
-    // Sync Inputs (Moved to handleSearch for instant feedback)
-
     if (!q) {
-        filterProducts('all');
-        // Reset category UI to 'All'
-        const allBtn = document.querySelector('.category-btn'); // Assuming first one is 'All'
-        if (allBtn) {
-            // Trigger click simulation or manual update
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
-            });
-            allBtn.className = 'category-btn active px-8 py-3 rounded-full bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/30 transform scale-105 transition-all duration-300 font-medium border border-transparent';
-        }
+        renderProducts(allProducts);
         return;
     }
 
-    // Visual feedback: Deselect categories
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
-    });
-
     const filtered = allProducts.filter(p => {
         return p.name.toLowerCase().includes(q) ||
-            p.category.name.toLowerCase().includes(q) ||
-            (p.description && p.description.toLowerCase().includes(q));
+            (p.description && p.description.toLowerCase().includes(q)) ||
+            (p.category_name && p.category_name.toLowerCase().includes(q));
     });
 
+    console.log(`  Found ${filtered.length} matching products`);
     renderProducts(filtered);
-
-    // Auto-scroll to collection if needed
-    const collection = document.getElementById('collection');
-    if (collection && window.scrollY < collection.offsetTop - 150) {
-        collection.scrollIntoView({ behavior: 'smooth' });
-    }
-}
+};
 
 // --- Smart Image Optimization ---
 window.getOptimizedImage = (url, type = 'main') => {
@@ -385,193 +370,195 @@ window.handleImageError = (img, fallbackSrc = './assets/logo.jpeg') => {
 // ... (initCategories, initProducts omitted for brevity) ...
 
 // --- Skeleton Loader ---
-function renderSkeleton() {
-    const grid = document.getElementById('products-grid');
-    if (!grid) return;
-
-    // Create 6 skeleton cards
-    const skeletons = Array(6).fill(0).map(() => `
-        <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
-            <!-- Image Skeleton -->
-            <div class="aspect-[3/4] w-full bg-gray-200"></div>
-            <!-- Content Skeleton -->
-            <div class="p-5 space-y-3">
-                <div class="h-4 bg-gray-200 rounded w-3/4"></div> <!-- Title -->
-                <div class="h-3 bg-gray-200 rounded w-1/2"></div> <!-- Subtitle -->
-                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-50">
-                    <div class="h-6 bg-gray-200 rounded w-1/4"></div> <!-- Price -->
-                    <div class="h-8 bg-gray-200 rounded w-1/3"></div> <!-- Button -->
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    grid.innerHTML = skeletons;
-}
-
+// ==============================================
+// RENDER PRODUCTS TO GRID
+// ==============================================
 function renderProducts(products) {
-    const grid = document.getElementById('products-grid');
-    if (!grid) return;
+    console.log('🎨 renderProducts() called with', products?.length, 'products');
 
-    if (products.length === 0) {
-        // ... (Empty state code) ...
-        grid.innerHTML = `
-            <div class="col-span-full flex flex-col items-center justify-center py-20 animate-fade-in-up">
-                <div class="relative mb-8">
-                    <div class="w-32 h-32 rounded-full bg-gradient-to-br from-brand-terracotta/20 to-brand-deep/10 flex items-center justify-center animate-pulse">
-                        <svg class="w-16 h-16 text-brand-terracotta/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                        </svg>
-                    </div>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-700 mb-3 font-bengali-display text-center">এই ক্যাটেগরিতে কোনো পণ্য নেই</h3>
-            </div>`;
+    const container = document.getElementById('products-grid');
+    if (!container) {
+        console.error('❌ Container not found in renderProducts');
         return;
     }
 
-    grid.innerHTML = products.map((product, index) => {
-        // Robust Image Handling
-        let optimizedSrc = './assets/logo.jpeg';
-        let originalSrc = './assets/logo.jpeg';
+    // Clear container
+    container.innerHTML = '';
 
-        if (product.image && typeof product.image === 'string') {
-            // Basic Fallback
-            originalSrc = product.image.startsWith('http') ? product.image : './assets/' + product.image.replace(/^\.?\/?assets\//, '');
-            // Try Optimization
-            try {
-                optimizedSrc = getOptimizedImage(product.image);
-            } catch (e) {
-                optimizedSrc = originalSrc;
-            }
+    // Validate products
+    if (!products || !Array.isArray(products)) {
+        console.error('❌ Invalid products array:', products);
+        showError(container, 'Invalid product data');
+        return;
+    }
+
+    if (products.length === 0) {
+        showEmptyState(container);
+        return;
+    }
+
+    // Render each product
+    products.forEach((product, index) => {
+        try {
+            console.log(`  Rendering product ${index + 1}:`, product.name);
+            const card = createProductCard(product, index);
+            container.appendChild(card);
+        } catch (error) {
+            console.error(`❌ Error rendering product ${index}:`, error);
         }
+    });
 
-        const stock = product.stock_quantity !== undefined ? parseInt(product.stock_quantity) : 100; // Default to available if not set
-        const isOutOfStock = stock <= 0;
-        const lowStock = stock > 0 && stock <= 5;
-
-        return `
-        <div class="bg-white rounded-3xl overflow-hidden shadow-sm group border border-gray-100 flex flex-col h-full animate-fade-in relative hover-lift ${isOutOfStock ? 'opacity-75 grayscale-[0.5]' : ''}" 
-             onmouseenter="${!isOutOfStock ? `startCardSlideshow(${product.id}, this)` : ''}"
-             onmouseleave="${!isOutOfStock ? `stopCardSlideshow(${product.id}, this)` : ''}">
-            <div class="relative h-80 bg-gray-100 overflow-hidden">
-                <!-- Main Image -->
-                <img src="${optimizedSrc}" alt="${product.name}"  
-                     data-original-src="${originalSrc}"
-                     class="product-main-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out relative z-0"
-                     loading="lazy"
-                     decoding="async"
-                     style="will-change: transform;"
-                     onerror="handleImageError(this, '${originalSrc}')">
-                
-                <!-- Overlay Gradient (z-20 to stay on top) -->
-                ${!isOutOfStock ? '<div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none"></div>' : ''}
-
-                <!-- Badges (z-30) -->
-                <div class="absolute top-4 left-4 flex flex-col gap-2 z-30 pointer-events-none">
-                    ${product.is_featured ? '<span class="bg-white/90 backdrop-blur-sm text-brand-deep text-xs font-bold px-3 py-1.5 rounded-full shadow-sm font-bengali">🔥 জনপ্রিয়</span>' : ''}
-                    ${isOutOfStock ? '<span class="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Out of Stock</span>' : ''}
-                    ${lowStock ? `<span class="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Only ${stock} Left</span>` : ''}
-                </div>
-            </div>
-            
-            <div class="p-6 flex flex-col flex-grow">
-                <div class="mb-4">
-                    <span class="inline-block px-3 py-1 bg-brand-light/30 text-brand-terracotta text-xs font-bold rounded-lg mb-2 font-bengali">
-                        ${(product.category && product.category.name) || 'অন্যান্য'}
-                    </span>
-                    <h3 class="text-xl font-bold text-gray-900 leading-tight font-bengali-display group-hover:text-brand-terracotta transition-colors">
-                        ${product.name}
-                    </h3>
-                </div>
-                
-                <p class="text-gray-500 text-sm font-bengali line-clamp-2 mb-6 flex-grow leading-relaxed">
-                    ${product.description || ''}
-                </p>
-                
-                <div class="flex items-center justify-between gap-4 mt-auto border-t border-gray-100 pt-5">
-                    <div class="flex flex-col">
-                        <span class="text-xs text-gray-400 font-medium">মূল্য</span>
-                        <span class="text-2xl font-bold text-brand-deep">৳${(product.price || 0).toLocaleString('bn-BD')}</span>
-                    </div>
-                    <button onclick="openModal(${product.id})" class="flex-1 bg-brand-deep text-white px-5 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand-deep/20 hover:bg-brand-terracotta hover:shadow-[0_8px_30px_rgba(224,122,95,0.4)] hover:scale-[1.02] active:scale-95 transition-all duration-300 font-bengali flex items-center justify-center gap-2 ${isOutOfStock ? 'cursor-not-allowed opacity-80' : ''}">
-                        ${isOutOfStock ? ' স্টক আউট' : 'বিস্তারিত দেখুন'} <svg class="w-4 h-4 ${isOutOfStock ? 'hidden' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        `;
-    }).join('');
+    console.log('✅ All products rendered successfully');
 }
 
+// ==============================================
+// CREATE PRODUCT CARD ELEMENT
+// ==============================================
+function createProductCard(product, index) {
+    // Validate product
+    if (!product || !product.id) {
+        console.error('Invalid product object:', product);
+        return document.createElement('div');
+    }
 
-// --- Modal Logic ---
+    // Create card container
+    const card = document.createElement('div');
+    card.className = 'product-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer animate-fade-in-up';
+    card.style.animationDelay = `${index * 0.1}s`;
 
-let currentQuantity = 1;
-let selectedSize = 'M';
-let currentProductId = null; // Added tracking
-const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+    // Create image
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'relative overflow-hidden h-64';
 
-// --- Card Slideshow Logic ---
-window.startCardSlideshow = (productId, card) => {
-    const product = allProducts.find(p => p.id === productId);
-    if (!product || !product.images || product.images.length <= 1) return;
+    const img = document.createElement('img');
+    img.src = product.image || './assets/logo.jpeg';
+    img.alt = product.name || 'Product';
+    img.className = 'w-full h-full object-cover transition-transform duration-300 hover:scale-110';
+    img.loading = 'lazy';
 
-    const img = card.querySelector('.product-main-image');
-    if (!img) return;
-
-    // Use a delay to prevent lag when quickly moving over items
-    // Store the timeout ID so we can cancel it if the user leaves quickly
-    card.dataset.hoverTimeout = setTimeout(() => {
-        // If already running (safety check), don't restart
-        if (card.dataset.slideshowInterval) return;
-
-        let idx = 0;
-        // Store original display src to reset later
-        if (!card.dataset.displaySrc) {
-            card.dataset.displaySrc = img.src;
+    // Image fallback
+    let fallbackAttempted = false;
+    img.onerror = function () {
+        if (!fallbackAttempted) {
+            fallbackAttempted = true;
+            this.src = './assets/logo.jpeg';
+            console.warn('⚠️ Image failed, using fallback for:', product.name);
+        } else {
+            this.onerror = null;
+            console.error('❌ Fallback image also failed');
         }
+    };
 
-        const interval = setInterval(() => {
-            idx = (idx + 1) % product.images.length;
-            const nextImgData = product.images[idx];
+    imgContainer.appendChild(img);
 
-            // Use optimized mid-size image for slideshow to reduce GPU load
-            const nextSrc = getOptimizedImage(nextImgData, 'card');
+    // Create content section
+    const content = document.createElement('div');
+    content.className = 'p-6';
 
-            // Preload next image to prevent flicker
-            const preloadImg = new Image();
-            preloadImg.src = nextSrc;
-            preloadImg.onload = () => {
-                // Only verify we are still mounted/hovered
-                if (card.dataset.slideshowInterval) {
-                    img.src = nextSrc;
-                }
-            };
-        }, 1500);
+    // Product name
+    const title = document.createElement('h3');
+    title.className = 'text-xl font-bold text-brand-deep mb-2 line-clamp-2 font-bengali';
+    title.textContent = product.name || 'Unknown Product';
 
-        card.dataset.slideshowInterval = interval;
-    }, 500); // 500ms Delay before starting slideshow
-};
+    // Category badge
+    const category = document.createElement('span');
+    category.className = 'inline-block text-xs bg-brand-terracotta/10 text-brand-terracotta px-3 py-1 rounded-full mb-3';
+    category.textContent = product.category_name || product.category?.name || 'অন্যান্য';
 
-window.stopCardSlideshow = (productId, card) => {
-    // 1. Clear the pending start (if the user left quickly)
-    if (card.dataset.hoverTimeout) {
-        clearTimeout(parseInt(card.dataset.hoverTimeout));
-        delete card.dataset.hoverTimeout;
-    }
+    // Description
+    const description = document.createElement('p');
+    description.className = 'text-gray-600 text-sm mb-4 line-clamp-2';
+    description.textContent = product.description || '';
 
-    // 2. Clear the active slideshow
-    const interval = card.dataset.slideshowInterval;
-    if (interval) {
-        clearInterval(parseInt(interval));
-        delete card.dataset.slideshowInterval;
-    }
+    // Price and button container
+    const footer = document.createElement('div');
+    footer.className = 'flex items-center justify-between mt-4';
 
-    const img = card.querySelector('.product-main-image');
-    if (img && card.dataset.displaySrc) {
-        img.src = card.dataset.displaySrc;
-    }
-};
+    // Price
+    const price = document.createElement('span');
+    price.className = 'text-2xl font-bold text-brand-terracotta';
+    const priceValue = parseFloat(product.price) || 0;
+    price.textContent = `৳${priceValue.toFixed(2)}`;
+
+    // Button
+    const button = document.createElement('button');
+    button.className = 'bg-brand-deep text-white px-6 py-2 rounded-full hover:bg-brand-terracotta transition-all duration-300 transform hover:scale-105 active:scale-95';
+    button.textContent = 'বিস্তারিত';
+    button.onclick = function (e) {
+        e.stopPropagation();
+        openModal(product);
+    };
+
+    // Also make card clickable
+    card.onclick = function () {
+        openModal(product);
+    };
+
+    // Assemble footer
+    footer.appendChild(price);
+    footer.appendChild(button);
+
+    // Assemble content
+    content.appendChild(category);
+    content.appendChild(title);
+    content.appendChild(description);
+    content.appendChild(footer);
+
+    // Assemble card
+    card.appendChild(imgContainer);
+    card.appendChild(content);
+
+    return card;
+}
+
+// ==============================================
+// LOADING STATE
+// ==============================================
+function showLoading(container) {
+    container.innerHTML = `
+        <div class="col-span-full flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-brand-terracotta mb-4"></div>
+            <p class="text-gray-500 text-lg">পণ্য লোড হচ্ছে...</p>
+        </div>
+    `;
+}
+
+// ==============================================
+// EMPTY STATE
+// ==============================================
+function showEmptyState(container) {
+    container.innerHTML = `
+        <div class="col-span-full text-center py-20">
+            <div class="text-6xl mb-4">🛍️</div>
+            <h3 class="text-2xl font-bold text-gray-400 mb-2 font-bengali">কোনো পণ্য পাওয়া যায়নি</h3>
+            <p class="text-gray-500 mb-6">শীঘ্রই নতুন পণ্য যোগ করা হবে!</p>
+            <button onclick="initProducts()" class="bg-brand-terracotta text-white px-6 py-3 rounded-full hover:bg-brand-deep transition-colors">
+                আবার চেষ্টা করুন
+            </button>
+        </div>
+    `;
+}
+
+// ==============================================
+// ERROR STATE
+// ==============================================
+function showError(container, errorMsg) {
+    container.innerHTML = `
+        <div class="col-span-full text-center py-20">
+            <div class="text-6xl mb-4">⚠️</div>
+            <h3 class="text-2xl font-bold text-red-500 mb-2">পণ্য লোড করতে সমস্যা হয়েছে</h3>
+            <p class="text-gray-600 mb-6">${errorMsg || 'অজানা ত্রুটি'}</p>
+            <button onclick="initProducts()" class="bg-brand-terracotta text-white px-6 py-3 rounded-full hover:bg-brand-deep transition-colors">
+                আবার চেষ্টা করুন
+            </button>
+        </div>
+    `;
+}
+
+// Make functions globally accessible
+window.initProducts = initProducts;
+window.renderProducts = renderProducts;
+window.createProductCard = createProductCard;
 
 // --- Modal Logic ---
 window.openModal = (productId) => {
