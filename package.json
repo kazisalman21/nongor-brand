@@ -2,7 +2,7 @@
   "name": "nongor-ecommerce",
   "version": "1.0.0",
   "description": "Nongor E-commerce Backend",
-  "main": "netlify/functions/api.js",
+  "main": "api/index.js",
   "dependencies": {
     "@sendgrid/mail": "^8.1.0",
     "bcryptjs": "^3.0.3",
