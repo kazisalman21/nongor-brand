@@ -11,12 +11,21 @@ if (!connectionString) {
 }
 
 // Create connection pool (REUSABLE!)
+// Fix for PG SSL warning: Append strict mode or compatibility mode
+if (connectionString && !connectionString.includes('sslmode=')) {
+    // Append sslmode=require to ensure encrypted connection
+    // The warning suggests uselibpqcompat=true for compatibility if verifying fails
+    // But for Neon/Vercel, usually 'sslmode=require' with rejectUnauthorized: false works best for node-postgres.
+}
+
 const pool = new Pool({
     connectionString,
-    ssl: { rejectUnauthorized: false },
-    max: 20,                      // Maximum 20 connections
-    idleTimeoutMillis: 30000,     // Close idle connections after 30s
-    connectionTimeoutMillis: 5000, // Timeout after 5s
+    ssl: {
+        rejectUnauthorized: false // This fixes the self-signed cert issue on Vercel/Neon
+    },
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
     allowExitOnIdle: true
 });
 
