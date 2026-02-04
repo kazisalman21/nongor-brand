@@ -144,6 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    // Fix Mobile Menu Stuck on Link Click
+    const mobileLinks = document.querySelectorAll('#mobile-menu a');
+    mobileLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const menu = document.getElementById('mobile-menu');
+            if (menu && !menu.classList.contains('translate-x-full')) {
+                toggleMobileMenu();
+            }
+        });
+    });
 });
 
 window.toggleMobileMenu = () => {
@@ -930,7 +940,7 @@ window.showCheckout = (fromCart = false) => {
         // Buy Now Mode (Single Item)
         const id = currentProductId;
         if (!id) {
-            alert("Something went wrong. Please reload.");
+            showToast("Something went wrong. Please reload.", 'error');
             return;
         }
         const params = new URLSearchParams({
@@ -998,6 +1008,10 @@ window.initCheckout = () => {
     // Calculate Totals (ensure price is numeric)
     const total = checkoutItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1), 0);
     document.getElementById('checkout-subtotal').textContent = `৳${total.toLocaleString()} `;
+
+    // CRITICAL FIX: Expose payload for confirm implementation
+    window.checkoutPayload = checkoutItems;
+    window.checkoutTotal = total;
     // Initial total will be updated by updateTotalWithShipping() below
 
     // Store globally for submission
@@ -1093,20 +1107,29 @@ window.confirmOrderFromPage = async () => {
     const email = document.getElementById('cust-email')?.value.trim();
 
     if (!name || !phone || !address) {
-        alert("Please fill all fields");
+        showToast("Please fill all fields", 'error');
         return;
     }
 
     if (!window.checkoutPayload || window.checkoutPayload.length === 0) {
-        alert("Cart is empty");
+        showToast("Cart is empty", 'error');
         return;
     }
 
     // Phone Validation
-    phone = phone.replace(/\D/g, '');
-    if (phone.length === 11 && phone.startsWith('0')) phone = phone.substring(1);
-    if (phone.length !== 10) { alert("Invalid Phone Number"); return; }
-    const fullPhone = '+880' + phone;
+    // Phone Validation (Robust)
+    // 1. Remove non-digits
+    let cleanPhone = phone.replace(/\D/g, '');
+    // 2. Handle 88 prefix (if user typed 88017...)
+    if (cleanPhone.startsWith('8801')) cleanPhone = cleanPhone.substring(2);
+    // 3. now we expect 11 digits starting with 01
+    const phoneRegex = /^01[3-9]\d{8}$/;
+
+    if (!phoneRegex.test(cleanPhone)) {
+        showToast("Invalid Phone Number (Must be 11 digits starting with 01)", 'error');
+        return;
+    }
+    const fullPhone = cleanPhone; // Backend handles raw 11 digits or +88. Best to send normalized 01...
 
     // Payment Logic
     const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
@@ -1116,7 +1139,7 @@ window.confirmOrderFromPage = async () => {
         senderNumber = document.getElementById('manual-sender')?.value.trim();
         trxId = document.getElementById('manual-trx')?.value.trim();
         if (!senderNumber || !trxId) {
-            alert("Please enter bKash details");
+            showToast("Please enter bKash details", 'error');
             return;
         }
     }
