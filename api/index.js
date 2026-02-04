@@ -470,4 +470,3 @@ try {
         message: 'Internal Server Error: ' + error.message
     });
 }
-};
