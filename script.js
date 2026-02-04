@@ -954,6 +954,42 @@ window.showCheckout = (fromCart = false) => {
     }
 };
 
+// --- Validation Helpers ---
+function isValidBangladeshiPhone(phone) {
+    const cleaned = phone.replace(/\D/g, '');
+    const regex = /^01[3-9]\d{8}$/; // Matches 01712345678 (11 digits)
+    return regex.test(cleaned);
+}
+
+function validatePhoneRealtime(input) {
+    const phone = input.value.trim();
+    // Use closest wrapper or create a feedback element if missing
+    // Assuming UI structure, we'll toggle classes directly on input
+    const submitBtn = document.getElementById('btn-confirm-order');
+
+    // Reset styles
+    input.classList.remove('border-green-500', 'border-red-500', 'ring-2', 'ring-red-500', 'ring-green-500');
+
+    if (phone.length === 0) {
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+    }
+
+    if (isValidBangladeshiPhone(phone)) {
+        input.classList.add('border-green-500', 'ring-2', 'ring-green-500');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    } else {
+        input.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+}
+
 window.initCheckout = () => {
     const params = new URLSearchParams(window.location.search);
     const id = parseInt(params.get('id')); // If ID exists, it's "Buy Now" mode
@@ -1017,6 +1053,15 @@ window.initCheckout = () => {
     // Initial total will be updated by updateTotalWithShipping() below
 
     // Store globally for submission
+    // ...
+
+    // Attach Real-time Validation
+    const phoneInput = document.getElementById('cust-phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function () { validatePhoneRealtime(this); });
+        phoneInput.addEventListener('blur', function () { validatePhoneRealtime(this); });
+    }
+
     window.checkoutPayload = checkoutItems;
     window.checkoutTotal = total;
     window.shippingFee = 70; // Default: Inside Dhaka
@@ -1118,20 +1163,16 @@ window.confirmOrderFromPage = async () => {
         return;
     }
 
-    // Phone Validation
-    // Phone Validation (Robust)
-    // 1. Remove non-digits
-    let cleanPhone = phone.replace(/\D/g, '');
-    // 2. Handle 88 prefix (if user typed 88017...)
-    if (cleanPhone.startsWith('8801')) cleanPhone = cleanPhone.substring(2);
-    // 3. now we expect 11 digits starting with 01
-    const phoneRegex = /^01[3-9]\d{8}$/;
-
-    if (!phoneRegex.test(cleanPhone)) {
+    // Phone Validation (Using shared helper)
+    if (!isValidBangladeshiPhone(phone)) {
         showToast("Invalid Phone Number (Must be 11 digits starting with 01)", 'error');
         return;
     }
-    const fullPhone = cleanPhone; // Backend handles raw 11 digits or +88. Best to send normalized 01...
+    // Normalize format for backend (remove +88 if user typed it, though validation expects 01...)
+    // Our helper checks 01..., so cleanPhone logic inside helper is what we trust.
+    // We'll re-clean here just to be safe for payload.
+    let fullPhone = phone.replace(/\D/g, '');
+    if (fullPhone.startsWith('8801')) fullPhone = fullPhone.substring(2);
 
     // Payment Logic
     const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
