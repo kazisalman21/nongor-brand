@@ -370,6 +370,17 @@ window.getOptimizedImage = (url, type = 'main') => {
     return url;
 };
 
+// --- Safe Image Handler (Prevents Infinite Loop) ---
+window.handleImageError = (img, fallbackSrc = './assets/logo.jpeg') => {
+    if (!img.dataset.fallbackAttempted) {
+        img.dataset.fallbackAttempted = 'true';
+        img.src = fallbackSrc;
+    } else {
+        img.onerror = null; // Stop infinite loop
+        console.warn('Image fallback failed:', img.src);
+    }
+};
+
 // --- Product Logic ---
 // ... (initCategories, initProducts omitted for brevity) ...
 
@@ -450,7 +461,7 @@ function renderProducts(products) {
                      loading="lazy"
                      decoding="async"
                      style="will-change: transform;"
-                     onerror="this.onerror=null; this.src='${originalSrc}';">
+                     onerror="handleImageError(this, '${originalSrc}')">
                 
                 <!-- Overlay Gradient (z-20 to stay on top) -->
                 ${!isOutOfStock ? '<div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none"></div>' : ''}
@@ -583,7 +594,7 @@ window.openModal = (productId) => {
     const modalImgEl = document.getElementById('modal-image');
     modalImgEl.src = mainImgSrc;
     // Add error handler specific to modal to fallback
-    modalImgEl.onerror = function () { this.src = mainImgOriginal; };
+    modalImgEl.onerror = function () { handleImageError(this, mainImgOriginal); };
 
     document.getElementById('modal-title').textContent = product.name;
     document.getElementById('modal-price').textContent = `৳${product.price} `;
@@ -870,7 +881,7 @@ window.updateCartUI = () => {
         container.innerHTML = cart.map((item, index) => `
     <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
                 <div class="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
-                    <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='./assets/logo.jpeg'">
+                    <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="handleImageError(this)">
                 </div>
                 
                 <div class="flex-grow min-w-0">
