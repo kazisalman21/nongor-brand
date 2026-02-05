@@ -36,6 +36,10 @@ let allProducts = [];
 let currentCategory = 'all';
 const API_URL = '/api';
 
+// Modal state variables
+let currentProductId = null;
+const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+
 
 // --- Initialization ---
 
