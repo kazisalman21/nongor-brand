@@ -20,194 +20,103 @@
     <link href="./assets/styles.css" rel="stylesheet">
     <!-- Premium Animations CSS -->
     <link rel="stylesheet" href="./assets/animations.css">
-    <!-- Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
-        rel="stylesheet">
-
-    <!-- Premium Checkout Animations -->
-    <style>
-        /* Staggered Fade In Animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-
-            100% {
-                background-position: 200% 0;
-            }
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-5px);
-            }
-        }
-
-        @keyframes pulse-border {
-
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.4);
-            }
-
-            50% {
-                box-shadow: 0 0 0 8px rgba(224, 122, 95, 0);
-            }
-        }
-
-        @keyframes checkmark-draw {
-            0% {
-                stroke-dashoffset: 50;
-            }
-
-            100% {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-
-        .animate-delay-100 {
-            animation-delay: 0.1s;
-            opacity: 0;
-        }
-
-        .animate-delay-200 {
-            animation-delay: 0.2s;
-            opacity: 0;
-        }
-
-        .animate-delay-300 {
-            animation-delay: 0.3s;
-            opacity: 0;
-        }
-
-        .animate-delay-400 {
-            animation-delay: 0.4s;
-            opacity: 0;
-        }
-
-        .animate-delay-500 {
-            animation-delay: 0.5s;
-            opacity: 0;
-        }
-
-        .shimmer-bg {
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
-
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .input-focus-effect:focus {
-            animation: pulse-border 1s ease-out;
-        }
-
-        /* Premium Input Styling */
-        .premium-input {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-        }
-
-        .premium-input:focus {
-            background: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(224, 122, 95, 0.15);
-        }
-
-        /* Glowing Button */
-        .btn-glow {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-glow::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-glow:hover::before {
-            left: 100%;
-        }
-
-        /* Card Hover Effect */
-        .card-premium {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .card-premium:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
-        }
-
-        /* Payment Option Animation */
-        .payment-option {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .payment-option:hover {
-            transform: translateY(-4px) scale(1.02);
-        }
-
-        /* Success Confetti Background */
-        .success-bg {
-            background:
-                radial-gradient(circle at 20% 80%, rgba(224, 122, 95, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(129, 178, 154, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(244, 241, 222, 0.3) 0%, transparent 70%),
-                linear-gradient(135deg, #ffffff 0%, #f9f7f2 100%);
-        }
-    </style>
 </head>
 
 <body
-    class="bg-[#F9F7F2] font-sans text-brand-checkout-deep min-h-screen flex flex-col selection:bg-brand-terracotta selection:text-white">
+    class="bg-brand-light font-sans text-brand-checkout-deep min-h-screen flex flex-col selection:bg-brand-terracotta selection:text-white">
 
-    <!-- Navbar (Simplified) -->
-    <nav class="bg-white/95 backdrop-blur-md shadow-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-3 group">
-                <img src="./assets/logo.jpeg" alt="Nongor" class="h-12 rounded-lg shadow-sm">
-                <div class="flex flex-col justify-center">
-                    <span
-                        class="text-2xl font-bold tracking-wide font-serif uppercase leading-none text-brand-checkout-deep group-hover:text-brand-terracotta transition-colors">নোঙর</span>
-                    <span class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-80 mt-1 text-gray-500">The
-                        Clothing Brand</span>
-                </div>
-            </a>
-            <a href="index.html" class="text-sm font-bold text-gray-500 hover:text-brand-checkout-deep">Back to Shop</a>
+    <!-- Cinematic Loading Overlay -->
+    <div id="app-loading-overlay"
+        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
+
+        <!-- Central Content -->
+        <div class="relative flex flex-col items-center">
+
+            <!-- Logo with Slow Zoom -->
+            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
+                <img src="./assets/logo.jpeg" alt="Nongor" class="w-24 h-24 object-cover"
+                    style="animation: subtle-zoom 20s infinite alternate">
+            </div>
+
+            <!-- Brand Name -->
+            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-wide font-light"
+                style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
+
+            <!-- Minimal Progress Line -->
+            <div class="w-32 h-[2px] bg-brand-deep/50 mt-8 overflow-hidden rounded-full relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-terracotta to-transparent w-full h-full"
+                    style="animation: shimmer-flow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite"></div>
+            </div>
+
         </div>
+    </div>
+
+    <!-- Navbar (Standardized) -->
+    <nav id="navbar"
+        class="fixed w-full z-50 transition-all duration-500 bg-brand-deep md:bg-transparent py-4 px-6 md:px-12 flex justify-between items-center text-brand-light border-b border-transparent">
+
+        <!-- Brand Logo & Name -->
+        <a href="index.html" class="flex items-center gap-3 group">
+            <img src="./assets/logo.jpeg" alt="Nongor"
+                class="h-10 md:h-12 rounded-lg md:mix-blend-multiply shadow-sm group-hover:scale-105 transition-transform duration-500">
+            <div class="flex flex-col justify-center">
+                <span
+                    class="text-xl md:text-2xl font-bold tracking-wide font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
+                <span class="text-[0.55rem] md:text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-80 mt-1">The
+                    Clothing Brand</span>
+            </div>
+        </a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide font-medium">
+            <a href="index.html"
+                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Home</a>
+            <a href="about.html"
+                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Story</a>
+            <a href="index.html#collection"
+                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Collection</a>
+            <button onclick="openTrackingModal()"
+                class="relative hover:text-brand-sand transition-colors outline-none focus:outline-none after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full tracking-wide">Track
+                Order</button>
+
+            <a href="index.html#contact"
+                class="glass px-5 py-2 rounded-full hover:bg-brand-terracotta hover:text-white transition-all duration-300 border border-white/20">Contact
+                Us</a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button class="md:hidden text-brand-light focus:outline-none" onclick="toggleMobileMenu()">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu"
+        class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
+        <button class="absolute top-6 right-6 text-white" onclick="toggleMobileMenu()">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <a href="index.html" class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
+            onclick="toggleMobileMenu()">Home</a>
+        <a href="about.html" class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
+            onclick="toggleMobileMenu()">Story</a>
+        <a href="index.html#collection"
+            class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
+            onclick="toggleMobileMenu()">Collection</a>
+        <a href="#" onclick="toggleMobileMenu(); openTrackingModal();"
+            class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition">Track Order</a>
+        <a href="index.html#contact" class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
+            onclick="toggleMobileMenu()">Contact Us</a>
+    </div>
+
+    <!-- Spacer for fixed navbar -->
+    <div class="h-24"></div>
 
     <!-- Main Content -->
     <main class="flex-grow max-w-2xl mx-auto w-full px-4 md:px-6 py-8 md:py-12">
@@ -215,13 +124,49 @@
         <div
             class="card-premium bg-white rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50 p-6 md:p-10 lg:p-12 ring-1 ring-black/[0.03] animate-fade-in-up">
 
-            <!-- Header -->
-            <div class="text-center mb-10 animate-fade-in-up animate-delay-100">
-                <p class="text-xs uppercase tracking-[0.3em] text-brand-terracotta font-bold mb-2 float-animation">🛒
-                    Final Step</p>
-                <h1 class="text-3xl md:text-4xl font-serif font-bold text-brand-checkout-deep">Checkout</h1>
-                <div
-                    class="w-20 h-1.5 bg-gradient-to-r from-brand-terracotta via-brand-terracotta/60 to-brand-light mx-auto mt-4 rounded-full shimmer-bg">
+            <!-- Header with Progress Steps -->
+            <div class="mb-10 animate-fade-in-up animate-delay-100">
+                <!-- Progress Steps -->
+                <div class="flex justify-between items-center max-w-xs mx-auto mb-8 relative">
+                    <!-- Progress Bar Background -->
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -z-10 rounded-full"></div>
+                    <!-- Active Progress -->
+                    <div
+                        class="absolute top-1/2 left-0 w-1/2 h-1 bg-brand-terracotta -z-10 rounded-full transition-all duration-1000">
+                    </div>
+
+                    <!-- Step 1: Cart (Done) -->
+                    <a href="index.html#cart" class="flex flex-col items-center gap-2 group cursor-pointer">
+                        <div
+                            class="w-8 h-8 rounded-full bg-brand-terracotta text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white transition-transform group-hover:scale-110">
+                            ✓</div>
+                        <span
+                            class="text-[0.65rem] font-bold text-brand-terracotta uppercase tracking-wider">Cart</span>
+                    </a>
+
+                    <!-- Step 2: Checkout (Active) -->
+                    <div class="flex flex-col items-center gap-2">
+                        <div
+                            class="w-8 h-8 rounded-full bg-brand-terracotta text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-brand-terracotta/20 animate-pulse">
+                            2</div>
+                        <span
+                            class="text-[0.65rem] font-bold text-brand-terracotta uppercase tracking-wider">Checkout</span>
+                    </div>
+
+                    <!-- Step 3: Confirm (Pending) -->
+                    <div class="flex flex-col items-center gap-2 opacity-50">
+                        <div
+                            class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center font-bold text-sm shadow-sm ring-4 ring-white">
+                            3</div>
+                        <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">Confirm</span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <h1 class="text-3xl md:text-4xl font-serif font-bold text-brand-checkout-deep">Checkout</h1>
+                    <div
+                        class="w-20 h-1.5 bg-gradient-to-r from-brand-terracotta via-brand-terracotta/60 to-brand-light mx-auto mt-4 rounded-full shimmer-bg">
+                    </div>
                 </div>
             </div>
 
@@ -275,20 +220,20 @@
 
                     <div>
                         <input type="text" id="cust-name" required placeholder="আপনার নাম (Full Name)"
-                            class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition-all bg-white focus:shadow-lg focus:-translate-y-0.5 placeholder-gray-400 shadow-sm">
+                            class="premium-input w-full shadow-sm placeholder-gray-400 text-brand-deep">
                     </div>
 
                     <div>
                         <input type="tel" id="cust-phone" required placeholder="মোবাইল নম্বর (017...)"
                             oninput="validatePhoneRealtime(this)"
-                            class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition-all bg-white focus:shadow-lg focus:-translate-y-0.5 placeholder-gray-400 shadow-sm font-mono text-lg">
+                            class="premium-input w-full shadow-sm placeholder-gray-400 font-mono text-lg text-brand-deep">
                         <p id="phone-feedback"
                             class="text-xs font-bengali ml-1 mt-1 h-4 text-red-500 font-bold transition-all"></p>
                     </div>
 
                     <div>
                         <input type="email" id="cust-email" placeholder="আপনার ইমেইল (Email - Optional)"
-                            class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition-all bg-white focus:shadow-lg focus:-translate-y-0.5 placeholder-gray-400 shadow-sm shadow-sm">
+                            class="premium-input w-full shadow-sm placeholder-gray-400 text-brand-deep">
                         <p class="text-xs text-brand-checkout-deep/60 ml-1 mt-1 font-medium">Order confirmation এর জন্য
                             (Optional)</p>
                     </div>
@@ -326,7 +271,7 @@
                     <div>
                         <textarea id="cust-address" required
                             placeholder="আপনার সম্পূর্ণ ঠিকানা (Full Address, Thana, District)" rows="3"
-                            class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-terracotta/50 focus:border-brand-terracotta outline-none transition-all bg-white focus:shadow-lg focus:-translate-y-0.5 placeholder-gray-400 shadow-sm"></textarea>
+                            class="premium-input w-full shadow-sm placeholder-gray-400 text-brand-deep"></textarea>
                     </div>
                 </div>
 
@@ -392,6 +337,81 @@
             </form>
         </div>
     </main>
+
+    <!-- Standard Footer -->
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-6">
+
+            <!-- Top Section: Links & Brand -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <!-- Brand -->
+                <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <img src="./assets/logo.jpeg" alt="Nongor" class="h-14 rounded-lg mix-blend-multiply opacity-90">
+                    <div>
+                        <h4 class="text-3xl font-serif font-bold tracking-wider text-brand-deep leading-none">নোঙর</h4>
+                        <p class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-60 mt-1">The Clothing
+                            Brand</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <div
+                    class="flex flex-wrap justify-center gap-6 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    <a href="about.html" class="hover:text-brand-terracotta transition">About Us</a>
+                    <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
+                    <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
+                    <a href="size-guide.html" class="hover:text-brand-terracotta transition">Size Guide</a>
+                    <a href="shipping-info.html" class="hover:text-brand-terracotta transition">Shipping Info</a>
+                    <a href="faq.html" class="hover:text-brand-terracotta transition">FAQ</a>
+                    <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                    <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-10">
+
+            <!-- Middle Section: Socials -->
+            <div class="flex justify-center gap-6 mb-10">
+                <a href="https://www.facebook.com/profile.php?id=61582283911710" target="_blank"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                </a>
+                <a href="#"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                </a>
+                <a href="https://m.me/857107060814707" target="_blank"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.03 2 11C2 13.66 3.34 16.05 5.5 17.65V22L9.64 19.74C10.4 19.91 11.19 20 12 20C17.52 20 22 15.97 22 11C22 6.03 17.52 2 12 2ZM13.19 14.88L10.79 12.33L6.11 14.88L11.21 9.46L13.61 12.01L18.29 9.46L13.19 14.88Z" />
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Bottom Section: Payment Methods & Copyright -->
+            <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <p>&copy; 2025 নোঙর Brand. All Rights Reserved. Made in Bangladesh.</p>
+
+                <div class="flex items-center gap-3">
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold italic text-blue-800 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">VISA</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-red-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">MasterCard</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-pink-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">bKash</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-orange-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">Nagad</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[200] hidden transition-all duration-300">

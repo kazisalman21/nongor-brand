@@ -118,21 +118,35 @@
         </div>
     </nav>
 
-    <!-- Page Header -->
-    <header class="relative h-[50vh] flex items-center justify-center overflow-hidden w-full">
-        <div class="absolute inset-0 z-0">
-            <!-- Using a neutral part of the hero bg or about bg -->
-            <img src="./assets/hero-bg.webp" alt="Background" class="w-full h-full object-cover blur-sm opacity-80"
-                onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#3D405B'">
-            <div class="absolute inset-0 bg-brand-deep/60"></div>
-        </div>
+    <!-- Page Header (Premium with Blobs) -->
+    <header
+        class="relative pt-32 pb-20 px-6 bg-gradient-to-br from-brand-deep via-brand-deep to-brand-deep/90 text-white overflow-hidden">
+        <!-- Decorative Background Blobs -->
+        <div class="absolute top-20 left-10 w-64 h-64 bg-brand-terracotta/10 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-brand-sand/5 rounded-full blur-3xl animate-float"
+            style="animation-delay: 2s;"></div>
 
-        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in-up">
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <!-- Breadcrumb -->
+            <div class="mb-6 text-brand-sand/80 text-sm font-bengali animate-fade-in-up">
+                <a href="index.html" class="hover:text-white transition">হোম</a> /
+                <span class="text-white">শর্তাবলী</span>
+            </div>
+
+            <!-- Title -->
             <h1
-                class="text-4xl md:text-6xl font-serif font-bold text-brand-light mb-4 leading-tight drop-shadow-xl text-shadow">
+                class="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight drop-shadow-xl animate-fade-in-up stagger-1">
                 Terms & Conditions
             </h1>
-            <div class="w-24 h-1 bg-brand-terracotta mx-auto rounded-full shadow-lg"></div>
+
+            <!-- Subtitle -->
+            <p
+                class="text-lg md:text-xl text-brand-light/80 max-w-2xl mx-auto font-bengali animate-fade-in-up stagger-2">
+                আমাদের সেবা গ্রহণের পূর্বে নিয়মাবলী এবং শর্তসমূহ জেনে নিন।
+            </p>
+
+            <!-- Decorative Line -->
+            <div class="w-24 h-1 bg-brand-terracotta mx-auto mt-8 rounded-full animate-fade-in-up stagger-3"></div>
         </div>
     </header>
 
