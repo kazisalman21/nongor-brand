@@ -186,25 +186,20 @@ function initCategories() {
     const filterContainer = document.getElementById('category-filter');
     if (!filterContainer) return;
 
-    // Premium container styling
-    filterContainer.className = 'flex flex-wrap justify-center gap-3 mb-12 font-bengali relative';
+    // Clear any existing content
+    filterContainer.innerHTML = '';
+
+    // Premium container styling - simple flexbox
+    filterContainer.className = 'flex flex-wrap justify-center gap-3 mb-12 font-bengali p-2 rounded-full';
     filterContainer.style.cssText = `
-        padding: 8px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(244, 241, 222, 0.6) 100%);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(244, 241, 222, 0.7) 100%);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border-radius: 50px;
         box-shadow: 0 4px 30px rgba(61, 64, 91, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
         border: 1px solid rgba(244, 241, 222, 0.5);
-        display: inline-flex;
-        margin: 0 auto;
+        max-width: fit-content;
+        margin: 0 auto 3rem auto;
     `;
-
-    // Create wrapper for centering
-    const wrapper = filterContainer.parentElement;
-    if (wrapper) {
-        wrapper.style.cssText = 'display: flex; justify-content: center;';
-    }
 
     // All button (active by default)
     const allBtn = document.createElement('button');
