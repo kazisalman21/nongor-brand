@@ -504,3 +504,139 @@ textarea:focus {
     opacity: 0;
     animation: scroll-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ========================================
+   New Premium Animations (Size Guide Era)
+   ======================================== */
+
+/* Particle Float */
+@keyframes float-particle {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(10px, -15px) rotate(5deg);
+    }
+
+    50% {
+        transform: translate(0, -25px) rotate(0deg);
+    }
+
+    75% {
+        transform: translate(-10px, -15px) rotate(-5deg);
+    }
+}
+
+.particle {
+    animation: float-particle 15s infinite ease-in-out;
+}
+
+/* SVG Line Drawing */
+@keyframes draw-line {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.measurement-line-draw {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: draw-line 2s ease-out forwards;
+}
+
+/* Glow Border Pulse (More subtle than pulse-glow) */
+@keyframes glow-border {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(224, 122, 95, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 15px rgba(224, 122, 95, 0.5);
+    }
+}
+
+.animate-glow-border {
+    animation: glow-border 3s ease-in-out infinite;
+}
+
+/* Floating Size Badge */
+@keyframes float-badge {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-8px) rotate(3deg);
+    }
+}
+
+.animate-float-badge {
+    animation: float-badge 3.5s ease-in-out infinite;
+}
+
+/* Stagger Fade In (Generalized) */
+@keyframes stagger-fade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stagger-fade-in>* {
+    opacity: 0;
+    animation: stagger-fade 0.6s ease-out forwards;
+}
+
+.stagger-fade-in>*:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.stagger-fade-in>*:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.stagger-fade-in>*:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.stagger-fade-in>*:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.stagger-fade-in>*:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+/* 3D Flip Card Utilities */
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+.transform-style-3d {
+    transform-style: preserve-3d;
+}
+
+.backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+    transform: rotateY(180deg);
+}
+
+.group:hover .group-hover\:rotate-y-180 {
+    transform: rotateY(180deg);
+}
