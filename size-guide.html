@@ -138,67 +138,159 @@
                 <h3 class="text-2xl font-bold font-serif mb-8 text-center text-pink-900">How to Measure</h3>
 
                 <div class="relative flex justify-center py-8">
-                    <!-- Silhouette Container -->
-                    <div class="relative" style="width: 14rem;">
-                        <img src="./assets/mannequin.png" alt="3D Mannequin"
-                            class="w-full h-auto drop-shadow-2xl brightness-105 contrast-105"
-                            style="border-radius: 2rem;">
+                    <!-- Advanced 3D SVG Mannequin (Code Generated) -->
+                    <div id="mannequin-container" class="relative group/mannequin" style="width: 18rem; height: 30rem;">
 
-                        <!-- Bust Line (Chest) -->
-                        <div class="absolute top-[27%] -left-8 -right-8 h-[2px] bg-pink-500 flex items-center justify-between"
-                            style="height: 2px;">
-                            <div class="w-2 h-2 bg-pink-500 rounded-full shadow-sm" style="width: 8px; height: 8px;">
+                        <svg viewBox="0 0 200 600" class="w-full h-full drop-shadow-2xl" id="svg-mannequin">
+                            <defs>
+                                <!-- 3D Skin Gradients -->
+                                <radialGradient id="skin3D" cx="40%" cy="40%" r="60%" fx="30%" fy="30%">
+                                    <stop offset="0%" style="stop-color:#FFD1DC;stop-opacity:1" /> <!-- Highlight -->
+                                    <stop offset="50%" style="stop-color:#FFB6C1;stop-opacity:1" /> <!-- Midtone -->
+                                    <stop offset="100%" style="stop-color:#FF69B4;stop-opacity:1" /> <!-- Shadow -->
+                                </radialGradient>
+                                <linearGradient id="legShade" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#FFB6C1;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#FFD1DC;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#FFB6C1;stop-opacity:1" />
+                                </linearGradient>
+
+                                <!-- Glow Filter for Active Areas -->
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+
+                                <!-- Markers -->
+                                <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                    <path d="M0,0 L0,10 L10,5 z" fill="#BE185D" />
+                                </marker>
+                            </defs>
+
+                            <!-- Head -->
+                            <ellipse cx="100" cy="50" rx="25" ry="32" fill="url(#skin3D)"
+                                class="transition-all duration-500 hover:brightness-110" />
+                            <!-- Neck -->
+                            <rect x="88" y="75" width="24" height="20" fill="url(#skin3D)" rx="5" />
+
+                            <!-- Torso (Complex Path for Bust/Waist/Hips) -->
+                            <!-- Coordinates: Shoulder 60/140, Bust ~150, Waist ~220, Hips ~280 -->
+                            <path
+                                d="M60,95 Q100,105 140,95 L140,130 Q145,150 135,200 Q140,230 145,260 Q135,320 100,320 Q65,320 55,260 Q60,230 65,200 Q55,150 60,130 Z"
+                                fill="url(#skin3D)" stroke="#E699B3" stroke-width="0.5"
+                                class="transition-all duration-700" id="torso-shape">
+                            </path>
+
+                            <!-- Legs -->
+                            <path d="M65,310 L68,310 L70,550 Q75,580 65,580 Q55,580 60,550 Z" fill="url(#legShade)" />
+                            <path d="M135,310 L132,310 L130,550 Q125,580 135,580 Q145,580 140,550 Z"
+                                fill="url(#legShade)" />
+
+                        </svg>
+
+                        <!-- Interactive Overlays (Labels & Zones) -->
+
+                        <!-- Bust Zone -->
+                        <div class="absolute top-[26%] left-0 right-0 h-10 group/bust flex items-center justify-center cursor-pointer hover:bg-pink-500/5 transition-all rounded-full"
+                            onmouseenter="document.getElementById('torso-shape').style.filter='url(#glow)';"
+                            onmouseleave="document.getElementById('torso-shape').style.filter='none';">
+                            <!-- Line -->
+                            <div
+                                class="absolute w-full h-[2px] bg-brand-terracotta/40 group-hover/bust:bg-brand-terracotta transition-colors">
                             </div>
-                            <span
-                                class="bg-pink-500 text-white text-[10px] px-3 py-1 rounded-full shadow-lg font-bold tracking-wider transform -translate-y-[1px]">BUST
-                                (বুক)</span>
-                            <div class="w-2 h-2 bg-pink-500 rounded-full shadow-sm" style="width: 8px; height: 8px;">
+                            <!-- Left Dot -->
+                            <div
+                                class="absolute left-[-10px] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg scale-0 group-hover/bust:scale-110 transition-transform duration-300">
+                            </div>
+                            <!-- Right Dot -->
+                            <div
+                                class="absolute right-[-10px] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg scale-0 group-hover/bust:scale-110 transition-transform duration-300">
+                            </div>
+                            <!-- Label -->
+                            <div
+                                class="z-10 bg-brand-terracotta text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-xl transform group-hover/bust:scale-110 transition-all duration-300">
+                                BUST <span class="font-bengali font-normal ml-1 opacity-90">(বুক)</span>
                             </div>
                         </div>
 
-                        <!-- Waist Line -->
-                        <div class="absolute top-[42%] left-0 right-0 h-[2px] border-t border-dashed border-pink-600/50 flex items-center justify-center"
-                            style="height: 2px;">
-                            <span
-                                class="bg-white/80 backdrop-blur-sm text-pink-600 text-[10px] px-2 py-0.5 font-bold border border-pink-200 rounded-full shadow-sm">Waist
-                                (কোমর)</span>
+                        <!-- Waist Zone -->
+                        <div class="absolute top-[38%] left-[10%] right-[10%] h-8 group/waist flex items-center justify-center cursor-pointer"
+                            onmouseenter="document.getElementById('torso-shape').style.fill='#FFC0CB';"
+                            onmouseleave="document.getElementById('torso-shape').style.fill='url(#skin3D)';">
+                            <!-- Dashed Line -->
+                            <div
+                                class="absolute w-full border-t-2 border-dashed border-pink-400/50 group-hover/waist:border-pink-600 transition-colors">
+                            </div>
+                            <!-- Label -->
+                            <div
+                                class="z-10 bg-white border border-pink-200 text-pink-600 font-bold text-[10px] px-3 py-1 rounded-full shadow-sm transform group-hover/waist:scale-110 transition-all duration-300">
+                                Waist <span class="font-bengali font-normal ml-1">(কোমর)</span>
+                            </div>
                         </div>
 
-                        <!-- Hip Line -->
-                        <div class="absolute top-[52%] -left-4 -right-4 h-[2px] bg-pink-400 flex items-center justify-between"
-                            style="height: 2px;">
-                            <div class="w-1.5 h-1.5 bg-pink-400 rounded-full ring-2 ring-white"></div>
-                            <span
-                                class="bg-white text-pink-500 text-[10px] px-3 py-0.5 rounded shadow-md font-bold border border-pink-100 uppercase tracking-wide">HIPS
-                                (হিপ)</span>
-                            <div class="w-1.5 h-1.5 bg-pink-400 rounded-full ring-2 ring-white"></div>
+                        <!-- Hips Zone -->
+                        <div class="absolute top-[50%] left-[-5%] right-[-5%] h-10 group/hips flex items-center justify-center cursor-pointer"
+                            onmouseenter="document.getElementById('torso-shape').style.filter='url(#glow)';"
+                            onmouseleave="document.getElementById('torso-shape').style.filter='none';">
+                            <!-- Line -->
+                            <div
+                                class="absolute w-full h-[2px] bg-pink-400/40 group-hover/hips:bg-pink-500 transition-colors">
+                            </div>
+                            <!-- Dots -->
+                            <div
+                                class="absolute left-0 w-2 h-2 bg-pink-500 rounded-full scale-75 group-hover/hips:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="absolute right-0 w-2 h-2 bg-pink-500 rounded-full scale-75 group-hover/hips:scale-110 transition-transform">
+                            </div>
+                            <!-- Label -->
+                            <div
+                                class="z-10 bg-pink-500 text-white font-bold text-xs px-4 py-1.5 rounded bg-opacity-90 shadow-md transform group-hover/hips:scale-110 transition-all duration-300 uppercase tracking-widest">
+                                Hips <span class="font-bengali font-normal ml-1 normal-case">(হিপ)</span>
+                            </div>
                         </div>
 
-                        <!-- Length Line -->
-                        <div class="absolute top-[15%] bottom-[15%] -right-12 w-[2px] bg-brand-deep flex flex-col items-center justify-between py-2 border-l border-brand-deep/30"
-                            style="width: 2px;">
-                            <div class="w-2 h-2 bg-brand-deep rounded-full"></div>
-                            <span
-                                class="bg-brand-deep text-white text-[10px] py-1 px-2 rounded font-bold -rotate-90 whitespace-nowrap shadow-lg">LENGTH
-                                (লম্বা)</span>
-                            <div class="w-2 h-2 bg-brand-deep rounded-full"></div>
+                        <!-- Length Ruler (Right Side) -->
+                        <div
+                            class="absolute top-[10%] bottom-[10%] -right-16 w-8 flex flex-col items-center justify-center group/length cursor-pointer">
+                            <div
+                                class="h-full w-1 bg-brand-deep/20 rounded-full relative group-hover/length:bg-brand-deep transition-colors duration-500">
+                                <div class="absolute top-0 w-3 h-1 bg-brand-deep rounded"></div>
+                                <div class="absolute bottom-0 w-3 h-1 bg-brand-deep rounded"></div>
+                                <!-- Sliding Indicator -->
+                                <div
+                                    class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-deep text-white text-[10px] py-3 px-1 rounded-lg font-bold shadow-xl -rotate-90 whitespace-nowrap z-20 transition-all duration-500 group-hover/length:scale-110">
+                                    LENGTH (লম্বা)
+                                </div>
+                            </div>
                         </div>
 
                     </div>
                 </div>
-                (হিপ)</span>
-                <div class="w-1.5 h-1.5 bg-pink-400 rounded-full"></div>
-            </div>
-
-            <!-- Length Line -->
-            <div class="absolute top-0 bottom-0 -right-8 w-[2px] bg-brand-deep flex flex-col items-center justify-between py-2 border-l border-brand-deep/30"
-                style="width: 2px;">
-                <div class="w-2 h-2 bg-brand-deep rounded-full"></div>
                 <span
-                    class="bg-brand-deep text-white text-[10px] py-1 px-2 rounded font-bold -rotate-90 whitespace-nowrap">LENGTH
+                    class="bg-brand-deep text-white text-[10px] py-1 px-2 rounded font-bold -rotate-90 whitespace-nowrap shadow-lg">LENGTH
                     (লম্বা)</span>
                 <div class="w-2 h-2 bg-brand-deep rounded-full"></div>
             </div>
+
+        </div>
+        </div>
+        (হিপ)</span>
+        <div class="w-1.5 h-1.5 bg-pink-400 rounded-full"></div>
+        </div>
+
+        <!-- Length Line -->
+        <div class="absolute top-0 bottom-0 -right-8 w-[2px] bg-brand-deep flex flex-col items-center justify-between py-2 border-l border-brand-deep/30"
+            style="width: 2px;">
+            <div class="w-2 h-2 bg-brand-deep rounded-full"></div>
+            <span
+                class="bg-brand-deep text-white text-[10px] py-1 px-2 rounded font-bold -rotate-90 whitespace-nowrap">LENGTH
+                (লম্বা)</span>
+            <div class="w-2 h-2 bg-brand-deep rounded-full"></div>
+        </div>
 
         </div>
         </div>
