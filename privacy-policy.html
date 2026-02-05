@@ -34,6 +34,33 @@
 
 <body class="bg-brand-light text-brand-deep font-sans antialiased overflow-x-hidden">
 
+    <!-- Cinematic Loading Overlay -->
+    <div id="app-loading-overlay"
+        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
+
+        <!-- Central Content -->
+        <div class="relative flex flex-col items-center">
+
+            <!-- Logo with Slow Zoom -->
+            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
+                <img src="./assets/logo.jpeg" alt="Nongor" class="w-24 h-24 object-cover"
+                    style="animation: subtle-zoom 20s infinite alternate">
+            </div>
+
+            <!-- Brand Name -->
+            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-wide font-light"
+                style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
+
+            <!-- Minimal Progress Line -->
+            <div class="w-32 h-[2px] bg-brand-deep/50 mt-8 overflow-hidden rounded-full relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-terracotta to-transparent w-full h-full"
+                    style="animation: shimmer-flow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite"></div>
+            </div>
+
+        </div>
+    </div>
+
     <!-- Navbar -->
     <nav id="navbar"
         class="fixed w-full z-50 transition-all duration-500 bg-brand-deep md:bg-transparent py-6 px-6 md:px-12 flex justify-between items-center text-brand-light border-b border-transparent">
