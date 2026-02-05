@@ -156,6 +156,18 @@ module.exports = async (req, res) => {
                     return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
                 }
 
+                // Rate limiting for product additions
+                const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+                const rateLimit = checkRateLimit('order', ip); // Reuse order limit (10/hour)
+                if (!rateLimit.allowed) {
+                    console.warn(`⚠️ Product Add Rate Limit Exceeded for IP: ${ip}`);
+                    client.release();
+                    return res.status(429).json({
+                        result: 'error',
+                        message: `Too many requests. Please try again in ${rateLimit.retryAfter} seconds.`
+                    });
+                }
+
                 // Validate product data
                 if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
                     client.release();
@@ -400,14 +412,14 @@ module.exports = async (req, res) => {
 
             let updatedOrder;
             if (data.type === 'delivery') {
-                const res = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
-                updatedOrder = res.rows[0];
+                const queryResult = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                updatedOrder = queryResult.rows[0];
             } else if (data.type === 'payment') {
-                const res = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
-                updatedOrder = res.rows[0];
+                const queryResult = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
+                updatedOrder = queryResult.rows[0];
             } else {
-                const res = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
-                updatedOrder = res.rows[0];
+                const queryResult = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                updatedOrder = queryResult.rows[0];
             }
 
             client.release();

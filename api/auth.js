@@ -57,6 +57,7 @@ module.exports = async (req, res) => {
 
             // Validate input
             if (!email || !password) {
+                client.release();
                 return res.status(400).json({
                     result: 'error',
                     message: 'Email and password are required'

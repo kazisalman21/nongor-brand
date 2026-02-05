@@ -585,7 +585,7 @@ window.openModal = (productId) => {
     // Optimized Main Image
     const mainImgData = images[0];
     const mainImgSrc = getOptimizedImage(mainImgData, 'main');
-    const mainImgOriginal = mainImgData && mainImgData.startsWith('http') ? mainImgData : `./ assets / ${(mainImgData || 'logo.jpeg').replace(/^\.?\/?assets\//, '')} `;
+    const mainImgOriginal = mainImgData && mainImgData.startsWith('http') ? mainImgData : `./assets/${(mainImgData || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
 
     const modalImgEl = document.getElementById('modal-image');
     modalImgEl.src = mainImgSrc;
@@ -607,7 +607,7 @@ window.openModal = (productId) => {
     if (galleryContainer && images.length > 1) {
         galleryContainer.innerHTML = images.map((img, index) => {
             const thumbSrc = getOptimizedImage(img, 'thumb');
-            const originalSrc = img && img.startsWith('http') ? img : `./ assets / ${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')} `;
+            const originalSrc = img && img.startsWith('http') ? img : `./assets/${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
 
             // For click, we want the high-res version (optimized main)
             const mainSwapSrc = getOptimizedImage(img, 'main');
@@ -810,6 +810,8 @@ window.selectSize = (size) => {
 // --- Cart Logic ---
 
 let cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+let selectedSize = 'M';
+let currentQuantity = 1;
 
 window.initCart = () => {
     updateCartUI();
@@ -838,7 +840,10 @@ window.addToCart = () => {
     updateCartUI();
 
     // Feedback
-    showToast("Added to Cart! 🛒");
+    // showToast("Added to Cart! 🛒"); // Need toast helper?
+    if (window.showToast) showToast("Added to Cart! 🛒");
+    else alert("Added to Cart! 🛒");
+
     closeModal();
     openCart();
 };
@@ -867,17 +872,17 @@ window.updateCartUI = () => {
 
     if (cart.length === 0) {
         container.innerHTML = `
-    <div class="flex flex-col items-center justify-center h-64 text-gray-400">
+            <div class="flex flex-col items-center justify-center h-64 text-gray-400">
                 <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 <p>Your cart is empty</p>
                 <button onclick="closeCart()" class="text-brand-terracotta text-sm font-bold mt-2">Start Shopping</button>
             </div>
-    `;
+        `;
     } else {
         container.innerHTML = cart.map((item, index) => `
-    <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
+            <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
                 <div class="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
-                    <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="handleImageError(this)">
+                    <img src="${getOptimizedImage(item.image, 'thumb')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="handleImageError(this)">
                 </div>
                 
                 <div class="flex-grow min-w-0">
@@ -899,14 +904,14 @@ window.updateCartUI = () => {
                 <button onclick="removeFromCart(${index})" class="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="Remove">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
-            </div >
-    `).join('');
+            </div>
+        `).join('');
     }
 
     // 3. Subtotal
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const subtotalEl = document.getElementById('cart-subtotal');
-    if (subtotalEl) subtotalEl.textContent = `৳${subtotal.toLocaleString()} `;
+    if (subtotalEl) subtotalEl.textContent = `৳${subtotal.toLocaleString()}`;
 };
 
 function saveCart() {
@@ -917,24 +922,52 @@ function saveCart() {
 window.openCart = () => {
     const drawer = document.getElementById('cart-drawer');
     const panel = document.getElementById('cart-panel');
-    drawer.classList.remove('hidden');
-    // Small delay to allow display:block to apply before transform
-    setTimeout(() => {
-        panel.classList.remove('translate-x-full');
-    }, 10);
-    document.body.style.overflow = 'hidden';
+    if (drawer && panel) {
+        drawer.classList.remove('hidden');
+        setTimeout(() => {
+            panel.classList.remove('translate-x-full');
+        }, 10);
+        document.body.style.overflow = 'hidden';
+        initCart(); // ensure UI is fresh
+    }
 };
 
 window.closeCart = () => {
     const drawer = document.getElementById('cart-drawer');
     const panel = document.getElementById('cart-panel');
-    panel.classList.add('translate-x-full');
-    setTimeout(() => {
-        drawer.classList.add('hidden');
-        document.body.style.overflow = '';
-    }, 300);
+    if (drawer && panel) {
+        panel.classList.add('translate-x-full');
+        setTimeout(() => {
+            drawer.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+    }
 };
 
+window.updateQuantity = (change) => {
+    const newQuantity = currentQuantity + change;
+    if (newQuantity >= 1 && newQuantity <= 10) {
+        currentQuantity = newQuantity;
+        const disp = document.getElementById('quantity-display');
+        if (disp) disp.textContent = currentQuantity;
+    }
+};
+
+// Make functions globally accessible
+window.initProducts = initProducts;
+window.renderProducts = renderProducts;
+window.createProductCard = createProductCard;
+window.initCategories = initCategories;
+window.toggleMobileMenu = toggleMobileMenu;
+window.initCart = initCart;
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.updateCartUI = updateCartUI;
+window.openCart = openCart;
+window.closeCart = closeCart;
+window.updateQuantity = updateQuantity;
+
+console.log('✅ Script loaded successfully');
 
 // --- Checkout Logic ---
 
@@ -1314,7 +1347,7 @@ window.confirmOrder = async () => {
     }
 
     const phone = '+88' + phoneInput; // Add Country Code standard
-    const orderId = '#NG-' + Math.floor(1000 + Math.random() * 9000);
+    const orderId = '#NG-' + Math.floor(10000 + Math.random() * 90000);
 
     const date = new Date();
     date.setDate(date.getDate() + 3);
@@ -1375,6 +1408,7 @@ window.confirmOrder = async () => {
         // Send POST request to API
         const response = await fetch(API_URL, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
         });
 
