@@ -30,6 +30,36 @@
 
     <!-- Premium Animations CSS -->
     <link rel="stylesheet" href="./assets/animations.css">
+
+    <style>
+        /* Robust Layout Fixes for Visual Measurement Guide */
+        .measurement-silhouette {
+            width: 12rem !important;
+            height: 16rem !important;
+            margin: 0 auto;
+        }
+
+        .measurement-line-chest {
+            top: 30% !important;
+        }
+
+        .measurement-line-length {
+            top: 0;
+            bottom: 0;
+        }
+
+        .measurement-line-bust {
+            top: 25% !important;
+        }
+
+        .measurement-line-waist {
+            top: 50% !important;
+        }
+
+        .measurement-line-hips {
+            top: 75% !important;
+        }
+    </style>
 </head>
 
 <body class="bg-brand-light text-brand-deep font-sans antialiased overflow-x-hidden">
@@ -200,11 +230,12 @@
                             <div
                                 class="relative aspect-[3/4] bg-gray-50 rounded-2xl overflow-hidden mb-6 flex items-center justify-center border border-dashed border-gray-300">
                                 <!-- Abstract Silhouette Representation -->
-                                <div class="relative bg-gray-200 border-2 border-gray-300 rounded-t-[4rem] rounded-b-lg"
-                                    style="width: 12rem; height: 16rem;">
+                                <!-- Abstract Silhouette Representation -->
+                                <div
+                                    class="relative bg-gray-200 border-2 border-gray-300 rounded-t-[4rem] rounded-b-lg measurement-silhouette">
                                     <!-- Chest Line -->
-                                    <div class="absolute -left-4 -right-4 h-[2px] bg-brand-terracotta flex items-center justify-between"
-                                        style="top: 30%;">
+                                    <div
+                                        class="absolute -left-4 -right-4 h-[2px] bg-brand-terracotta flex items-center justify-between measurement-line-chest">
                                         <div class="w-2 h-2 bg-brand-terracotta rounded-full"></div>
                                         <span
                                             class="bg-brand-terracotta text-white text-xs px-2 py-0.5 rounded-full shadow-sm">Chest
@@ -213,7 +244,7 @@
                                     </div>
                                     <!-- Length Line -->
                                     <div
-                                        class="absolute top-0 bottom-0 -right-8 w-[2px] bg-brand-deep flex flex-col items-center justify-between py-2">
+                                        class="absolute -right-8 w-[2px] bg-brand-deep flex flex-col items-center justify-between py-2 measurement-line-length">
                                         <div class="w-2 h-2 bg-brand-deep rounded-full"></div>
                                         <span
                                             class="bg-brand-deep text-white text-xs py-1 px-2 rounded shadow-sm -rotate-90 origin-center whitespace-nowrap">Length
@@ -331,11 +362,12 @@
                             <div
                                 class="relative aspect-[3/4] bg-pink-50 rounded-2xl overflow-hidden mb-6 flex items-center justify-center border border-dashed border-pink-200">
                                 <!-- Abstract Silhouette Representation -->
-                                <div class="relative bg-pink-100 border-2 border-pink-200 rounded-[3rem]"
-                                    style="width: 12rem; height: 16rem;">
+                                <!-- Abstract Silhouette Representation -->
+                                <div
+                                    class="relative bg-pink-100 border-2 border-pink-200 rounded-[3rem] measurement-silhouette">
                                     <!-- Bust Line -->
-                                    <div class="absolute -left-4 -right-4 h-[2px] bg-pink-500 flex items-center justify-between"
-                                        style="top: 25%;">
+                                    <div
+                                        class="absolute -left-4 -right-4 h-[2px] bg-pink-500 flex items-center justify-between measurement-line-bust">
                                         <div class="w-2 h-2 bg-pink-500 rounded-full"></div>
                                         <span
                                             class="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full shadow-sm">Bust
@@ -343,15 +375,15 @@
                                         <div class="w-2 h-2 bg-pink-500 rounded-full"></div>
                                     </div>
                                     <!-- Waist Line -->
-                                    <div class="absolute left-2 right-2 h-[2px] bg-pink-400 flex items-center justify-between border-t border-dashed border-pink-400"
-                                        style="top: 50%;">
+                                    <div
+                                        class="absolute left-2 right-2 h-[2px] bg-pink-400 flex items-center justify-between border-t border-dashed border-pink-400 measurement-line-waist">
                                         <div class="w-1 h-1 bg-pink-400 rounded-full"></div>
                                         <span class="text-pink-600 text-[10px] bg-white px-1">Waist (কোমর)</span>
                                         <div class="w-1 h-1 bg-pink-400 rounded-full"></div>
                                     </div>
                                     <!-- Hips Line -->
-                                    <div class="absolute -left-2 -right-2 h-[2px] bg-pink-400 flex items-center justify-between"
-                                        style="top: 75%;">
+                                    <div
+                                        class="absolute -left-2 -right-2 h-[2px] bg-pink-400 flex items-center justify-between measurement-line-hips">
                                         <div class="w-1 h-1 bg-pink-400 rounded-full"></div>
                                         <span class="text-pink-600 text-[10px] bg-white px-1">Hips (হিপস)</span>
                                         <div class="w-1 h-1 bg-pink-400 rounded-full"></div>
