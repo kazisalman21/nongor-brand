@@ -186,21 +186,185 @@ function initCategories() {
     const filterContainer = document.getElementById('category-filter');
     if (!filterContainer) return;
 
-    filterContainer.innerHTML = `
-        <button onclick="filterProducts('all', event)"
-            class="category-btn active px-8 py-3 rounded-full bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/30 transform scale-105 transition-all duration-300 font-medium border border-transparent">
-            সব
-        </button>
+    // Premium container styling
+    filterContainer.className = 'flex flex-wrap justify-center gap-3 mb-12 font-bengali relative';
+    filterContainer.style.cssText = `
+        padding: 8px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(244, 241, 222, 0.6) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 50px;
+        box-shadow: 0 4px 30px rgba(61, 64, 91, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(244, 241, 222, 0.5);
+        display: inline-flex;
+        margin: 0 auto;
     `;
 
-    categoriesData.forEach(cat => {
+    // Create wrapper for centering
+    const wrapper = filterContainer.parentElement;
+    if (wrapper) {
+        wrapper.style.cssText = 'display: flex; justify-content: center;';
+    }
+
+    // All button (active by default)
+    const allBtn = document.createElement('button');
+    allBtn.className = 'category-btn active';
+    allBtn.textContent = 'সব';
+    allBtn.onclick = (e) => filterProducts('all', e);
+    applyButtonStyles(allBtn, true, 0);
+    filterContainer.appendChild(allBtn);
+
+    // Category buttons with staggered animation
+    categoriesData.forEach((cat, index) => {
         const btn = document.createElement('button');
-        btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
+        btn.className = 'category-btn';
         btn.textContent = cat.name;
         btn.onclick = (e) => filterProducts(cat.slug, e);
+        applyButtonStyles(btn, false, index + 1);
         filterContainer.appendChild(btn);
     });
+
+    // Apply premium button styles
+    function applyButtonStyles(btn, isActive, delay) {
+        btn.style.cssText = `
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay * 0.08}s forwards;
+            ${isActive ? `
+                background: linear-gradient(135deg, #E07A5F 0%, #d4694f 100%);
+                color: white;
+                box-shadow: 0 8px 25px rgba(224, 122, 95, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            ` : `
+                background: transparent;
+                color: #6b7280;
+            `}
+        `;
+
+        // Add keyframe animation if not exists
+        if (!document.getElementById('category-animations')) {
+            const style = document.createElement('style');
+            style.id = 'category-animations';
+            style.textContent = `
+                @keyframes slideIn {
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes rippleEffect {
+                    to { transform: scale(4); opacity: 0; }
+                }
+                @keyframes pulseGlow {
+                    0%, 100% { box-shadow: 0 8px 25px rgba(224, 122, 95, 0.35); }
+                    50% { box-shadow: 0 8px 35px rgba(224, 122, 95, 0.5); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Hover effects
+        btn.onmouseenter = function () {
+            if (!this.classList.contains('active')) {
+                this.style.background = 'linear-gradient(135deg, rgba(224, 122, 95, 0.1) 0%, rgba(224, 122, 95, 0.05) 100%)';
+                this.style.color = '#E07A5F';
+                this.style.transform = 'translateY(-2px)';
+            } else {
+                this.style.animation = 'pulseGlow 1.5s ease-in-out infinite';
+            }
+        };
+
+        btn.onmouseleave = function () {
+            if (!this.classList.contains('active')) {
+                this.style.background = 'transparent';
+                this.style.color = '#6b7280';
+                this.style.transform = 'translateY(0)';
+            } else {
+                this.style.animation = 'none';
+            }
+        };
+
+        // Ripple effect on click
+        btn.addEventListener('click', function (e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                background: rgba(255, 255, 255, 0.4);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: rippleEffect 0.6s ease-out;
+                pointer-events: none;
+                left: ${e.clientX - rect.left - size / 2}px;
+                top: ${e.clientY - rect.top - size / 2}px;
+            `;
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+    }
 }
+
+// Enhanced filterProducts with smooth transitions
+const originalFilterProducts = window.filterProducts;
+window.filterProducts = function (category, event) {
+    console.log('🔍 Filtering by category:', category);
+
+    currentCategory = category;
+
+    // Update active button with smooth animation
+    if (event) {
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            if (btn === event.target) {
+                // Activate this button
+                btn.classList.add('active');
+                btn.style.background = 'linear-gradient(135deg, #E07A5F 0%, #d4694f 100%)';
+                btn.style.color = 'white';
+                btn.style.boxShadow = '0 8px 25px rgba(224, 122, 95, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                btn.style.transform = 'scale(1.05)';
+                setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+            } else {
+                // Deactivate other buttons
+                btn.classList.remove('active');
+                btn.style.background = 'transparent';
+                btn.style.color = '#6b7280';
+                btn.style.boxShadow = 'none';
+            }
+        });
+    }
+
+    // Filter and render with fade effect
+    const container = document.getElementById('products-grid');
+    if (container) {
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+            if (category === 'all') {
+                renderProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => p.category_slug === category);
+                console.log(`  Found ${filtered.length} products in category`);
+                renderProducts(filtered);
+            }
+
+            // Fade in
+            setTimeout(() => {
+                container.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 50);
+        }, 200);
+    }
+};
+
 
 // ==============================================
 // FETCH AND INITIALIZE PRODUCTS
@@ -267,33 +431,7 @@ async function initProducts() {
     }
 }
 
-// ==============================================
-// FILTER PRODUCTS BY CATEGORY
-// ==============================================
-window.filterProducts = function (category, event) {
-    console.log('🔍 Filtering by category:', category);
-
-    currentCategory = category;
-
-    // Update active button
-    if (event) {
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.remove('active', 'bg-brand-terracotta', 'text-white', 'shadow-lg');
-            btn.classList.add('text-gray-500');
-        });
-        event.target.classList.add('active', 'bg-brand-terracotta', 'text-white', 'shadow-lg');
-        event.target.classList.remove('text-gray-500');
-    }
-
-    // Filter and render
-    if (category === 'all') {
-        renderProducts(allProducts);
-    } else {
-        const filtered = allProducts.filter(p => p.category_slug === category);
-        console.log(`  Found ${filtered.length} products in category`);
-        renderProducts(filtered);
-    }
-};
+// (filterProducts is now defined in initCategories above with enhanced animations)
 
 // ==============================================
 // SEARCH PRODUCTS
