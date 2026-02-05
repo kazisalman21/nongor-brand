@@ -234,12 +234,13 @@
                 <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 
                     <!-- Men's Card (3D Flip) -->
-                    <div class="group h-64 w-full perspective-1000 cursor-pointer" onclick="switchCategory('men')">
-                        <div
-                            class="relative h-full w-full transition-transform duration-700 transform-style-3d group-hover:rotate-y-180 shadow-2xl rounded-3xl">
+                    <div class="group h-64 w-full perspective-1000 cursor-pointer" onclick="switchCategory('men')"
+                        style="perspective: 1000px;">
+                        <div class="relative h-full w-full transition-transform duration-700 transform-style-3d group-hover:rotate-y-180 shadow-2xl rounded-3xl"
+                            style="transform-style: preserve-3d; border-radius: 1.5rem;">
                             <!-- Front -->
-                            <div
-                                class="absolute inset-0 backface-hidden bg-gradient-to-br from-[#3D405B] to-[#2A2C3E] rounded-3xl p-8 flex flex-col items-center justify-center text-white border border-white/10">
+                            <div class="absolute inset-0 backface-hidden bg-gradient-to-br from-[#3D405B] to-[#2A2C3E] rounded-3xl p-8 flex flex-col items-center justify-center text-white border border-white/10"
+                                style="backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 1.5rem;">
                                 <div class="text-6xl mb-4 animate-float">👔</div>
                                 <h3 class="text-3xl font-bengali-display font-bold">পাঞ্জাবী</h3>
                                 <p class="opacity-70 font-bengali mt-2">Men's Collection</p>
@@ -248,8 +249,8 @@
                                     to Flip</span>
                             </div>
                             <!-- Back -->
-                            <div
-                                class="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-brand-deep border border-brand-deep/10 shadow-inner bg-[url('./assets/pattern-bg.png')]">
+                            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-brand-deep border border-brand-deep/10 shadow-inner bg-[url('./assets/pattern-bg.png')]"
+                                style="transform: rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 1.5rem;">
                                 <h4 class="text-xl font-bold mb-4">View Guide</h4>
                                 <ul class="text-sm space-y-2 text-center text-gray-600 mb-6">
                                     <li>• Regular Fit</li>
@@ -264,12 +265,13 @@
                     </div>
 
                     <!-- Women's Card (3D Flip) -->
-                    <div class="group h-64 w-full perspective-1000 cursor-pointer" onclick="switchCategory('women')">
-                        <div
-                            class="relative h-full w-full transition-transform duration-700 transform-style-3d group-hover:rotate-y-180 shadow-2xl rounded-3xl">
+                    <div class="group h-64 w-full perspective-1000 cursor-pointer" onclick="switchCategory('women')"
+                        style="perspective: 1000px;">
+                        <div class="relative h-full w-full transition-transform duration-700 transform-style-3d group-hover:rotate-y-180 shadow-2xl rounded-3xl"
+                            style="transform-style: preserve-3d; border-radius: 1.5rem;">
                             <!-- Front -->
-                            <div
-                                class="absolute inset-0 backface-hidden bg-gradient-to-br from-[#EC4899] to-[#BE185D] rounded-3xl p-8 flex flex-col items-center justify-center text-white border border-white/10">
+                            <div class="absolute inset-0 backface-hidden bg-gradient-to-br from-[#EC4899] to-[#BE185D] rounded-3xl p-8 flex flex-col items-center justify-center text-white border border-white/10"
+                                style="backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 1.5rem;">
                                 <div class="text-6xl mb-4 animate-float" style="animation-delay: 0.5s;">👗</div>
                                 <h3 class="text-3xl font-bengali-display font-bold">কুর্তি / থ্রি-পিস</h3>
                                 <p class="opacity-70 font-bengali mt-2">Women's Collection</p>
@@ -278,8 +280,8 @@
                                     to Flip</span>
                             </div>
                             <!-- Back -->
-                            <div
-                                class="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-pink-600 border border-pink-100 shadow-inner">
+                            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-pink-600 border border-pink-100 shadow-inner"
+                                style="transform: rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 1.5rem;">
                                 <h4 class="text-xl font-bold mb-4">View Guide</h4>
                                 <ul class="text-sm space-y-2 text-center text-gray-600 mb-6">
                                     <li>• Standard Cut</li>
@@ -306,8 +308,8 @@
                         <h2 class="text-3xl font-bold font-bengali-display text-brand-deep">মেজারমেন্ট গাইড</h2>
                     </div>
 
-                    <div
-                        class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-brand-light/50 relative overflow-hidden">
+                    <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-brand-light/50 relative overflow-hidden"
+                        style="border-radius: 2.5rem;">
                         <!-- Decorative Blob -->
                         <div
                             class="absolute -top-20 -right-20 w-64 h-64 bg-brand-terracotta/5 rounded-full blur-3xl blob">
@@ -315,27 +317,33 @@
 
                         <div class="grid md:grid-cols-2 gap-12 items-center">
                             <!-- Interactive Visual (Robust CSS) -->
-                            <div
-                                class="relative flex justify-center py-8 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                            <div class="relative flex justify-center py-8 bg-gray-50 rounded-3xl border border-dashed border-gray-200"
+                                style="border-radius: 1.5rem;">
                                 <div id="visual-silhouette"
-                                    class="relative bg-gray-200 border-2 border-gray-300 rounded-t-[4rem] rounded-b-lg measurement-silhouette transition-all duration-500">
+                                    class="relative bg-gray-200 border-2 border-gray-300 rounded-t-[4rem] rounded-b-lg measurement-silhouette transition-all duration-500"
+                                    style="border-top-left-radius: 4rem; border-top-right-radius: 4rem; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
 
                                     <!-- Dynamic Lines (Men Default) -->
                                     <div id="line-chest"
-                                        class="absolute -left-8 -right-8 h-[2px] bg-brand-terracotta flex items-center justify-between measurement-line-chest measurement-line-draw">
-                                        <div class="w-2 h-2 bg-brand-terracotta rounded-full shadow-lg"></div>
+                                        class="absolute -left-8 -right-8 h-[2px] bg-brand-terracotta flex items-center justify-between measurement-line-chest measurement-line-draw"
+                                        style="height: 2px;">
+                                        <div class="w-2 h-2 bg-brand-terracotta rounded-full shadow-lg"
+                                            style="width: 8px; height: 8px;"></div>
                                         <span
                                             class="bg-brand-terracotta text-white text-xs px-3 py-1 rounded-full shadow-md font-bold">Chest</span>
-                                        <div class="w-2 h-2 bg-brand-terracotta rounded-full shadow-lg"></div>
+                                        <div class="w-2 h-2 bg-brand-terracotta rounded-full shadow-lg"
+                                            style="width: 8px; height: 8px;"></div>
                                     </div>
 
                                     <div id="line-length"
                                         class="absolute -right-10 w-[2px] bg-brand-deep flex flex-col items-center justify-between py-2 measurement-line-length measurement-line-draw"
-                                        style="animation-delay: 0.5s;">
-                                        <div class="w-2 h-2 bg-brand-deep rounded-full shadow-lg"></div>
+                                        style="width: 2px; animation-delay: 0.5s;">
+                                        <div class="w-2 h-2 bg-brand-deep rounded-full shadow-lg"
+                                            style="width: 8px; height: 8px;"></div>
                                         <span
                                             class="bg-brand-deep text-white text-xs py-1 px-3 rounded shadow-md font-bold -rotate-90 origin-center whitespace-nowrap">Length</span>
-                                        <div class="w-2 h-2 bg-brand-deep rounded-full shadow-lg"></div>
+                                        <div class="w-2 h-2 bg-brand-deep rounded-full shadow-lg"
+                                            style="width: 8px; height: 8px;"></div>
                                     </div>
 
                                 </div>
