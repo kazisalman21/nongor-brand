@@ -239,7 +239,7 @@ async function initProducts() {
 
     const container = document.getElementById('products-grid');
     if (!container) {
-        console.error('❌ Container not found');
+        // Not on a page with products grid - this is expected
         return;
     }
 
