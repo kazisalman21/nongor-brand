@@ -726,8 +726,64 @@
         </div>
     </footer>
 
-    <script src="./assets/script.js"></script>
     <script>
+        /* ========================================
+           Nongor Brand - Core Interaction Script (Inlined for Robustness)
+           ======================================== */
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 1. Cinematic Loading Overlay Dismissal
+            // ======================================
+            const overlay = document.getElementById('app-loading-overlay');
+
+            if (overlay) {
+                // Force remove after 100ms - aggressive fix for "stuck" issue
+                setTimeout(() => {
+                    overlay.style.opacity = '0';
+                    overlay.style.pointerEvents = 'none';
+                    setTimeout(() => overlay.remove(), 1000);
+                }, 500); // 0.5s delay to show branding briefly, then clear
+
+                // Backup cleanup
+                window.addEventListener('load', () => {
+                    if (document.body.contains(overlay)) {
+                        overlay.style.opacity = '0';
+                        setTimeout(() => overlay.remove(), 1000);
+                    }
+                });
+            }
+
+            // 2. Navbar Scroll Effect
+            const navbar = document.getElementById('navbar');
+            if (navbar) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) {
+                        navbar.classList.add('bg-white/90', 'shadow-md');
+                        navbar.classList.remove('bg-white/80', 'border-white/20');
+                    } else {
+                        navbar.classList.add('bg-white/80', 'border-white/20');
+                        navbar.classList.remove('bg-white/90', 'shadow-md');
+                    }
+                });
+            }
+
+            // 3. Intersection Observer for Fade-In
+            const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fade-in-up');
+                        entry.target.style.opacity = '1';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.scroll-reveal').forEach(el => {
+                observer.observe(el);
+            });
+        });
+
         // Data Objects
         const menData = {
             visual: {
