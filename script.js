@@ -1083,20 +1083,31 @@ window.showCheckout = (fromCart = false) => {
             showToast("Cart is empty!");
             return;
         }
-        window.location.href = `checkout.html`; // No params = Cart Mode
+        // Build cart is default
+        localStorage.removeItem('nongor_direct_buy');
+        window.location.href = `checkout.html`;
     } else {
         // Buy Now Mode (Single Item)
         const id = currentProductId;
-        if (!id) {
-            showToast("Something went wrong. Please reload.", 'error');
+        const product = allProducts.find(p => p.id == id); // Loose equality safe check
+
+        if (!product) {
+            showToast("Product data not found. Please reload.", 'error');
             return;
         }
-        const params = new URLSearchParams({
-            id: id,
-            qty: currentQuantity,
-            size: selectedSize
-        });
-        window.location.href = `checkout.html?${params.toString()}`;
+
+        // Save Exact Product State to LocalStorage (bypassing re-fetch consistency issues)
+        const buyNowItem = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            size: selectedSize,
+            quantity: currentQuantity
+        };
+
+        localStorage.setItem('nongor_direct_buy', JSON.stringify([buyNowItem]));
+        window.location.href = `checkout.html?mode=direct`;
     }
 };
 
@@ -1138,15 +1149,27 @@ function validatePhoneRealtime(input) {
 
 window.initCheckout = async () => {
     const params = new URLSearchParams(window.location.search);
-    const id = parseInt(params.get('id')); // If ID exists, it's "Buy Now" mode
+    const mode = params.get('mode');
+
+    // Legacy support for ID param (backwards compatibility)
+    const legacyId = params.get('id');
 
     let checkoutItems = [];
 
-    if (id) {
-        // --- Buy Now Mode - Need to fetch products first ---
+    if (mode === 'direct') {
+        // New Direct Buy Mode
+        try {
+            checkoutItems = JSON.parse(localStorage.getItem('nongor_direct_buy')) || [];
+        } catch (e) {
+            console.error('Error reading direct buy data', e);
+        }
+    } else if (legacyId) {
+        // --- Legacy Buy Now Mode (Fetch) ---
+        // Fallback if someone shares a link with ?id=...
+        const id = parseInt(legacyId);
         if (allProducts.length === 0) {
             try {
-                console.log('📡 Checkout: Fetching products for Buy Now mode...');
+                console.log('📡 Checkout: Fetching products for Legacy Mode...');
                 const response = await fetch(`${API_URL}?action=getProducts`);
                 const data = await response.json();
                 if (data.success && data.products) {
@@ -1162,7 +1185,7 @@ window.initCheckout = async () => {
 
         const qty = parseInt(params.get('qty')) || 1;
         const size = params.get('size') || 'M';
-        const product = allProducts.find(p => p.id === id);
+        const product = allProducts.find(p => p.id == id); // Loose equality
 
         if (product) {
             checkoutItems.push({
@@ -1173,8 +1196,6 @@ window.initCheckout = async () => {
                 size: size,
                 quantity: qty
             });
-        } else {
-            console.warn('⚠️ Product not found with id:', id);
         }
     } else {
         // --- Cart Mode ---
