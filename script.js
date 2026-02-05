@@ -1136,14 +1136,30 @@ function validatePhoneRealtime(input) {
     }
 }
 
-window.initCheckout = () => {
+window.initCheckout = async () => {
     const params = new URLSearchParams(window.location.search);
     const id = parseInt(params.get('id')); // If ID exists, it's "Buy Now" mode
 
     let checkoutItems = [];
 
     if (id) {
-        // --- Buy Now Mode ---
+        // --- Buy Now Mode - Need to fetch products first ---
+        if (allProducts.length === 0) {
+            try {
+                console.log('📡 Checkout: Fetching products for Buy Now mode...');
+                const response = await fetch(`${API_URL}?action=getProducts`);
+                const data = await response.json();
+                if (data.success && data.products) {
+                    allProducts = data.products;
+                } else {
+                    allProducts = fallbackProducts;
+                }
+            } catch (err) {
+                console.warn('⚠️ API failed, using fallback products');
+                allProducts = fallbackProducts;
+            }
+        }
+
         const qty = parseInt(params.get('qty')) || 1;
         const size = params.get('size') || 'M';
         const product = allProducts.find(p => p.id === id);
@@ -1157,6 +1173,8 @@ window.initCheckout = () => {
                 size: size,
                 quantity: qty
             });
+        } else {
+            console.warn('⚠️ Product not found with id:', id);
         }
     } else {
         // --- Cart Mode ---
@@ -1168,6 +1186,7 @@ window.initCheckout = () => {
         document.getElementById('checkout-items-container').innerHTML = '<p class="text-center text-red-500">No items in checkout.</p>';
         return;
     }
+
 
     // Render Items
     const container = document.getElementById('checkout-items-container');
