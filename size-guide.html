@@ -138,38 +138,43 @@
                 <h3 class="text-2xl font-bold font-serif mb-8 text-center text-pink-900">How to Measure</h3>
 
                 <div class="relative flex justify-center py-8">
-                    <!-- High-Fidelity Pure Code 3D Mannequin -->
+                    <!-- High-Fidelity Organic Bezier Mannequin -->
                     <div id="mannequin-container" class="relative group/mannequin" style="width: 18rem; height: 32rem;">
 
                         <svg viewBox="0 0 300 800" class="w-full h-full drop-shadow-2xl" id="svg-mannequin"
                             preserveAspectRatio="xMidYMid meet">
                             <defs>
-                                <!-- 1. Base Skin Gradient (Soft Pink) -->
-                                <linearGradient id="skinBase" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" style="stop-color:#FBCFE8" /> <!-- Lighter edge -->
-                                    <stop offset="20%" style="stop-color:#F472B6" /> <!-- Shadow edge -->
-                                    <stop offset="50%" style="stop-color:#FBCFE8" /> <!-- Highlight center -->
-                                    <stop offset="80%" style="stop-color:#F472B6" /> <!-- Shadow edge -->
-                                    <stop offset="100%" style="stop-color:#FBCFE8" /> <!-- Lighter edge -->
+                                <!-- Realistic Skin Shader -->
+                                <linearGradient id="skinReal" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#FCE7F3" /> <!-- Edge Light -->
+                                    <stop offset="25%" style="stop-color:#FBCFE8" /> <!-- Midtone -->
+                                    <stop offset="50%" style="stop-color:#F9A8D4" /> <!-- Shadow Center -->
+                                    <stop offset="75%" style="stop-color:#FBCFE8" /> <!-- Midtone -->
+                                    <stop offset="100%" style="stop-color:#FCE7F3" /> <!-- Edge Light -->
                                 </linearGradient>
 
-                                <!-- 2. 3D Volume Gradient (For limbs/torso) -->
-                                <linearGradient id="volume3D" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" style="stop-color:#BE185D; stop-opacity: 0.3" />
-                                    <stop offset="30%" style="stop-color:#BE185D; stop-opacity: 0.1" />
-                                    <stop offset="50%" style="stop-color:#FFFFFF; stop-opacity: 0.4" />
-                                    <stop offset="70%" style="stop-color:#BE185D; stop-opacity: 0.1" />
-                                    <stop offset="100%" style="stop-color:#BE185D; stop-opacity: 0.3" />
-                                </linearGradient>
-
-                                <!-- 3. Bust Highlight (Spherical volume) -->
-                                <radialGradient id="bustHighlight" cx="30%" cy="30%" r="50%">
+                                <!-- Volume Highlight (Bust/Hips) -->
+                                <radialGradient id="volumeHighlight" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
                                     <stop offset="0%" style="stop-color:#FFFFFF; stop-opacity: 0.6" />
                                     <stop offset="100%" style="stop-color:#FFFFFF; stop-opacity: 0" />
                                 </radialGradient>
 
-                                <filter id="softGlow">
-                                    <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                <!-- Soft Shadow -->
+                                <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur in="SourceAlpha" stdDeviation="5" />
+                                    <feOffset dx="0" dy="5" result="offsetblur" />
+                                    <feComponentTransfer>
+                                        <feFuncA type="linear" slope="0.3" />
+                                    </feComponentTransfer>
+                                    <feMerge>
+                                        <feMergeNode />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+
+                                <!-- Glow Interaction -->
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="4" result="coloredBlur" />
                                     <feMerge>
                                         <feMergeNode in="coloredBlur" />
                                         <feMergeNode in="SourceGraphic" />
@@ -177,27 +182,169 @@
                                 </filter>
                             </defs>
 
-                            <!-- BODY GROUP -->
-                            <g id="body-shape" transform="translate(150, 400) scale(1.2) translate(-150, -400)">
+                            <!-- UNIFIED ORGANIC BODY MESH -->
+                            <g id="body-mesh" filter="url(#softShadow)">
+                                <path d="M150,50 
+                                       C165,50 175,65 175,85  /* Head Right */
+                                       C175,100 165,110 150,110 /* Chin */
+                                       C135,110 125,100 125,85 /* Head Left */
+                                       C125,65 135,50 150,50 Z /* Top Head */
+                                       
+                                       M138,110 /* Neck Start Left */
+                                       Q135,140 110,150 /* Shoulder Left */
+                                       Q100,155 100,180 /* Arm Left */
+                                       Q100,250 115,250 /* Body Side Left Upper */
+                                       Q125,250 120,310 /* Waist Left In */
+                                       Q115,360 105,400 /* Hip Left Out */
+                                       Q100,450 115,500 /* Thigh Left */
+                                       L125,750 /* Leg Left Down */
+                                       Q130,770 140,770 /* Foot Left */
+                                       L145,500 /* Inner Leg Left */
+                                       L155,500 /* Inner Leg Right */
+                                       L160,770 /* Leg Right Down */
+                                       Q170,770 175,750 /* Foot Right */
+                                       L185,500 /* Thigh Right */
+                                       Q200,450 195,400 /* Hip Right Out */
+                                       Q185,360 180,310 /* Waist Right In */
+                                       Q175,250 185,250 /* Body Side Right Upper */
+                                       Q200,250 200,180 /* Arm Right */
+                                       Q200,155 190,150 /* Shoulder Right */
+                                       Q165,140 162,110 /* Neck Ryght */
+                                       Z" fill="url(#skinReal)" id="torso-shape" class="transition-all duration-700" />
 
-                                <!-- Legs (Long & Tapered) -->
-                                <path
-                                    d="M125 450 Q 120 550 120 750 Q 125 780 135 780 Q 145 780 145 750 Q 145 550 145 450 Z"
-                                    fill="url(#skinBase)" />
-                                <path
-                                    d="M125 450 Q 120 550 120 750 Q 125 780 135 780 Q 145 780 145 750 Q 145 550 145 450 Z"
-                                    fill="url(#volume3D)" />
+                                <!-- Realistic Bust Volume (Overlay) -->
+                                <path d="M125,250 Q150,280 175,250" fill="none" stroke="#DB2777" stroke-width="1"
+                                    stroke-opacity="0.1" />
+                                <ellipse cx="135" cy="240" rx="18" ry="15" fill="url(#volumeHighlight)" opacity="0.4" />
+                                <ellipse cx="165" cy="240" rx="18" ry="15" fill="url(#volumeHighlight)" opacity="0.4" />
 
-                                <path
-                                    d="M155 450 Q 155 550 155 750 Q 155 780 165 780 Q 175 780 180 750 Q 180 550 175 450 Z"
-                                    fill="url(#skinBase)" />
-                                <path
-                                    d="M155 450 Q 155 550 155 750 Q 155 780 165 780 Q 175 780 180 750 Q 180 550 175 450 Z"
-                                    fill="url(#volume3D)" />
+                                <!-- Realistic Hips Volume (Overlay) -->
+                                <ellipse cx="150" cy="400" rx="40" ry="25" fill="url(#volumeHighlight)" opacity="0.2" />
+                            </g>
 
-                                <!-- Torso (Hourglass) -->
-                                <!-- Hips(120/180) -> Waist(130/170) -> Bust(115/185) -> Shoulders(110/190) -->
-                                <path d="M125 460 
+                            <!-- MEASUREMENT REGIONS (Interactive) -->
+
+                            <!-- BUST LINE (Adjusted to new coordinates ~240) -->
+                            <div class="absolute top-[28%] left-[-10%] right-[-10%] h-12 flex items-center justify-center group/bust cursor-pointer"
+                                onmouseenter="document.getElementById('torso-shape').style.filter='url(#glow)'"
+                                onmouseleave="document.getElementById('torso-shape').style.filter='none'">
+                                <!-- Left Marker -->
+                                <div
+                                    class="absolute left-[15%] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg z-20 group-hover/bust:scale-125 transition-transform">
+                                </div>
+                                <!-- Line -->
+                                <div class="w-[80%] h-[2px] bg-brand-terracotta relative">
+                                    <span
+                                        class="absolute top-[-25px] left-1/2 -translate-x-1/2 bg-brand-terracotta text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg group-hover/bust:scale-110 transition-transform">
+                                        BUST (বুক)
+                                    </span>
+                                </div>
+                                <!-- Right Marker -->
+                                <div
+                                    class="absolute right-[15%] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg z-20 group-hover/bust:scale-125 transition-transform">
+                                </div>
+                            </div>
+
+                            <!-- WAIST LINE (Adjusted to new coordinates ~310) -->
+                            <div
+                                class="absolute top-[38%] left-[10%] right-[10%] h-12 flex items-center justify-center group/waist cursor-pointer">
+                                <!-- Dashed Line -->
+                                <div class="w-full border-t-2 border-dashed border-pink-400 relative">
+                                    <span
+                                        class="absolute top-[-14px] left-1/2 -translate-x-1/2 bg-white text-pink-600 font-bold text-[10px] px-2 py-0.5 border border-pink-200 rounded shadow-sm group-hover/waist:scale-110 transition-transform">
+                                        Waist (কোমর)
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- HIPS LINE (Adjusted to new coordinates ~400) -->
+                            <div class="absolute top-[50%] left-[-5%] right-[-5%] h-12 flex items-center justify-center group/hips cursor-pointer"
+                                onmouseenter="document.getElementById('torso-shape').style.filter='url(#glow)'"
+                                onmouseleave="document.getElementById('torso-shape').style.filter='none'">
+                                <!-- Left Marker -->
+                                <div class="absolute left-[15%] w-2 h-2 bg-pink-500 rounded-full shadow-lg z-20"></div>
+                                <!-- Line -->
+                                <div class="w-[85%] h-[2px] bg-pink-400 relative">
+                                    <span
+                                        class="absolute bottom-[-25px] left-1/2 -translate-x-1/2 bg-pink-500 text-white font-bold text-xs px-3 py-1 rounded shadow-lg group-hover/hips:scale-110 transition-transform uppercase tracking-wider">
+                                        HIPS (হিপ)
+                                    </span>
+                                </div>
+                                <!-- Right Marker -->
+                                <div class="absolute right-[15%] w-2 h-2 bg-pink-500 rounded-full shadow-lg z-20"></div>
+                            </div>
+
+                            <!-- Length Ruler (Right Side) -->
+                            <div
+                                class="absolute top-[10%] bottom-[5%] -right-12 w-8 flex flex-col items-center justify-center group/length cursor-pointer">
+                                <div
+                                    class="h-full w-1 bg-brand-deep/20 rounded-full relative group-hover/length:bg-brand-deep transition-colors duration-500">
+                                    <div class="absolute top-0 left-[-3px] w-2.5 h-1 bg-brand-deep rounded"></div>
+                                    <div class="absolute bottom-0 left-[-3px] w-2.5 h-1 bg-brand-deep rounded"></div>
+                                    <!-- Sliding Indicator -->
+                                    <div
+                                        class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-deep text-white text-[10px] py-3 px-1 rounded-lg font-bold shadow-xl -rotate-90 whitespace-nowrap z-20 transition-all duration-500 group-hover/length:scale-110">
+                                        LENGTH (লম্বা)
+                                    </div>
+                                </div>
+                            </div>
+
+                    </div>
+                </div>
+
+                <svg viewBox="0 0 300 800" class="w-full h-full drop-shadow-2xl" id="svg-mannequin"
+                    preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <!-- 1. Base Skin Gradient (Soft Pink) -->
+                        <linearGradient id="skinBase" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FBCFE8" /> <!-- Lighter edge -->
+                            <stop offset="20%" style="stop-color:#F472B6" /> <!-- Shadow edge -->
+                            <stop offset="50%" style="stop-color:#FBCFE8" /> <!-- Highlight center -->
+                            <stop offset="80%" style="stop-color:#F472B6" /> <!-- Shadow edge -->
+                            <stop offset="100%" style="stop-color:#FBCFE8" /> <!-- Lighter edge -->
+                        </linearGradient>
+
+                        <!-- 2. 3D Volume Gradient (For limbs/torso) -->
+                        <linearGradient id="volume3D" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#BE185D; stop-opacity: 0.3" />
+                            <stop offset="30%" style="stop-color:#BE185D; stop-opacity: 0.1" />
+                            <stop offset="50%" style="stop-color:#FFFFFF; stop-opacity: 0.4" />
+                            <stop offset="70%" style="stop-color:#BE185D; stop-opacity: 0.1" />
+                            <stop offset="100%" style="stop-color:#BE185D; stop-opacity: 0.3" />
+                        </linearGradient>
+
+                        <!-- 3. Bust Highlight (Spherical volume) -->
+                        <radialGradient id="bustHighlight" cx="30%" cy="30%" r="50%">
+                            <stop offset="0%" style="stop-color:#FFFFFF; stop-opacity: 0.6" />
+                            <stop offset="100%" style="stop-color:#FFFFFF; stop-opacity: 0" />
+                        </radialGradient>
+
+                        <filter id="softGlow">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- BODY GROUP -->
+                    <g id="body-shape" transform="translate(150, 400) scale(1.2) translate(-150, -400)">
+
+                        <!-- Legs (Long & Tapered) -->
+                        <path d="M125 450 Q 120 550 120 750 Q 125 780 135 780 Q 145 780 145 750 Q 145 550 145 450 Z"
+                            fill="url(#skinBase)" />
+                        <path d="M125 450 Q 120 550 120 750 Q 125 780 135 780 Q 145 780 145 750 Q 145 550 145 450 Z"
+                            fill="url(#volume3D)" />
+
+                        <path d="M155 450 Q 155 550 155 750 Q 155 780 165 780 Q 175 780 180 750 Q 180 550 175 450 Z"
+                            fill="url(#skinBase)" />
+                        <path d="M155 450 Q 155 550 155 750 Q 155 780 165 780 Q 175 780 180 750 Q 180 550 175 450 Z"
+                            fill="url(#volume3D)" />
+
+                        <!-- Torso (Hourglass) -->
+                        <!-- Hips(120/180) -> Waist(130/170) -> Bust(115/185) -> Shoulders(110/190) -->
+                        <path d="M125 460 
                                          Q 115 400 130 350  
                                          Q 135 320 120 280  
                                          Q 115 250 110 220  
@@ -207,107 +354,107 @@
                                          Q 185 400 175 460  
                                          Z" fill="url(#skinBase)" />
 
-                                <!-- Torso Volume Overlay -->
-                                <path
-                                    d="M125 460 Q 115 400 130 350 Q 135 320 120 280 Q 115 250 110 220 L 190 220 Q 185 250 180 280 Q 165 320 170 350 Q 185 400 175 460 Z"
-                                    fill="url(#volume3D)" />
+                        <!-- Torso Volume Overlay -->
+                        <path
+                            d="M125 460 Q 115 400 130 350 Q 135 320 120 280 Q 115 250 110 220 L 190 220 Q 185 250 180 280 Q 165 320 170 350 Q 185 400 175 460 Z"
+                            fill="url(#volume3D)" />
 
-                                <!-- Bust Definition (Curves) -->
-                                <path d="M120 280 Q 135 310 150 280 T 180 280" fill="none" stroke="#DB2777"
-                                    stroke-width="0.5" stroke-opacity="0.3" />
+                        <!-- Bust Definition (Curves) -->
+                        <path d="M120 280 Q 135 310 150 280 T 180 280" fill="none" stroke="#DB2777" stroke-width="0.5"
+                            stroke-opacity="0.3" />
 
-                                <!-- Bust Highlights (Spheres) -->
-                                <ellipse cx="135" cy="270" rx="15" ry="12" fill="url(#bustHighlight)" opacity="0.6" />
-                                <ellipse cx="165" cy="270" rx="15" ry="12" fill="url(#bustHighlight)" opacity="0.6" />
+                        <!-- Bust Highlights (Spheres) -->
+                        <ellipse cx="135" cy="270" rx="15" ry="12" fill="url(#bustHighlight)" opacity="0.6" />
+                        <ellipse cx="165" cy="270" rx="15" ry="12" fill="url(#bustHighlight)" opacity="0.6" />
 
-                                <!-- Neck -->
-                                <path d="M135 220 L 135 190 Q 150 200 165 190 L 165 220 Z" fill="url(#skinBase)" />
-                                <path d="M135 220 L 135 190 Q 150 200 165 190 L 165 220 Z" fill="url(#volume3D)" />
+                        <!-- Neck -->
+                        <path d="M135 220 L 135 190 Q 150 200 165 190 L 165 220 Z" fill="url(#skinBase)" />
+                        <path d="M135 220 L 135 190 Q 150 200 165 190 L 165 220 Z" fill="url(#volume3D)" />
 
-                                <!-- Head (Oval) -->
-                                <ellipse cx="150" cy="150" rx="22" ry="28" fill="url(#skinBase)" />
-                                <ellipse cx="150" cy="150" rx="22" ry="28" fill="url(#volume3D)" />
+                        <!-- Head (Oval) -->
+                        <ellipse cx="150" cy="150" rx="22" ry="28" fill="url(#skinBase)" />
+                        <ellipse cx="150" cy="150" rx="22" ry="28" fill="url(#volume3D)" />
 
-                            </g>
-                        </svg>
+                    </g>
+                </svg>
 
-                        <!-- MEASUREMENT REGIONS (Interactive) -->
+                <!-- MEASUREMENT REGIONS (Interactive) -->
 
-                        <!-- BUST LINE -->
-                        <div class="absolute top-[28%] left-[-10%] right-[-10%] h-12 flex items-center justify-center group/bust cursor-pointer"
-                            onmouseenter="document.getElementById('svg-mannequin').style.filter='url(#softGlow)'"
-                            onmouseleave="document.getElementById('svg-mannequin').style.filter='none'">
-                            <!-- Left Marker -->
-                            <div
-                                class="absolute left-[15%] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg z-20 group-hover/bust:scale-125 transition-transform">
-                            </div>
-                            <!-- Line -->
-                            <div class="w-[80%] h-[2px] bg-brand-terracotta relative">
-                                <span
-                                    class="absolute top-[-25px] left-1/2 -translate-x-1/2 bg-brand-terracotta text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg group-hover/bust:scale-110 transition-transform">
-                                    BUST (বুক)
-                                </span>
-                            </div>
-                            <!-- Right Marker -->
-                            <div
-                                class="absolute right-[15%] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg z-20 group-hover/bust:scale-125 transition-transform">
-                            </div>
-                        </div>
-
-                        <!-- WAIST LINE -->
-                        <div
-                            class="absolute top-[39%] left-[10%] right-[10%] h-12 flex items-center justify-center group/waist cursor-pointer">
-                            <!-- Dashed Line -->
-                            <div class="w-full border-t-2 border-dashed border-pink-400 relative">
-                                <span
-                                    class="absolute top-[-14px] left-1/2 -translate-x-1/2 bg-white text-pink-600 font-bold text-[10px] px-2 py-0.5 border border-pink-200 rounded shadow-sm group-hover/waist:scale-110 transition-transform">
-                                    Waist (কোমর)
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- HIPS LINE -->
-                        <div class="absolute top-[50%] left-[-5%] right-[-5%] h-12 flex items-center justify-center group/hips cursor-pointer"
-                            onmouseenter="document.getElementById('svg-mannequin').style.filter='url(#softGlow)'"
-                            onmouseleave="document.getElementById('svg-mannequin').style.filter='none'">
-                            <!-- Left Marker -->
-                            <div class="absolute left-[15%] w-2 h-2 bg-pink-500 rounded-full shadow-lg z-20"></div>
-                            <!-- Line -->
-                            <div class="w-[85%] h-[2px] bg-pink-400 relative">
-                                <span
-                                    class="absolute bottom-[-25px] left-1/2 -translate-x-1/2 bg-pink-500 text-white font-bold text-xs px-3 py-1 rounded shadow-lg group-hover/hips:scale-110 transition-transform uppercase tracking-wider">
-                                    HIPS (হিপ)
-                                </span>
-                            </div>
-                            <!-- Right Marker -->
-                            <div class="absolute right-[15%] w-2 h-2 bg-pink-500 rounded-full shadow-lg z-20"></div>
-                        </div>
-
-                        <!-- Length Ruler (Right Side) -->
-                        <div
-                            class="absolute top-[10%] bottom-[5%] -right-12 w-8 flex flex-col items-center justify-center group/length cursor-pointer">
-                            <div
-                                class="h-full w-1 bg-brand-deep/20 rounded-full relative group-hover/length:bg-brand-deep transition-colors duration-500">
-                                <div class="absolute top-0 left-[-3px] w-2.5 h-1 bg-brand-deep rounded"></div>
-                                <div class="absolute bottom-0 left-[-3px] w-2.5 h-1 bg-brand-deep rounded"></div>
-                                <!-- Sliding Indicator -->
-                                <div
-                                    class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-deep text-white text-[10px] py-3 px-1 rounded-lg font-bold shadow-xl -rotate-90 whitespace-nowrap z-20 transition-all duration-500 group-hover/length:scale-110">
-                                    LENGTH (লম্বা)
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="absolute top-0 w-3 h-1 bg-brand-deep rounded"></div>
-                    <div class="absolute bottom-0 w-3 h-1 bg-brand-deep rounded"></div>
-                    <!-- Sliding Indicator -->
+                <!-- BUST LINE -->
+                <div class="absolute top-[28%] left-[-10%] right-[-10%] h-12 flex items-center justify-center group/bust cursor-pointer"
+                    onmouseenter="document.getElementById('svg-mannequin').style.filter='url(#softGlow)'"
+                    onmouseleave="document.getElementById('svg-mannequin').style.filter='none'">
+                    <!-- Left Marker -->
                     <div
-                        class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-deep text-white text-[10px] py-3 px-1 rounded-lg font-bold shadow-xl -rotate-90 whitespace-nowrap z-20 transition-all duration-500 group-hover/length:scale-110">
-                        LENGTH (লম্বা)
+                        class="absolute left-[15%] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg z-20 group-hover/bust:scale-125 transition-transform">
+                    </div>
+                    <!-- Line -->
+                    <div class="w-[80%] h-[2px] bg-brand-terracotta relative">
+                        <span
+                            class="absolute top-[-25px] left-1/2 -translate-x-1/2 bg-brand-terracotta text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg group-hover/bust:scale-110 transition-transform">
+                            BUST (বুক)
+                        </span>
+                    </div>
+                    <!-- Right Marker -->
+                    <div
+                        class="absolute right-[15%] w-3 h-3 bg-brand-terracotta rounded-full shadow-lg z-20 group-hover/bust:scale-125 transition-transform">
                     </div>
                 </div>
+
+                <!-- WAIST LINE -->
+                <div
+                    class="absolute top-[39%] left-[10%] right-[10%] h-12 flex items-center justify-center group/waist cursor-pointer">
+                    <!-- Dashed Line -->
+                    <div class="w-full border-t-2 border-dashed border-pink-400 relative">
+                        <span
+                            class="absolute top-[-14px] left-1/2 -translate-x-1/2 bg-white text-pink-600 font-bold text-[10px] px-2 py-0.5 border border-pink-200 rounded shadow-sm group-hover/waist:scale-110 transition-transform">
+                            Waist (কোমর)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- HIPS LINE -->
+                <div class="absolute top-[50%] left-[-5%] right-[-5%] h-12 flex items-center justify-center group/hips cursor-pointer"
+                    onmouseenter="document.getElementById('svg-mannequin').style.filter='url(#softGlow)'"
+                    onmouseleave="document.getElementById('svg-mannequin').style.filter='none'">
+                    <!-- Left Marker -->
+                    <div class="absolute left-[15%] w-2 h-2 bg-pink-500 rounded-full shadow-lg z-20"></div>
+                    <!-- Line -->
+                    <div class="w-[85%] h-[2px] bg-pink-400 relative">
+                        <span
+                            class="absolute bottom-[-25px] left-1/2 -translate-x-1/2 bg-pink-500 text-white font-bold text-xs px-3 py-1 rounded shadow-lg group-hover/hips:scale-110 transition-transform uppercase tracking-wider">
+                            HIPS (হিপ)
+                        </span>
+                    </div>
+                    <!-- Right Marker -->
+                    <div class="absolute right-[15%] w-2 h-2 bg-pink-500 rounded-full shadow-lg z-20"></div>
+                </div>
+
+                <!-- Length Ruler (Right Side) -->
+                <div
+                    class="absolute top-[10%] bottom-[5%] -right-12 w-8 flex flex-col items-center justify-center group/length cursor-pointer">
+                    <div
+                        class="h-full w-1 bg-brand-deep/20 rounded-full relative group-hover/length:bg-brand-deep transition-colors duration-500">
+                        <div class="absolute top-0 left-[-3px] w-2.5 h-1 bg-brand-deep rounded"></div>
+                        <div class="absolute bottom-0 left-[-3px] w-2.5 h-1 bg-brand-deep rounded"></div>
+                        <!-- Sliding Indicator -->
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-deep text-white text-[10px] py-3 px-1 rounded-lg font-bold shadow-xl -rotate-90 whitespace-nowrap z-20 transition-all duration-500 group-hover/length:scale-110">
+                            LENGTH (লম্বা)
+                        </div>
+                    </div>
+                </div>
+
             </div>
+            <div class="absolute top-0 w-3 h-1 bg-brand-deep rounded"></div>
+            <div class="absolute bottom-0 w-3 h-1 bg-brand-deep rounded"></div>
+            <!-- Sliding Indicator -->
+            <div
+                class="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-deep text-white text-[10px] py-3 px-1 rounded-lg font-bold shadow-xl -rotate-90 whitespace-nowrap z-20 transition-all duration-500 group-hover/length:scale-110">
+                LENGTH (লম্বা)
+            </div>
+        </div>
+        </div>
 
         </div>
         </div>
