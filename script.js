@@ -570,12 +570,14 @@ function createProductCard(product, index) {
 
     // Premium button with ripple effect
     const button = document.createElement('button');
-    button.className = 'relative overflow-hidden text-white px-5 py-2.5 rounded-full font-semibold text-sm';
+    button.className = 'relative overflow-hidden text-white px-7 py-3 rounded-full font-semibold text-base';
     button.style.cssText = `
         background: linear-gradient(135deg, #3D405B 0%, #2d3047 100%);
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         box-shadow: 0 4px 15px rgba(61, 64, 91, 0.25);
+        min-width: 110px;
     `;
+
     button.textContent = 'বিস্তারিত';
 
     // Button hover effects
