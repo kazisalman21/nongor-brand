@@ -133,82 +133,125 @@
         </div>
     </header>
 
-    <!-- Size Calculator Section -->
+    <!-- Quick Size Guide Section -->
     <section class="py-20 px-6 bg-white">
         <div class="max-w-5xl mx-auto">
 
-            <div
-                class="bg-gradient-to-br from-brand-deep to-brand-deep/90 rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
-                <div class="grid md:grid-cols-2 gap-0">
+            <!-- Section Header -->
+            <div class="text-center mb-16 animate-fade-in-up">
+                <span
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-brand-terracotta/10 text-brand-terracotta rounded-full text-sm font-medium mb-6">
+                    <span class="w-2 h-2 bg-brand-terracotta rounded-full animate-pulse"></span>
+                    Quick Size Guide
+                </span>
+                <h2 class="text-3xl md:text-4xl font-serif font-bold text-brand-deep mb-4">আপনার সাইজ খুঁজুন</h2>
+                <p class="text-gray-500 max-w-md mx-auto">নিচে থেকে আপনার উচ্চতা ও ওজন অনুযায়ী সাইজ নির্বাচন করুন</p>
+            </div>
 
-                    <!-- Left: Calculator Info -->
-                    <div class="p-10 md:p-12 text-white relative overflow-hidden">
-                        <div class="relative z-10">
-                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-sm mb-6">
-                                <span class="w-2 h-2 bg-brand-terracotta rounded-full animate-pulse"></span>
-                                Size Calculator
-                            </div>
-                            <h2 class="text-3xl md:text-4xl font-serif font-bold mb-4 leading-tight">আপনার সঠিক
-                                সাইজ<br>জানুন</h2>
-                            <p class="text-white/70 mb-8 leading-relaxed">
-                                উচ্চতা ও ওজন দিন, আমরা আপনার জন্য সঠিক সাইজ বলে দেব।
-                            </p>
-                            <ul class="space-y-3 text-sm text-white/80">
-                                <li class="flex items-center gap-3">
-                                    <span
-                                        class="w-6 h-6 bg-brand-terracotta rounded-full flex items-center justify-center text-xs">✓</span>
-                                    বাংলাদেশী বডি টাইপের জন্য অপ্টিমাইজড
-                                </li>
-                                <li class="flex items-center gap-3">
-                                    <span
-                                        class="w-6 h-6 bg-brand-terracotta rounded-full flex items-center justify-center text-xs">✓</span>
-                                    ১০০% সঠিক ফিটিং গ্যারান্টি
-                                </li>
-                            </ul>
-                        </div>
-                        <!-- Decorative -->
-                        <div class="absolute -top-20 -right-20 w-60 h-60 bg-brand-terracotta/20 rounded-full blur-3xl">
-                        </div>
-                        <div class="absolute -bottom-20 -left-20 w-60 h-60 bg-brand-sand/10 rounded-full blur-3xl">
-                        </div>
+            <!-- Size Cards Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 animate-fade-in-up"
+                style="animation-delay: 0.1s;">
+
+                <!-- Size S -->
+                <div
+                    class="group bg-white border-2 border-gray-100 rounded-2xl p-6 text-center hover:border-brand-terracotta hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold font-serif shadow-lg group-hover:scale-110 transition-transform">
+                        S
                     </div>
-
-                    <!-- Right: Calculator Form -->
-                    <div class="p-10 md:p-12 bg-white">
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-bold text-brand-deep mb-2">উচ্চতা (ফুট.ইঞ্চি)</label>
-                                <input type="number" id="height-input" placeholder="যেমন: 5.6" step="0.1"
-                                    class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-brand-terracotta/30 focus:border-brand-terracotta outline-none transition font-mono text-lg">
-                                <p class="text-xs text-gray-400 mt-2">উদাহরণ: ৫ ফুট ৬ ইঞ্চির জন্য লিখুন 5.6</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-brand-deep mb-2">ওজন (কেজি)</label>
-                                <input type="number" id="weight-input" placeholder="যেমন: 70"
-                                    class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-brand-terracotta/30 focus:border-brand-terracotta outline-none transition font-mono text-lg">
-                            </div>
-                            <button onclick="calculateSize()"
-                                class="w-full bg-brand-deep text-white py-4 rounded-xl font-bold text-lg hover:bg-brand-terracotta hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
-                                    </path>
-                                </svg>
-                                Calculate My Size
-                            </button>
-
-                            <!-- Result Display -->
-                            <div id="size-result"
-                                class="hidden mt-6 p-6 bg-gradient-to-br from-green-50 to-green-100/50 border-2 border-green-200 rounded-2xl text-center animate-fade-in-up">
-                                <p class="text-sm text-green-700 font-medium mb-2">আপনার প্রস্তাবিত সাইজ</p>
-                                <p id="recommended-size" class="text-5xl font-bold text-green-700 font-serif">M</p>
-                            </div>
-                        </div>
+                    <h3 class="font-bold text-brand-deep text-lg mb-2">Small</h3>
+                    <div class="space-y-1 text-sm text-gray-500">
+                        <p>📏 উচ্চতা: 5'0" - 5'4"</p>
+                        <p>⚖️ ওজন: 45-55 kg</p>
                     </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">বুক: 32-34"</span>
+                    </div>
+                </div>
+
+                <!-- Size M -->
+                <div
+                    class="group bg-white border-2 border-gray-100 rounded-2xl p-6 text-center hover:border-brand-terracotta hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold font-serif shadow-lg group-hover:scale-110 transition-transform">
+                        M
+                    </div>
+                    <h3 class="font-bold text-brand-deep text-lg mb-2">Medium</h3>
+                    <div class="space-y-1 text-sm text-gray-500">
+                        <p>📏 উচ্চতা: 5'4" - 5'7"</p>
+                        <p>⚖️ ওজন: 55-65 kg</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">বুক: 36-38"</span>
+                    </div>
+                </div>
+
+                <!-- Size L -->
+                <div
+                    class="group bg-white border-2 border-gray-100 rounded-2xl p-6 text-center hover:border-brand-terracotta hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-brand-terracotta to-orange-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold font-serif shadow-lg group-hover:scale-110 transition-transform">
+                        L
+                    </div>
+                    <h3 class="font-bold text-brand-deep text-lg mb-2">Large</h3>
+                    <div class="space-y-1 text-sm text-gray-500">
+                        <p>📏 উচ্চতা: 5'6" - 5'9"</p>
+                        <p>⚖️ ওজন: 65-75 kg</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">বুক: 40-42"</span>
+                    </div>
+                </div>
+
+                <!-- Size XL -->
+                <div
+                    class="group bg-white border-2 border-gray-100 rounded-2xl p-6 text-center hover:border-brand-terracotta hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold font-serif shadow-lg group-hover:scale-110 transition-transform">
+                        XL
+                    </div>
+                    <h3 class="font-bold text-brand-deep text-lg mb-2">X-Large</h3>
+                    <div class="space-y-1 text-sm text-gray-500">
+                        <p>📏 উচ্চতা: 5'8" - 5'11"</p>
+                        <p>⚖️ ওজন: 75-85 kg</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">বুক: 44-46"</span>
+                    </div>
+                </div>
+
+                <!-- Size XXL -->
+                <div
+                    class="group col-span-2 md:col-span-1 bg-white border-2 border-gray-100 rounded-2xl p-6 text-center hover:border-brand-terracotta hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-brand-deep to-gray-700 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold font-serif shadow-lg group-hover:scale-110 transition-transform">
+                        XXL
+                    </div>
+                    <h3 class="font-bold text-brand-deep text-lg mb-2">XX-Large</h3>
+                    <div class="space-y-1 text-sm text-gray-500">
+                        <p>📏 উচ্চতা: 5'10"+</p>
+                        <p>⚖️ ওজন: 85+ kg</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <span class="text-xs text-gray-400">বুক: 48-50"</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Help Note -->
+            <div class="mt-12 text-center animate-fade-in-up" style="animation-delay: 0.2s;">
+                <div
+                    class="inline-flex items-center gap-3 bg-brand-light/50 border border-brand-terracotta/20 rounded-full px-6 py-3">
+                    <span class="text-xl">💡</span>
+                    <p class="text-sm text-gray-600">সাইজ নিয়ে সমস্যা? আমাদের <a href="https://m.me/857107060814707"
+                            target="_blank" class="text-brand-terracotta font-medium hover:underline">মেসেঞ্জারে</a>
+                        জিজ্ঞাসা করুন!</p>
                 </div>
             </div>
         </div>
     </section>
+
 
     <!-- Size Tables Section -->
     <section class="py-20 px-6 bg-gray-50">
@@ -497,39 +540,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Size Calculator Script -->
-    <script>
-        function calculateSize() {
-            const height = parseFloat(document.getElementById('height-input').value);
-            const weight = parseFloat(document.getElementById('weight-input').value);
-            const resultDiv = document.getElementById('size-result');
-            const sizeDisplay = document.getElementById('recommended-size');
-
-            if (!height || !weight) {
-                alert('অনুগ্রহ করে উচ্চতা ও ওজন দিন');
-                return;
-            }
-
-            // Calculate BMI-style score for size recommendation
-            const heightInMeters = (height * 0.3048); // Convert feet to meters
-            const bmi = weight / (heightInMeters * heightInMeters);
-
-            let size = 'M';
-            if (bmi < 18.5) {
-                size = 'S';
-            } else if (bmi < 23) {
-                size = height < 5.5 ? 'M' : 'L';
-            } else if (bmi < 27) {
-                size = height < 5.5 ? 'L' : 'XL';
-            } else {
-                size = 'XXL';
-            }
-
-            sizeDisplay.textContent = size;
-            resultDiv.classList.remove('hidden');
-        }
-    </script>
 
     <!-- Standard script import -->
     <script src="./script.js" defer></script>
