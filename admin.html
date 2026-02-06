@@ -2822,11 +2822,20 @@
             // Instead, we simply request the .webp extension in the returned URL.
 
             try {
+                console.log('Starting Cloudinary upload...');
                 const response = await fetch(
                     `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
                     { method: 'POST', body: formData }
                 );
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Cloudinary HTTP Error:', response.status, errorText);
+                    throw new Error(`Cloudinary Error ${response.status}: ${errorText || response.statusText}`);
+                }
+
                 const data = await response.json();
+                console.log('Cloudinary response:', data);
 
                 if (data.error) {
                     throw new Error(data.error.message || 'Upload failed');
@@ -2964,11 +2973,12 @@
                     closeProductModal();
                     loadProducts();
                 } else {
+                    console.error('Server Error Response:', result);
                     showToast(result.message || 'Failed to save product', 'red');
                 }
             } catch (error) {
                 console.error('Error saving product:', error);
-                showToast('Error saving product', 'red');
+                showToast(error.message || 'Error saving product', 'red');
             } finally {
                 submitBtn.disabled = false;
                 btnText.textContent = 'Save Product';

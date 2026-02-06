@@ -2,6 +2,7 @@
  * Database Connection Pool
  * Reusable connections for better performance
  */
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const connectionString = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
