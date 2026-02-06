@@ -199,7 +199,7 @@ module.exports = async (req, res) => {
                     data.name,
                     data.price,
                     data.image || '',
-                    JSON.stringify(data.images || []),
+                    data.images || [], // Pass raw array for TEXT[] column
                     data.description || '',
                     data.category_slug || '',
                     data.category_name || '',
@@ -375,7 +375,7 @@ module.exports = async (req, res) => {
                     data.name,
                     data.price,
                     data.image || '',
-                    JSON.stringify(data.images || []),
+                    data.images || [], // Pass raw array for TEXT[] column
                     data.description || '',
                     data.category_slug || '',
                     data.category_name || '',
