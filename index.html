@@ -309,8 +309,27 @@
             </div>
 
             <!-- Categories -->
-            <div id="category-filter" class="flex flex-wrap justify-center gap-4 mb-12 font-bengali">
+            <div id="category-filter" class="flex flex-wrap justify-center gap-4 mb-8 font-bengali">
                 <!-- Injected by JS -->
+            </div>
+
+            <!-- Price Filter -->
+            <div class="flex justify-center items-center gap-2 mb-12 animate-fade-in-up" style="animation-delay: 0.1s">
+                <div class="flex items-center bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
+                    <span class="text-gray-400 text-sm mr-2">৳</span>
+                    <input type="number" id="min-price" placeholder="Min" class="w-16 md:w-20 outline-none text-sm"
+                        min="0">
+                </div>
+                <span class="text-gray-400">-</span>
+                <div class="flex items-center bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
+                    <span class="text-gray-400 text-sm mr-2">৳</span>
+                    <input type="number" id="max-price" placeholder="Max" class="w-16 md:w-20 outline-none text-sm"
+                        min="0">
+                </div>
+                <button onclick="applyPriceFilter()"
+                    class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand-terracotta transition-colors shadow-sm">
+                    FILTER
+                </button>
             </div>
 
             <!-- Products Grid -->

@@ -20,6 +20,11 @@
     "optimize:images": "node scripts/optimize-images.js",
     "setup:db": "node scripts/setup_auth_pg.js",
     "test:db": "node test-fixes.js",
-    "db:backup": "node scripts/backup_db.js"
+    "db:backup": "node scripts/backup_db.js",
+    "db:migrate:tracking": "node scripts/add_tracking_token.js",
+    "db:migrate:order-items": "node scripts/create_order_items_table.js",
+    "db:migrate:images": "node scripts/migrate_images_to_jsonb.js",
+    "db:migrate:coupons": "node scripts/create_coupons_table.js",
+    "db:setup:all": "npm run db:migrate:tracking && npm run db:migrate:order-items && npm run db:migrate:images && npm run db:migrate:coupons"
   }
 }

@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
 
             if (!rateLimit.allowed) {
                 console.warn(`⚠️ Login Rate Limit Exceeded for IP: ${ip}`);
-                client.release();
+                // client.release() removed - handled in finally
                 return res.status(429).json({
                     result: 'error',
                     message: `Too many login attempts. Please try again in ${rateLimit.retryAfter} seconds.`
@@ -57,7 +57,7 @@ module.exports = async (req, res) => {
 
             // Validate input
             if (!email || !password) {
-                client.release();
+                // client.release() removed - handled in finally
                 return res.status(400).json({
                     result: 'error',
                     message: 'Email and password are required'

@@ -8,6 +8,7 @@ const pool = require('./db');
 const { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit } = require('./cache');
 const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
 const { sanitizeObject } = require('./sanitize');
+const crypto = require('crypto');
 
 module.exports = async (req, res) => {
     // --- SECURITY: CORS & HEADERS ---
@@ -69,21 +70,67 @@ module.exports = async (req, res) => {
 
         // --- 1. GET REQUESTS ---
         if (method === 'GET') {
-            // --- GET PRODUCTS (Public) - WITH CACHING ---
+            // --- GET PRODUCTS (Public) - WITH CACHING & FILTERS ---
             if (query.action === 'getProducts') {
-                // Check cache first
-                const cached = cache.get(CACHE_KEYS.ALL_PRODUCTS);
-                if (cached) {
-                    client.release();
-                    return res.status(200).json({ result: 'success', data: cached, cached: true });
+                const search = query.search ? query.search.trim() : null;
+                const category = query.category && query.category !== 'all' ? query.category : null;
+                const minPrice = parseFloat(query.min) || 0;
+                const maxPrice = parseFloat(query.max) || 0;
+
+                // Create Filter Key for Cache (or skip cache for filters)
+                const isFiltered = search || category || minPrice || maxPrice;
+                const cacheKey = isFiltered ? `products_${search || ''}_${category || ''}_${minPrice}_${maxPrice}` : CACHE_KEYS.ALL_PRODUCTS;
+
+                // Check cache first (for filtered queries, cache might be less effective but still useful for pagination later)
+                // For now, let's cache only the FULL list, and filtered lists for short duration?
+                // Or just skip cache for filters to save memory.
+                if (!isFiltered) {
+                    const cached = cache.get(CACHE_KEYS.ALL_PRODUCTS);
+                    if (cached) {
+                        client.release();
+                        return res.status(200).json({ result: 'success', data: cached, cached: true });
+                    }
                 }
 
-                // Not in cache, fetch from DB
-                const result = await client.query('SELECT * FROM products WHERE is_active = true ORDER BY created_at DESC');
+                // Build Query
+                let sql = 'SELECT * FROM products WHERE is_active = true';
+                const params = [];
+                let paramCount = 1;
+
+                if (search) {
+                    sql += ` AND (name ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
+                    params.push(`%${search}%`);
+                    paramCount++;
+                }
+
+                if (category) {
+                    sql += ` AND category_slug = $${paramCount}`;
+                    params.push(category);
+                    paramCount++;
+                }
+
+                if (minPrice > 0) {
+                    sql += ` AND price >= $${paramCount}`;
+                    params.push(minPrice);
+                    paramCount++;
+                }
+
+                if (maxPrice > 0) {
+                    sql += ` AND price <= $${paramCount}`;
+                    params.push(maxPrice);
+                    paramCount++;
+                }
+
+                sql += ' ORDER BY created_at DESC';
+
+                // Fetch from DB
+                const result = await client.query(sql, params);
                 client.release();
 
-                // Store in cache
-                cache.set(CACHE_KEYS.ALL_PRODUCTS, result.rows);
+                // Store in cache (Only full list)
+                if (!isFiltered) {
+                    cache.set(CACHE_KEYS.ALL_PRODUCTS, result.rows);
+                }
 
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
@@ -107,12 +154,34 @@ module.exports = async (req, res) => {
             }
 
             // --- TRACKING (Public) ---
-            if (query.orderId) {
-                const result = await client.query('SELECT * FROM orders WHERE order_id = $1', [query.orderId]);
+            if (query.orderId || query.tracking_token) {
+                let result;
+                if (query.tracking_token) {
+                    result = await client.query('SELECT * FROM orders WHERE tracking_token = $1', [query.tracking_token]);
+                } else {
+                    result = await client.query('SELECT * FROM orders WHERE order_id = $1', [query.orderId]);
+                }
+
                 client.release();
 
                 if (result.rows.length > 0) {
-                    return res.status(200).json({ result: 'success', data: result.rows[0] });
+                    // FILTER SENSITIVE DATA (Phase 3)
+                    const order = result.rows[0];
+                    const safeOrder = {
+                        order_id: order.order_id,
+                        status: order.status,
+                        payment_status: order.payment_status,
+                        delivery_status: order.delivery_status,
+                        created_at: order.created_at,
+                        updated_at: order.updated_at,
+                        product_name: order.product_name, // Maybe safe?
+                        total_price: order.total_price,
+                        delivery_date: order.delivery_date,
+                        size: order.size,
+                        quantity: order.quantity
+                        // EXCLUDED: customer_name, phone, address, email, trx_id, sender_number
+                    };
+                    return res.status(200).json({ result: 'success', data: safeOrder });
                 } else {
                     return res.status(404).json({ result: 'error', message: 'Order not found' });
                 }
@@ -134,6 +203,70 @@ module.exports = async (req, res) => {
                 const result = await client.query('SELECT * FROM orders ORDER BY created_at DESC');
                 client.release();
                 return res.status(200).json({ result: 'success', data: result.rows });
+            }
+
+            // --- VALIDATE COUPON (Public) ---
+            if (query.action === 'validateCoupon') {
+                const code = query.code;
+                const amount = parseFloat(query.amount) || 0;
+
+                if (!code) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Coupon code required' });
+                }
+
+                const resCoupon = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [code]);
+
+                if (resCoupon.rows.length === 0) {
+                    client.release();
+                    return res.status(404).json({ result: 'error', message: 'Invalid coupon code' });
+                }
+
+                const coupon = resCoupon.rows[0];
+
+                // Check Expiry
+                if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Coupon expired' });
+                }
+
+                // Check Usage Limit
+                if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Coupon usage limit reached' });
+                }
+
+                // Check Min Order
+                if (coupon.min_order_value && amount < parseFloat(coupon.min_order_value)) {
+                    client.release();
+                    return res.status(400).json({
+                        result: 'error',
+                        message: `Minimum order value for this coupon is ${coupon.min_order_value}`
+                    });
+                }
+
+                // Calculate Discount Preview
+                let discount = 0;
+                if (coupon.discount_type === 'percent') {
+                    discount = amount * (parseFloat(coupon.discount_value) / 100);
+                    if (coupon.max_discount_amount) {
+                        discount = Math.min(discount, parseFloat(coupon.max_discount_amount));
+                    }
+                } else {
+                    discount = parseFloat(coupon.discount_value);
+                }
+
+                client.release();
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Coupon applied',
+                    discount: discount,
+                    coupon: {
+                        code: coupon.code,
+                        type: coupon.discount_type,
+                        value: coupon.discount_value
+                    }
+                });
             }
 
             client.release();
@@ -266,6 +399,9 @@ module.exports = async (req, res) => {
             // --- TRANSACTION START ---
             await client.query('BEGIN');
 
+            let calculatedSubtotal = 0;
+            const orderItemsToInsert = [];
+
             // 1. Update Stock & Validate Availability (Locking Rows)
             if (data.items && Array.isArray(data.items)) {
                 for (const item of data.items) {
@@ -275,12 +411,15 @@ module.exports = async (req, res) => {
                     }
 
                     if (item.id && item.quantity) {
-                        // LOCK ROW: Check stock availability
-                        const stockRes = await client.query('SELECT stock_quantity FROM products WHERE id = $1 FOR UPDATE', [item.id]);
+                        // LOCK ROW: Check stock availability AND Fetch Price
+                        const stockRes = await client.query('SELECT price, stock_quantity FROM products WHERE id = $1 FOR UPDATE', [item.id]);
 
                         if (stockRes.rows.length === 0) throw new Error(`Product ${item.id} not found`);
 
-                        const available = stockRes.rows[0].stock_quantity;
+                        const product = stockRes.rows[0];
+                        const available = product.stock_quantity;
+                        const price = parseFloat(product.price);
+
                         if (available < item.quantity) {
                             throw new Error(`Insufficient stock for Product ID ${item.id}. Available: ${available}, Requested: ${item.quantity}`);
                         }
@@ -290,17 +429,76 @@ module.exports = async (req, res) => {
                             'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
                             [item.quantity, item.id]
                         );
+
+                        // Calculate Line Total
+                        const lineTotal = price * item.quantity;
+                        calculatedSubtotal += lineTotal;
+
+                        orderItemsToInsert.push({
+                            product_id: item.id,
+                            qty: item.quantity,
+                            unit_price: price,
+                            size: item.size || 'M',
+                            line_total: lineTotal
+                        });
                     }
                 }
                 // Invalidate cache as stock changed
                 invalidateProductCache();
             }
 
+            // Calculate Verification Total
+            const shippingFee = parseFloat(data.shippingFee) || 70; // Default or from client (validated?)
+            let finalTotal = calculatedSubtotal + shippingFee;
+
+            // --- COUPON APPLICATION ---
+            let discountAmount = 0;
+            let appliedCouponCode = null;
+
+            if (data.couponCode) {
+                // Validate Coupon (Re-check for security)
+                const couponRes = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [data.couponCode]);
+
+                if (couponRes.rows.length > 0) {
+                    const coupon = couponRes.rows[0];
+                    let isValid = true;
+
+                    // Check Expiry
+                    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) isValid = false;
+                    // Check Limits
+                    if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) isValid = false;
+                    // Check Min Order (on subtotal)
+                    if (coupon.min_order_value && calculatedSubtotal < parseFloat(coupon.min_order_value)) isValid = false;
+
+                    if (isValid) {
+                        if (coupon.discount_type === 'percent') {
+                            discountAmount = calculatedSubtotal * (parseFloat(coupon.discount_value) / 100);
+                            if (coupon.max_discount_amount) {
+                                discountAmount = Math.min(discountAmount, parseFloat(coupon.max_discount_amount));
+                            }
+                        } else {
+                            discountAmount = parseFloat(coupon.discount_value);
+                        }
+
+                        // Ensure discount doesn't exceed total
+                        discountAmount = Math.min(discountAmount, finalTotal);
+
+                        finalTotal -= discountAmount;
+                        appliedCouponCode = coupon.code;
+
+                        // Increment Usage
+                        await client.query('UPDATE coupons SET usage_count = usage_count + 1 WHERE id = $1', [coupon.id]);
+                    }
+                }
+            }
+
             // 2. Insert Order
+            const trackingToken = crypto.randomBytes(32).toString('hex');
+
             const insertQuery = `
                 INSERT INTO orders 
-                (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
                 RETURNING *
             `;
 
@@ -310,7 +508,7 @@ module.exports = async (req, res) => {
                 data.customerPhone,
                 data.address,
                 data.productName,
-                data.totalPrice,
+                finalTotal, // Use Server Calculated Total (with discount)
                 initialDelivery,
                 initialDelivery,
                 initialPayment,
@@ -320,10 +518,21 @@ module.exports = async (req, res) => {
                 data.size,
                 data.quantity,
                 data.senderNumber || '',
-                data.customerEmail || null
+                data.customerEmail || null,
+                trackingToken,
+                appliedCouponCode,
+                discountAmount
             ];
 
             const result = await client.query(insertQuery, values);
+
+            // 3. Insert Order Items (New Table)
+            for (const item of orderItemsToInsert) {
+                await client.query(
+                    'INSERT INTO order_items (order_id, product_id, qty, unit_price, size, line_total) VALUES ($1, $2, $3, $4, $5, $6)',
+                    [data.orderId, item.product_id, item.qty, item.unit_price, item.size, item.line_total]
+                );
+            }
 
             // --- TRANSACTION COMMIT ---
             await client.query('COMMIT');

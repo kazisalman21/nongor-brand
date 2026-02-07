@@ -230,26 +230,72 @@ window.filterProducts = function (category, event) {
     }
 };
 
+// ==============================================
+// SEARCH LOGIC
+// ==============================================
+let searchDebounceTimer;
+window.handleSearch = (query) => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        console.log('🔎 Searching for:', query);
+        // Call initProducts with search param
+        // We need to maintain current category? Or reset to all? 
+        // Usually search resets category or searches within.
+        // Let's reset category to 'all' for global search, or keep it if we want to filter within category.
+        // For now, let's keep currentCategory if it's not 'all', otherwise search all.
+        // Actually best to search ALL.
+
+        // Update UI active state if needed
+        if (query.length > 0) {
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active', 'bg-brand-terracotta', 'text-white'));
+        }
+
+        initProducts({ search: query, category: currentCategory });
+    }, 500); // 500ms debounce
+};
+
+// ==============================================
+// PRICE FILTER LOGIC
+// ==============================================
+window.applyPriceFilter = () => {
+    const min = document.getElementById('min-price')?.value;
+    const max = document.getElementById('max-price')?.value;
+    const search = document.getElementById('desktop-search')?.value || document.getElementById('mobile-search')?.value;
+
+    initProducts({
+        search: search,
+        category: currentCategory,
+        min: min,
+        max: max
+    });
+};
+
 
 // ==============================================
 // FETCH AND INITIALIZE PRODUCTS
 // ==============================================
-async function initProducts() {
-    console.log('🚀 initProducts() called');
+async function initProducts(params = {}) {
+    console.log('🚀 initProducts() called with:', params);
 
     const container = document.getElementById('products-grid');
-    if (!container) {
-        // Not on a page with products grid - this is expected
-        return;
-    }
+    if (!container) return;
 
     // Show loading spinner
     showLoading(container);
 
     try {
-        console.log('📡 Fetching from:', `${API_URL}?action=getProducts`);
+        // Construct Query
+        const urlP = new URLSearchParams();
+        urlP.append('action', 'getProducts');
 
-        const response = await fetch(`${API_URL}?action=getProducts`);
+        if (params.search) urlP.append('search', params.search);
+        if (params.category && params.category !== 'all') urlP.append('category', params.category);
+        if (params.min) urlP.append('min', params.min);
+        if (params.max) urlP.append('max', params.max);
+
+        console.log('📡 Fetching from:', `${API_URL}?${urlP.toString()}`);
+
+        const response = await fetch(`${API_URL}?${urlP.toString()}`);
         console.log('📥 Response status:', response.status);
 
         if (!response.ok) {
@@ -1313,10 +1359,25 @@ function updateTotalWithShipping() {
     const deliveryEl = document.getElementById('checkout-delivery');
     const totalEl = document.getElementById('checkout-total');
 
+    const couponMsgEl = document.getElementById('coupon-message');
+
     if (deliveryEl) deliveryEl.textContent = `৳${window.shippingFee} `;
 
-    const finalTotal = (window.checkoutTotal || 0) + (window.shippingFee || 0);
-    if (totalEl) totalEl.textContent = `৳${finalTotal.toLocaleString()} `;
+    let total = (window.checkoutTotal || 0) + (window.shippingFee || 0);
+
+    // Subtract Discount
+    if (window.discountAmount) {
+        total -= window.discountAmount;
+        // Show discount in UI if not already shown? 
+        // Better to just update total for now, or add a row dynamically.
+        // Let's stick to updating total and showing message.
+        if (couponMsgEl) {
+            couponMsgEl.textContent = `Coupon applied! You saved ৳${window.discountAmount}`;
+            couponMsgEl.className = "text-xs mt-1 min-h-[1.25rem] font-medium text-green-600";
+        }
+    }
+
+    if (totalEl) totalEl.textContent = `৳${Math.max(0, total).toLocaleString()} `;
 
     // Re-render bKash instructions to show new total
     const manualInfo = document.getElementById('manual-payment-info');
@@ -1327,6 +1388,50 @@ function updateTotalWithShipping() {
         });
     }
 }
+
+
+
+// --- Coupon Logic ---
+window.discountAmount = 0;
+window.appliedCouponCode = null;
+
+window.checkCoupon = async () => {
+    const codeInput = document.getElementById('coupon-code');
+    const msgEl = document.getElementById('coupon-message');
+    const code = codeInput.value.trim();
+
+    if (!code) {
+        msgEl.textContent = "Please enter a code";
+        msgEl.className = "text-xs mt-1 min-h-[1.25rem] font-medium text-red-500";
+        return;
+    }
+
+    try {
+        const subtotal = window.checkoutTotal || 0;
+        const res = await fetch(`${API_URL}?action=validateCoupon&code=${encodeURIComponent(code)}&amount=${subtotal}`);
+        const data = await res.json();
+
+        if (data.result === 'success') {
+            window.discountAmount = data.discount;
+            window.appliedCouponCode = data.coupon.code;
+
+            msgEl.textContent = `Success! ${data.message}`;
+            msgEl.className = "text-xs mt-1 min-h-[1.25rem] font-medium text-green-600";
+
+            updateTotalWithShipping(); // Update UI
+        } else {
+            window.discountAmount = 0;
+            window.appliedCouponCode = null;
+            msgEl.textContent = data.message;
+            msgEl.className = "text-xs mt-1 min-h-[1.25rem] font-medium text-red-500";
+            updateTotalWithShipping();
+        }
+    } catch (e) {
+        console.error(e);
+        msgEl.textContent = "Error validation coupon";
+        msgEl.className = "text-xs mt-1 min-h-[1.25rem] font-medium text-red-500";
+    }
+};
 
 // --- Confirm Order from Page ---
 window.confirmOrderFromPage = async () => {
@@ -1393,6 +1498,10 @@ window.confirmOrderFromPage = async () => {
         paymentMethod: paymentMethod,
         senderNumber: senderNumber,
         trxId: trxId,
+        paymentMethod: paymentMethod,
+        senderNumber: senderNumber,
+        trxId: trxId,
+        couponCode: window.appliedCouponCode,
         status: 'Pending'
     };
 
@@ -1493,7 +1602,7 @@ window.confirmOrder = async () => {
     }
 
     const phone = '+88' + phoneInput; // Add Country Code standard
-    const orderId = '#NG-' + Math.floor(10000 + Math.random() * 90000);
+    const orderId = 'NG-' + Math.floor(10000000 + Math.random() * 90000000);
 
     const date = new Date();
     date.setDate(date.getDate() + 3);
@@ -1534,6 +1643,7 @@ window.confirmOrder = async () => {
         paymentMethod: paymentMethod,
         senderNumber: senderNumber, // Added
         trxId: trxId,               // Added
+        shippingFee: window.shippingFee, // Added for server-side calculation
         status: 'Pending'
     };
 

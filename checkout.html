@@ -192,6 +192,19 @@
                     <p class="text-sm text-gray-500 text-center py-4">Loading items...</p>
                 </div>
 
+                <!-- Coupon Code -->
+                <div class="mb-4 pt-4 border-t border-brand-deep/10">
+                    <div class="flex gap-2">
+                        <input type="text" id="coupon-code" placeholder="Coupon Code"
+                            class="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-terracotta transition-colors uppercase">
+                        <button type="button" onclick="checkCoupon()"
+                            class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-brand-terracotta transition-colors shadow-sm">
+                            APPLY
+                        </button>
+                    </div>
+                    <p id="coupon-message" class="text-xs mt-1 min-h-[1.25rem] font-medium"></p>
+                </div>
+
                 <!-- Totals -->
                 <div class="flex justify-between items-center text-sm mb-2">
                     <span class="text-gray-600">Subtotal</span>
