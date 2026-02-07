@@ -57,6 +57,8 @@
 
     <!-- Tailwind CSS -->
     <link href="./assets/styles.css" rel="stylesheet">
+    <!-- Custom Animations & Polish -->
+    <link href="./assets/animations.css" rel="stylesheet">
 </head>
 
 <body class="bg-white font-sans text-brand-deep antialiased">
@@ -103,23 +105,26 @@
         <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
 
             <!-- Image Gallery -->
-            <div class="space-y-4">
+            <div class="space-y-4 animate-fade-in-up">
                 <!-- Main Image -->
-                <div class="aspect-[4/5] bg-gray-50 rounded-2xl overflow-hidden shadow-lg">
-                    <img id="main-image" src="" alt="" class="w-full h-full object-cover" loading="lazy">
+                <div class="aspect-[4/5] bg-gray-50 rounded-2xl overflow-hidden shadow-lg img-zoom">
+                    <img id="main-image" src="" alt=""
+                        class="w-full h-full object-cover transition-transform duration-500" loading="lazy">
                 </div>
                 <!-- Thumbnails -->
-                <div id="thumbnails" class="flex gap-3 overflow-x-auto pb-2"></div>
+                <div id="thumbnails" class="flex gap-3 overflow-x-auto pb-2 animate-slide-in-left anim-delay-2"></div>
             </div>
 
             <!-- Product Info -->
-            <div class="flex flex-col">
+            <div class="flex flex-col animate-slide-in-right">
                 <!-- Category -->
-                <p id="product-category" class="text-xs uppercase tracking-widest text-brand-terracotta font-bold mb-2">
+                <p id="product-category"
+                    class="text-xs uppercase tracking-widest text-brand-terracotta font-bold mb-2 anim-delay-1">
                 </p>
 
                 <!-- Title -->
-                <h1 id="product-title" class="text-3xl md:text-4xl font-serif font-bold text-brand-deep mb-4"></h1>
+                <h1 id="product-title"
+                    class="text-3xl md:text-4xl font-serif font-bold text-brand-deep mb-4 gradient-text"></h1>
 
                 <!-- Price -->
                 <div class="flex items-baseline gap-3 mb-6">
@@ -164,7 +169,7 @@
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 mb-8">
                     <button id="btn-add-cart" onclick="addToCartFromPage()"
-                        class="flex-1 bg-white border-2 border-brand-deep text-brand-deep py-4 rounded-xl font-bold hover:bg-brand-deep hover:text-white transition flex items-center justify-center gap-2">
+                        class="flex-1 bg-white border-2 border-brand-deep text-brand-deep py-4 rounded-xl font-bold hover:bg-brand-deep hover:text-white transition-all duration-300 flex items-center justify-center gap-2 ripple hover:-translate-y-1 hover:shadow-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
@@ -173,29 +178,33 @@
                         Add to Cart
                     </button>
                     <button id="btn-buy-now" onclick="buyNowFromPage()"
-                        class="flex-1 bg-gradient-to-r from-brand-deep to-brand-terracotta text-white py-4 rounded-xl font-bold hover:opacity-90 transition shadow-lg">
+                        class="flex-1 bg-gradient-to-r from-brand-deep to-brand-terracotta text-white py-4 rounded-xl font-bold transition-all duration-300 shadow-lg btn-premium shine animate-pulse-glow">
                         Buy Now
                     </button>
                 </div>
 
                 <!-- Shipping Info -->
-                <div class="bg-gray-50 rounded-xl p-5 space-y-3">
-                    <div class="flex items-center gap-3 text-sm text-gray-600">
-                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div
+                    class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 space-y-3 border border-gray-100 glass-light">
+                    <div class="flex items-center gap-3 text-sm text-gray-600 animate-fade-in-up anim-delay-1">
+                        <svg class="w-5 h-5 text-green-500 animate-bounce-in" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
                             </path>
                         </svg>
                         <span>Free shipping on orders over ৳2000</span>
                     </div>
-                    <div class="flex items-center gap-3 text-sm text-gray-600">
-                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-3 text-sm text-gray-600 animate-fade-in-up anim-delay-2">
+                        <svg class="w-5 h-5 text-green-500 animate-bounce-in" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
                             </path>
                         </svg>
                         <span>3-5 day delivery within Bangladesh</span>
                     </div>
-                    <div class="flex items-center gap-3 text-sm text-gray-600">
-                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-3 text-sm text-gray-600 animate-fade-in-up anim-delay-3">
+                        <svg class="w-5 h-5 text-green-500 animate-bounce-in" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
                             </path>
                         </svg>
