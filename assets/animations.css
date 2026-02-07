@@ -167,25 +167,35 @@
     animation: rotateIn 0.5s ease-out forwards;
 }
 
-/* Staggered animation delays */
+/* Staggered animation delays - elements start hidden, then animate in */
 .anim-delay-1 {
     animation-delay: 0.1s;
+    opacity: 0;
+    animation-fill-mode: forwards;
 }
 
 .anim-delay-2 {
     animation-delay: 0.2s;
+    opacity: 0;
+    animation-fill-mode: forwards;
 }
 
 .anim-delay-3 {
     animation-delay: 0.3s;
+    opacity: 0;
+    animation-fill-mode: forwards;
 }
 
 .anim-delay-4 {
     animation-delay: 0.4s;
+    opacity: 0;
+    animation-fill-mode: forwards;
 }
 
 .anim-delay-5 {
     animation-delay: 0.5s;
+    opacity: 0;
+    animation-fill-mode: forwards;
 }
 
 /* ===== GLASSMORPHISM EFFECTS ===== */
