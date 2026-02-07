@@ -255,20 +255,93 @@ window.handleSearch = (query) => {
 };
 
 // ==============================================
-// PRICE FILTER LOGIC
+// UNIFIED FILTER/SORT/SEARCH LOGIC
 // ==============================================
-window.applyPriceFilter = () => {
-    const min = document.getElementById('min-price')?.value;
-    const max = document.getElementById('max-price')?.value;
-    const search = document.getElementById('desktop-search')?.value || document.getElementById('mobile-search')?.value;
+let filterDebounceTimer;
+window.applyAllFilters = () => {
+    clearTimeout(filterDebounceTimer);
+    filterDebounceTimer = setTimeout(() => {
+        const searchQuery = document.getElementById('search-input')?.value?.trim().toLowerCase() || '';
+        const minPrice = parseFloat(document.getElementById('min-price')?.value) || 0;
+        const maxPrice = parseFloat(document.getElementById('max-price')?.value) || Infinity;
+        const sortBy = document.getElementById('sort-select')?.value || 'newest';
+        const inStockOnly = document.getElementById('instock-toggle')?.checked || false;
 
-    initProducts({
-        search: search,
-        category: currentCategory,
-        min: min,
-        max: max
-    });
+        console.log('🔍 Applying filters:', { searchQuery, minPrice, maxPrice, sortBy, inStockOnly, category: currentCategory });
+
+        let filtered = [...allProducts];
+
+        // Category filter
+        if (currentCategory && currentCategory !== 'all') {
+            filtered = filtered.filter(p => p.category_slug === currentCategory);
+        }
+
+        // Search filter (name + category)
+        if (searchQuery) {
+            filtered = filtered.filter(p =>
+                p.name?.toLowerCase().includes(searchQuery) ||
+                p.category_name?.toLowerCase().includes(searchQuery) ||
+                p.description?.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        // Price filter
+        filtered = filtered.filter(p => {
+            const price = parseFloat(p.price) || 0;
+            return price >= minPrice && price <= maxPrice;
+        });
+
+        // In-Stock filter
+        if (inStockOnly) {
+            filtered = filtered.filter(p => parseInt(p.stock_quantity) > 0);
+        }
+
+        // Sorting
+        switch (sortBy) {
+            case 'price-low':
+                filtered.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+                break;
+            case 'price-high':
+                filtered.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+                break;
+            case 'name':
+                filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                break;
+            case 'newest':
+            default:
+                filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                break;
+        }
+
+        console.log(`✅ Filtered to ${filtered.length} products`);
+        renderProducts(filtered);
+    }, 300);
 };
+
+window.clearAllFilters = () => {
+    document.getElementById('search-input').value = '';
+    document.getElementById('min-price').value = '';
+    document.getElementById('max-price').value = '';
+    document.getElementById('sort-select').value = 'newest';
+    document.getElementById('instock-toggle').checked = false;
+    currentCategory = 'all';
+
+    // Reset category button states
+    document.querySelectorAll('.category-btn').forEach((btn, i) => {
+        if (i === 0) {
+            btn.classList.add('active', 'bg-brand-terracotta', 'text-white', 'shadow-lg', 'scale-105');
+            btn.classList.remove('text-gray-500');
+        } else {
+            btn.classList.remove('active', 'bg-brand-terracotta', 'text-white', 'shadow-lg', 'scale-105');
+            btn.classList.add('text-gray-500');
+        }
+    });
+
+    renderProducts(allProducts);
+};
+
+// Legacy function for backward compatibility
+window.applyPriceFilter = applyAllFilters;
 
 
 // ==============================================

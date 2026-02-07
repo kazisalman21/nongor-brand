@@ -313,23 +313,55 @@
                 <!-- Injected by JS -->
             </div>
 
-            <!-- Price Filter -->
-            <div class="flex justify-center items-center gap-2 mb-12 animate-fade-in-up" style="animation-delay: 0.1s">
+            <!-- Search Bar -->
+            <div class="flex justify-center mb-6">
+                <div class="relative w-full max-w-md">
+                    <input type="text" id="search-input" placeholder="Search products..."
+                        class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:border-brand-terracotta text-gray-700"
+                        oninput="applyAllFilters()">
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Filter Controls Row -->
+            <div class="flex flex-wrap justify-center items-center gap-4 mb-12">
+                <!-- Price Range -->
                 <div class="flex items-center bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
                     <span class="text-gray-400 text-sm mr-2">৳</span>
                     <input type="number" id="min-price" placeholder="Min" class="w-16 md:w-20 outline-none text-sm"
-                        min="0">
+                        min="0" oninput="applyAllFilters()">
                 </div>
                 <span class="text-gray-400">-</span>
                 <div class="flex items-center bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
                     <span class="text-gray-400 text-sm mr-2">৳</span>
                     <input type="number" id="max-price" placeholder="Max" class="w-16 md:w-20 outline-none text-sm"
-                        min="0">
+                        min="0" oninput="applyAllFilters()">
                 </div>
-                <button onclick="applyPriceFilter()"
-                    class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand-terracotta transition-colors shadow-sm">
-                    FILTER
-                </button>
+
+                <!-- Sort Dropdown -->
+                <select id="sort-select" onchange="applyAllFilters()"
+                    class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-700 shadow-sm focus:outline-none focus:border-brand-terracotta cursor-pointer">
+                    <option value="newest">Newest</option>
+                    <option value="price-low">Price: Low → High</option>
+                    <option value="price-high">Price: High → Low</option>
+                    <option value="name">Name A-Z</option>
+                </select>
+
+                <!-- In Stock Toggle -->
+                <label
+                    class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm cursor-pointer hover:border-brand-terracotta transition">
+                    <input type="checkbox" id="instock-toggle" onchange="applyAllFilters()"
+                        class="w-4 h-4 accent-brand-terracotta">
+                    <span class="text-sm text-gray-700">In Stock Only</span>
+                </label>
+
+                <!-- Clear Filters -->
+                <button onclick="clearAllFilters()"
+                    class="text-sm text-gray-500 hover:text-brand-terracotta underline">Clear</button>
             </div>
 
             <!-- Products Grid -->

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L96D9CXWFY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-L96D9CXWFY');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Default Meta (Updated dynamically by JS) -->
+    <meta name="description" id="meta-description"
+        content="নোঙর - বাংলাদেশের প্রিমিয়াম ক্লোদিং ব্র্যান্ড। Premium Bangladeshi clothing brand.">
+    <meta name="theme-color" content="#3D405B">
+
+    <!-- Open Graph / Facebook / WhatsApp (Updated dynamically) -->
+    <meta property="fb:app_id" content="966242223397117">
+    <meta property="og:type" content="product">
+    <meta property="og:url" id="og-url" content="https://nongor-brand.vercel.app/product.html">
+    <meta property="og:title" id="og-title" content="নোঙর | Product">
+    <meta property="og:description" id="og-description"
+        content="Premium Bangladeshi clothing with handcrafted heritage.">
+    <meta property="og:image" id="og-image" content="https://nongor-brand.vercel.app/assets/logo.jpeg">
+    <meta property="og:image:width" content="800">
+    <meta property="og:image:height" content="800">
+    <meta property="og:locale" content="bn_BD">
+    <meta property="og:site_name" content="নোঙর - Nongor">
+    <meta property="product:price:amount" id="og-price" content="0">
+    <meta property="product:price:currency" content="BDT">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twitter-title" content="নোঙর | Product">
+    <meta name="twitter:description" id="twitter-description"
+        content="Premium Bangladeshi clothing with handcrafted heritage.">
+    <meta name="twitter:image" id="twitter-image" content="https://nongor-brand.vercel.app/assets/logo.jpeg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" sizes="32x32" href="./assets/logo.jpeg">
+    <link rel="apple-touch-icon" href="./assets/logo.jpeg">
+    <link rel="manifest" href="/manifest.json">
+
+    <title id="page-title">নোঙর | Product</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <link href="./assets/styles.css" rel="stylesheet">
+</head>
+
+<body class="bg-white font-sans text-brand-deep antialiased">
+
+    <!-- Simple Header -->
+    <header class="bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="./assets/logo.jpeg" alt="নোঙর" class="h-10 rounded-lg">
+                <span class="text-2xl font-serif font-bold text-brand-deep">নোঙর</span>
+            </a>
+            <a href="index.html#collection"
+                class="text-sm font-medium text-gray-600 hover:text-brand-terracotta transition">← Back to Shop</a>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="product-loading" class="flex items-center justify-center min-h-[60vh]">
+        <div class="text-center">
+            <div
+                class="animate-spin w-12 h-12 border-4 border-brand-terracotta border-t-transparent rounded-full mx-auto mb-4">
+            </div>
+            <p class="text-gray-500">Loading product...</p>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="product-error" class="hidden flex items-center justify-center min-h-[60vh]">
+        <div class="text-center px-6">
+            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 class="text-xl font-bold text-gray-700 mb-2">Product Not Found</h2>
+            <p class="text-gray-500 mb-6">The product you're looking for doesn't exist or has been removed.</p>
+            <a href="index.html#collection"
+                class="inline-block bg-brand-deep text-white px-6 py-3 rounded-xl font-medium hover:bg-brand-terracotta transition">Browse
+                Collection</a>
+        </div>
+    </div>
+
+    <!-- Product Content -->
+    <main id="product-content" class="hidden max-w-6xl mx-auto px-4 py-8">
+        <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+
+            <!-- Image Gallery -->
+            <div class="space-y-4">
+                <!-- Main Image -->
+                <div class="aspect-[4/5] bg-gray-50 rounded-2xl overflow-hidden shadow-lg">
+                    <img id="main-image" src="" alt="" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <!-- Thumbnails -->
+                <div id="thumbnails" class="flex gap-3 overflow-x-auto pb-2"></div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="flex flex-col">
+                <!-- Category -->
+                <p id="product-category" class="text-xs uppercase tracking-widest text-brand-terracotta font-bold mb-2">
+                </p>
+
+                <!-- Title -->
+                <h1 id="product-title" class="text-3xl md:text-4xl font-serif font-bold text-brand-deep mb-4"></h1>
+
+                <!-- Price -->
+                <div class="flex items-baseline gap-3 mb-6">
+                    <span id="product-price" class="text-3xl font-bold text-brand-deep"></span>
+                    <span class="text-sm text-gray-400 line-through" id="product-original-price"></span>
+                </div>
+
+                <!-- Stock Status -->
+                <div id="stock-status" class="flex items-center gap-2 mb-6"></div>
+
+                <!-- Description -->
+                <p id="product-description" class="text-gray-600 leading-relaxed mb-8"></p>
+
+                <!-- Size Selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">Size</label>
+                    <div id="size-options" class="flex flex-wrap gap-3"></div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">Quantity</label>
+                    <div class="flex items-center gap-4">
+                        <button onclick="updateQty(-1)"
+                            class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-brand-terracotta transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4">
+                                </path>
+                            </svg>
+                        </button>
+                        <span id="qty-display" class="text-xl font-bold w-8 text-center">1</span>
+                        <button onclick="updateQty(1)"
+                            class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-brand-terracotta transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                    <button id="btn-add-cart" onclick="addToCartFromPage()"
+                        class="flex-1 bg-white border-2 border-brand-deep text-brand-deep py-4 rounded-xl font-bold hover:bg-brand-deep hover:text-white transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                        Add to Cart
+                    </button>
+                    <button id="btn-buy-now" onclick="buyNowFromPage()"
+                        class="flex-1 bg-gradient-to-r from-brand-deep to-brand-terracotta text-white py-4 rounded-xl font-bold hover:opacity-90 transition shadow-lg">
+                        Buy Now
+                    </button>
+                </div>
+
+                <!-- Shipping Info -->
+                <div class="bg-gray-50 rounded-xl p-5 space-y-3">
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <span>Free shipping on orders over ৳2000</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <span>3-5 day delivery within Bangladesh</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        <span>Easy returns within 7 days</span>
+                    </div>
+                </div>
+
+                <!-- Share Button -->
+                <button onclick="shareProduct()"
+                    class="mt-6 flex items-center justify-center gap-2 text-gray-500 hover:text-brand-terracotta transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+                        </path>
+                    </svg>
+                    Share this product
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white text-brand-deep pt-12 pb-6 border-t border-gray-100 mt-12">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <p class="text-sm text-gray-400">© 2024 নোঙর - Nongor. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-xl border border-gray-100 hidden opacity-0 translate-y-20 transition-all duration-300 z-50 flex items-center gap-3">
+        <div id="toast-icon" class="w-2 h-2 rounded-full bg-green-500"></div>
+        <span id="toast-message" class="text-sm font-medium text-gray-700"></span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./script.js"></script>
+    <script>
+        const API_URL = '/api';
+        let currentProduct = null;
+        let selectedSize = 'M';
+        let quantity = 1;
+
+        // Init on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id');
+
+            if (!productId) {
+                showError();
+                return;
+            }
+
+            await loadProduct(productId);
+        });
+
+        async function loadProduct(id) {
+            try {
+                const res = await fetch(`${API_URL}?action=getProducts`);
+                const data = await res.json();
+
+                if (data.result !== 'success') throw new Error('Failed to load');
+
+                currentProduct = data.data.find(p => p.id == id);
+
+                if (!currentProduct) {
+                    showError();
+                    return;
+                }
+
+                renderProduct(currentProduct);
+                updateMetaTags(currentProduct);
+                document.getElementById('product-loading').classList.add('hidden');
+                document.getElementById('product-content').classList.remove('hidden');
+
+            } catch (e) {
+                console.error(e);
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('product-loading').classList.add('hidden');
+            document.getElementById('product-error').classList.remove('hidden');
+        }
+
+        function renderProduct(product) {
+            // Title
+            document.getElementById('product-title').textContent = product.name;
+            document.getElementById('page-title').textContent = `${product.name} | নোঙর`;
+
+            // Category
+            document.getElementById('product-category').textContent = product.category_name || 'Collection';
+
+            // Price
+            document.getElementById('product-price').textContent = `৳${parseFloat(product.price).toLocaleString()}`;
+
+            // Description
+            document.getElementById('product-description').textContent = product.description || 'Premium quality Bangladeshi clothing.';
+
+            // Stock
+            const stock = parseInt(product.stock_quantity) || 0;
+            const stockEl = document.getElementById('stock-status');
+            if (stock > 0) {
+                stockEl.innerHTML = `<span class="w-2 h-2 bg-green-500 rounded-full"></span><span class="text-sm text-green-600 font-medium">In Stock (${stock} available)</span>`;
+            } else {
+                stockEl.innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full"></span><span class="text-sm text-red-600 font-medium">Out of Stock</span>`;
+                document.getElementById('btn-add-cart').disabled = true;
+                document.getElementById('btn-buy-now').disabled = true;
+            }
+
+            // Main Image
+            const mainImg = document.getElementById('main-image');
+            const imgSrc = product.image?.startsWith('http') ? product.image : `./assets/${product.image || 'logo.jpeg'}`;
+            mainImg.src = imgSrc;
+            mainImg.alt = product.name;
+
+            // Thumbnails
+            const thumbContainer = document.getElementById('thumbnails');
+            let images = [product.image];
+            if (product.images && Array.isArray(product.images)) {
+                images = [...new Set([product.image, ...product.images])].filter(Boolean);
+            }
+            thumbContainer.innerHTML = images.map((img, i) => {
+                const src = img?.startsWith('http') ? img : `./assets/${img || 'logo.jpeg'}`;
+                return `<img src="${src}" alt="Thumbnail ${i + 1}" onclick="changeMainImage('${src}')" class="w-16 h-20 object-cover rounded-lg cursor-pointer border-2 ${i === 0 ? 'border-brand-terracotta' : 'border-gray-200'} hover:border-brand-terracotta transition">`;
+            }).join('');
+
+            // Sizes
+            const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+            document.getElementById('size-options').innerHTML = sizes.map(s => `
+                <button onclick="selectSize('${s}')" class="size-btn px-4 py-2 border-2 rounded-lg font-medium transition ${s === selectedSize ? 'border-brand-terracotta bg-brand-terracotta/10 text-brand-terracotta' : 'border-gray-200 text-gray-600 hover:border-brand-terracotta'}">${s}</button>
+            `).join('');
+        }
+
+        function updateMetaTags(product) {
+            const url = window.location.href;
+            const imgSrc = product.image?.startsWith('http') ? product.image : `https://nongor-brand.vercel.app/assets/${product.image || 'logo.jpeg'}`;
+            const desc = product.description || 'Premium quality Bangladeshi clothing from Nongor.';
+
+            document.getElementById('meta-description').content = desc;
+            document.getElementById('og-url').content = url;
+            document.getElementById('og-title').content = `${product.name} | নোঙর`;
+            document.getElementById('og-description').content = desc;
+            document.getElementById('og-image').content = imgSrc;
+            document.getElementById('og-price').content = product.price;
+            document.getElementById('twitter-title').content = `${product.name} | নোঙর`;
+            document.getElementById('twitter-description').content = desc;
+            document.getElementById('twitter-image').content = imgSrc;
+        }
+
+        function changeMainImage(src) {
+            document.getElementById('main-image').src = src;
+            document.querySelectorAll('#thumbnails img').forEach(img => {
+                img.classList.toggle('border-brand-terracotta', img.src === src);
+                img.classList.toggle('border-gray-200', img.src !== src);
+            });
+        }
+
+        function selectSize(size) {
+            selectedSize = size;
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                const isSelected = btn.textContent.trim() === size;
+                btn.classList.toggle('border-brand-terracotta', isSelected);
+                btn.classList.toggle('bg-brand-terracotta/10', isSelected);
+                btn.classList.toggle('text-brand-terracotta', isSelected);
+                btn.classList.toggle('border-gray-200', !isSelected);
+                btn.classList.toggle('text-gray-600', !isSelected);
+            });
+        }
+
+        function updateQty(delta) {
+            quantity = Math.min(10, Math.max(1, quantity + delta));
+            document.getElementById('qty-display').textContent = quantity;
+        }
+
+        function addToCartFromPage() {
+            if (!currentProduct) return;
+            const cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+            cart.push({
+                id: currentProduct.id,
+                name: currentProduct.name,
+                price: currentProduct.price,
+                image: currentProduct.image,
+                size: selectedSize,
+                quantity: quantity,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('nongor_cart', JSON.stringify(cart));
+            showToast('Added to cart! 🛒');
+        }
+
+        function buyNowFromPage() {
+            if (!currentProduct) return;
+            const buyNowItem = [{
+                id: currentProduct.id,
+                name: currentProduct.name,
+                price: currentProduct.price,
+                image: currentProduct.image,
+                size: selectedSize,
+                quantity: quantity
+            }];
+            localStorage.setItem('nongor_direct_buy', JSON.stringify(buyNowItem));
+            window.location.href = `checkout.html?mode=direct`;
+        }
+
+        function shareProduct() {
+            if (navigator.share) {
+                navigator.share({
+                    title: currentProduct.name + ' | নোঙর',
+                    text: `Check out ${currentProduct.name} from Nongor!`,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showToast('Link copied! 📋');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.remove('hidden', 'opacity-0', 'translate-y-20');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-20');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

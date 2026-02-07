@@ -223,7 +223,56 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
-            // --- VALIDATE COUPON (Public) ---
+            // --- GET REVIEWS (Public - by product_id, approved only) ---
+            if (query.action === 'getReviews') {
+                const productId = parseInt(query.productId);
+                if (!productId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'productId is required' });
+                }
+
+                const result = await client.query(
+                    'SELECT id, reviewer_name, rating, comment, created_at FROM reviews WHERE product_id = $1 AND approved = true ORDER BY created_at DESC',
+                    [productId]
+                );
+
+                // Calculate average rating
+                let avgRating = 0;
+                if (result.rows.length > 0) {
+                    const sum = result.rows.reduce((acc, r) => acc + r.rating, 0);
+                    avgRating = (sum / result.rows.length).toFixed(1);
+                }
+
+                client.release();
+                return res.status(200).json({
+                    result: 'success',
+                    data: result.rows,
+                    avgRating: parseFloat(avgRating),
+                    count: result.rows.length
+                });
+            }
+
+            // --- GET ALL REVIEWS (Admin - all reviews, all products) ---
+            if (query.action === 'getAllReviews') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Admin access required' });
+                }
+
+                const result = await client.query(`
+                    SELECT r.*, p.name as product_name 
+                    FROM reviews r 
+                    LEFT JOIN products p ON r.product_id = p.id 
+                    ORDER BY r.created_at DESC
+                `);
+                client.release();
+                return res.status(200).json({ result: 'success', data: result.rows });
+            }
             if (query.action === 'validateCoupon') {
                 const code = query.code;
                 const amount = parseFloat(query.amount) || 0;
@@ -414,7 +463,64 @@ module.exports = async (req, res) => {
                 }
             }
 
-            // --- CREATE ORDER (Public) ---
+            // --- CREATE REVIEW (Admin) ---
+            if (data.action === 'createReview') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Admin access required' });
+                }
+
+                const { productId, reviewerName, rating, comment, approved } = data;
+
+                if (!productId || !rating || rating < 1 || rating > 5) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'productId and valid rating (1-5) are required' });
+                }
+
+                const result = await client.query(
+                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment, approved) 
+                     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+                    [productId, reviewerName || 'Anonymous', rating, comment || '', approved !== false]
+                );
+
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Review created', data: result.rows[0] });
+            }
+
+            // --- TOGGLE REVIEW APPROVAL (Admin) ---
+            if (data.action === 'toggleReviewApproval') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Admin access required' });
+                }
+
+                const { reviewId, approved } = data;
+                if (!reviewId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'reviewId is required' });
+                }
+
+                const result = await client.query(
+                    'UPDATE reviews SET approved = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+                    [approved === true, reviewId]
+                );
+
+                client.release();
+                if (result.rows.length === 0) {
+                    return res.status(404).json({ result: 'error', message: 'Review not found' });
+                }
+                return res.status(200).json({ result: 'success', message: 'Review updated', data: result.rows[0] });
+            }
 
             // --- SECURITY: RATE LIMITING (Priority 1) ---
             // Get IP Address
