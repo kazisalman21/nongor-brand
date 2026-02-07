@@ -1105,19 +1105,7 @@ window.updateQuantity = (change) => {
     }
 };
 
-// Make functions globally accessible
-window.initProducts = initProducts;
-window.renderProducts = renderProducts;
-window.createProductCard = createProductCard;
-window.initCategories = initCategories;
-window.toggleMobileMenu = toggleMobileMenu;
-window.initCart = initCart;
-window.addToCart = addToCart;
-window.removeFromCart = removeFromCart;
-window.updateCartUI = updateCartUI;
-window.openCart = openCart;
-window.closeCart = closeCart;
-window.updateQuantity = updateQuantity;
+console.log('✅ Script loaded successfully');
 
 console.log('✅ Script loaded successfully');
 
