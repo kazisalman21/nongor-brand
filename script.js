@@ -1520,6 +1520,7 @@ window.confirmOrderFromPage = async () => {
         if (result.result === 'success') {
             document.getElementById('success-order-id').textContent = orderData.orderId;
             document.getElementById('order-success').classList.replace('hidden', 'flex');
+            document.getElementById('checkout-form').classList.add('hidden'); // Hide form
             document.body.style.overflow = 'hidden'; // Lock Scroll
 
             // Clear Cart after successful order
