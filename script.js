@@ -1471,25 +1471,23 @@ window.confirmOrderFromPage = async () => {
     const finalTotal = window.checkoutTotal + window.shippingFee; // Include Shipping
 
     const orderData = {
-        orderId: '#NG-' + Math.floor(10000 + Math.random() * 90000),
+        // orderId: generated on server
         customerName: name,
         customerEmail: email,
         customerPhone: fullPhone,
         address: address,
-        productName: itemsDescription,
-        items: window.checkoutPayload, // Send full items array for backend inventory update
-        price: '0',
+        productName: itemsDescription, // Keep for legacy/email?
+        items: window.checkoutPayload, // Send full items array
+        price: '0', // Server calculates
         size: 'Mixed',
         quantity: window.checkoutPayload.reduce((s, i) => s + i.quantity, 0),
-        totalPrice: finalTotal, // Send total with shipping
+        // totalPrice: Server calculates
         deliveryDate: new Date(Date.now() + 259200000).toLocaleDateString('en-GB'),
         paymentMethod: paymentMethod,
         senderNumber: senderNumber,
         trxId: trxId,
-        paymentMethod: paymentMethod,
-        senderNumber: senderNumber,
-        trxId: trxId,
         couponCode: window.appliedCouponCode,
+        shippingFee: window.shippingFee, // Server validates
         status: 'Pending'
     };
 
@@ -1506,7 +1504,8 @@ window.confirmOrderFromPage = async () => {
         const result = await res.json();
 
         if (result.result === 'success') {
-            document.getElementById('success-order-id').textContent = orderData.orderId;
+            const serverOrderId = result.data.order_id; // Use server ID
+            document.getElementById('success-order-id').textContent = serverOrderId;
             document.getElementById('order-success').classList.replace('hidden', 'flex');
             document.getElementById('checkout-form').classList.add('hidden'); // Hide form
             document.body.style.overflow = 'hidden'; // Lock Scroll
@@ -1618,21 +1617,29 @@ window.confirmOrder = async () => {
         }
     }
 
+    // Prepare Items for Backend
+    const items = [{
+        id: currentProductId,
+        quantity: currentQuantity,
+        size: selectedSize
+    }];
+
     const orderData = {
-        orderId: orderId,
+        // orderId: Generated on server
         customerName: name,
         customerPhone: phone,
         address: address,
         productName: document.getElementById('modal-title').textContent,
-        price: parseFloat(document.getElementById('modal-price').textContent.replace(/[^\d.]/g, '')),
+        // price: parseFloat(document.getElementById('modal-price').textContent.replace(/[^\d.]/g, '')),
+        items: items, // Send items!
         size: selectedSize,
         quantity: currentQuantity,
-        totalPrice: parseFloat(document.getElementById('modal-price').textContent.replace(/[^\d.]/g, '')) * currentQuantity,
+        // totalPrice: Server calculates
         deliveryDate: deliveryDate,
         paymentMethod: paymentMethod,
         senderNumber: senderNumber, // Added
         trxId: trxId,               // Added
-        shippingFee: window.shippingFee, // Added for server-side calculation
+        shippingFee: window.shippingFee || 70, // Default to 70 if not set
         status: 'Pending'
     };
 
@@ -1661,6 +1668,7 @@ window.confirmOrder = async () => {
 
         if (result.result === "success") {
             console.log("✅ Order saved!");
+            const serverOrderId = result.data.order_id;
 
             // Hide checkout form
             const checkoutForm = document.getElementById('checkout-form');
@@ -1677,7 +1685,7 @@ window.confirmOrder = async () => {
                 const orderIdEl = document.getElementById('success-order-id');
                 const deliveryDateEl = document.getElementById('success-delivery-date');
 
-                if (orderIdEl) orderIdEl.textContent = orderId;
+                if (orderIdEl) orderIdEl.textContent = serverOrderId;
                 if (deliveryDateEl) deliveryDateEl.textContent = deliveryDate;
             }
 
@@ -1749,18 +1757,30 @@ window.trackOrder = async () => {
                 paymentStatusEl.innerHTML = `<span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs">Due ⚠️</span>`;
             }
 
-            // Status Container
+            // Status Container (XSS FIX: Use textContent)
             const statusContainer = document.getElementById('track-status-container');
             const deliveryStatus = order.delivery_status || order.status || 'Pending';
             const paymentStatus = order.payment_status || 'Unpaid';
             const statusColor = getStatusColor(deliveryStatus);
 
-            statusContainer.innerHTML = `
-                <div class="flex flex-col gap-1">
-                    <span class="text-2xl font-bold ${statusColor} block">${deliveryStatus}</span>
-                    <span class="text-gray-400 text-xs text-left block mt-1"><span class="font-bold">Items:</span> ${order.product_name}</span>
-                </div>
-            `;
+            // Clear and rebuild using DOM methods for XSS safety
+            statusContainer.innerHTML = '';
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'flex flex-col gap-1';
+
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `text-2xl font-bold ${statusColor} block`;
+            statusSpan.textContent = deliveryStatus;
+
+            const itemsSpan = document.createElement('span');
+            itemsSpan.className = 'text-gray-400 text-xs text-left block mt-1';
+            itemsSpan.innerHTML = '<span class="font-bold">Items:</span> ';
+            const itemsText = document.createTextNode(order.product_name || '');
+            itemsSpan.appendChild(itemsText);
+
+            statusDiv.appendChild(statusSpan);
+            statusDiv.appendChild(itemsSpan);
+            statusContainer.appendChild(statusDiv);
 
             // Separate Payment Status Box
             const paymentBox = document.getElementById('track-payment-status');

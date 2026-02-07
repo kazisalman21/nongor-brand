@@ -148,7 +148,7 @@ module.exports = async (req, res) => {
                     return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
                 }
 
-                const result = await client.query('SELECT * FROM products WHERE is_active = true ORDER BY created_at DESC');
+                const result = await client.query('SELECT * FROM products ORDER BY created_at DESC'); // Admin sees ALL products
                 client.release();
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
@@ -463,6 +463,16 @@ module.exports = async (req, res) => {
             // --- TRANSACTION START ---
             await client.query('BEGIN');
 
+            // --- VALIDATE ITEMS REQUIRED ---
+            if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
+                await client.query('ROLLBACK');
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Order must contain at least one item' });
+            }
+
+            // --- SERVER-SIDE ORDER ID GENERATION ---
+            const generatedOrderId = 'NG-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
             let calculatedSubtotal = 0;
             const orderItemsToInsert = [];
 
@@ -511,8 +521,11 @@ module.exports = async (req, res) => {
                 invalidateProductCache();
             }
 
-            // Calculate Verification Total
-            const shippingFee = parseFloat(data.shippingFee) || 70; // Default or from client (validated?)
+            // Calculate Shipping Fee Server-Side
+            // Valid zones: 'inside_dhaka' => 70, 'outside_dhaka' => 120
+            const shippingZone = data.shippingZone || 'inside_dhaka';
+            const allowedShippingFees = { 'inside_dhaka': 70, 'outside_dhaka': 120 };
+            const shippingFee = allowedShippingFees[shippingZone] || 70;
             let finalTotal = calculatedSubtotal + shippingFee;
 
             // --- COUPON APPLICATION ---
@@ -567,7 +580,7 @@ module.exports = async (req, res) => {
             `;
 
             const values = [
-                data.orderId,
+                generatedOrderId, // Use server-generated ID
                 data.customerName,
                 data.customerPhone,
                 data.address,
@@ -594,7 +607,7 @@ module.exports = async (req, res) => {
             for (const item of orderItemsToInsert) {
                 await client.query(
                     'INSERT INTO order_items (order_id, product_id, qty, unit_price, size, line_total) VALUES ($1, $2, $3, $4, $5, $6)',
-                    [data.orderId, item.product_id, item.qty, item.unit_price, item.size, item.line_total]
+                    [generatedOrderId, item.product_id, item.qty, item.unit_price, item.size, item.line_total]
                 );
             }
 
@@ -607,17 +620,18 @@ module.exports = async (req, res) => {
             if (data.customerEmail) {
                 // We don't await this to keep API fast, but we log errors inside the function
                 sendOrderConfirmation({
-                    orderId: data.orderId,
+                    orderId: generatedOrderId,
                     customerName: data.customerName,
                     customerEmail: data.customerEmail,
                     products: data.productName, // passing string description for now 
-                    totalPrice: data.totalPrice,
+                    totalPrice: finalTotal,
                     address: data.address,
-                    deliveryDate: data.deliveryDate
+                    deliveryDate: data.deliveryDate,
+                    trackingToken: trackingToken // Include token for email link
                 }).catch(err => console.error('Email trigger failed:', err));
             }
 
-            return res.status(200).json({ result: 'success', message: 'Order Placed', orderId: data.orderId });
+            return res.status(200).json({ result: 'success', message: 'Order Placed', data: { order_id: generatedOrderId, tracking_token: trackingToken } });
         }
 
         // --- 3. PUT REQUESTS ---
