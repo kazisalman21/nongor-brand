@@ -205,6 +205,24 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
+            // --- GET ALL COUPONS (Admin) ---
+            if (query.action === 'getCoupons') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
+                }
+
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
+
+                const result = await client.query('SELECT * FROM coupons ORDER BY created_at DESC');
+                client.release();
+                return res.status(200).json({ result: 'success', data: result.rows });
+            }
+
             // --- VALIDATE COUPON (Public) ---
             if (query.action === 'validateCoupon') {
                 const code = query.code;
@@ -348,6 +366,52 @@ module.exports = async (req, res) => {
                 invalidateProductCache();
 
                 return res.status(200).json({ result: 'success', message: 'Product added', data: result.rows[0] });
+            }
+
+            // --- CREATE COUPON (Protected) ---
+            if (query.action === 'createCoupon') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
+
+                if (!data.code || !data.discountType || !data.discountValue) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Code, Type, and Value are required' });
+                }
+
+                const insertQuery = `
+                    INSERT INTO coupons (code, discount_type, discount_value, min_order_value, max_discount_amount, expires_at, usage_limit, is_active)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    RETURNING *
+                `;
+                const values = [
+                    data.code.toUpperCase(),
+                    data.discountType,
+                    parseFloat(data.discountValue),
+                    parseFloat(data.minOrderValue) || 0,
+                    data.maxDiscountAmount ? parseFloat(data.maxDiscountAmount) : null,
+                    data.expiresAt || null,
+                    data.usageLimit ? parseInt(data.usageLimit) : null,
+                    data.isActive !== false
+                ];
+
+                try {
+                    const result = await client.query(insertQuery, values);
+                    client.release();
+                    return res.status(200).json({ result: 'success', message: 'Coupon created', data: result.rows[0] });
+                } catch (e) {
+                    client.release();
+                    if (e.code === '23505') { // Unique violation
+                        return res.status(400).json({ result: 'error', message: 'Coupon code already exists' });
+                    }
+                    throw e;
+                }
             }
 
             // --- CREATE ORDER (Public) ---
@@ -645,6 +709,8 @@ module.exports = async (req, res) => {
             }
         }
 
+
+
         // --- 4. DELETE REQUESTS ---
         if (method === 'DELETE') {
             const auth = await verifySession(req, client);
@@ -655,6 +721,19 @@ module.exports = async (req, res) => {
             if (auth.user.role !== 'admin') {
                 client.release();
                 return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+            }
+
+            // --- DELETE COUPON ---
+            if (query.action === 'deleteCoupon') {
+                const couponId = query.id;
+                if (!couponId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Coupon ID required' });
+                }
+
+                await client.query('DELETE FROM coupons WHERE id = $1', [couponId]);
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Coupon deleted' });
             }
 
             const productId = query.id;

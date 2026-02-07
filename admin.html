@@ -1595,6 +1595,10 @@
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
                     🛍️ Products
                 </button>
+                <button onclick="switchTab('coupons')" id="tab-coupons-main"
+                    class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
+                    🎫 Coupons
+                </button>
             </div>
 
             <!-- Orders Section -->
@@ -1806,6 +1810,60 @@
                 </div>
             </div> <!-- End Products Section -->
 
+            <!-- Coupons Section (Hidden by default) -->
+            <div id="coupons-section" class="hidden">
+                <!-- Coupons Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Coupon Management</h2>
+                        <p class="text-gray-500 text-sm">Create and manage discount codes</p>
+                    </div>
+                    <button onclick="openCouponModal()"
+                        class="bg-brand-accent text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                        Create Coupon
+                    </button>
+                </div>
+
+                <!-- Coupons Table -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-100">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Code
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
+                                        Discount</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Min
+                                        Order</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Usage
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
+                                        Expires</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Status
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coupons-table-body" class="divide-y divide-gray-100">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="coupons-loading" class="py-12 text-center text-gray-400 hidden">
+                        <div
+                            class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-accent mx-auto mb-2">
+                        </div>
+                        Loading coupons...
+                    </div>
+                </div>
+            </div> <!-- End Coupons Section -->
+
         </main>
     </div>
 
@@ -1912,6 +1970,91 @@
                     <span id="submit-btn-text">Save Product</span>
                     <div id="submit-btn-spinner"
                         class="hidden animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div id="coupon-modal" class="fixed inset-0 z-[150] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeCouponModal()"></div>
+        <div
+            class="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div
+                class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white rounded-t-2xl">
+                <h3 class="text-xl font-bold text-gray-800">Create New Coupon</h3>
+                <button onclick="closeCouponModal()" class="p-2 hover:bg-gray-100 rounded-full transition">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <form id="coupon-form" onsubmit="handleCouponSubmit(event)" class="p-6 space-y-5">
+                <!-- Code -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Coupon Code *</label>
+                    <input type="text" id="coupon-code" required
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent transition uppercase"
+                        placeholder="e.g. SAVE10">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Type -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Type *</label>
+                        <select id="coupon-type" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent transition">
+                            <option value="percent">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (৳)</option>
+                        </select>
+                    </div>
+                    <!-- Value -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Value *</label>
+                        <input type="number" id="coupon-value" required min="0" step="0.01"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent transition"
+                            placeholder="10">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Min Order -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Min Order (৳)</label>
+                        <input type="number" id="coupon-min" min="0"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent transition"
+                            placeholder="0">
+                    </div>
+                    <!-- Max Discount -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Max Cap (৳)</label>
+                        <input type="number" id="coupon-max" min="0"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent transition"
+                            placeholder="Optional">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Usage Limit -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Usage Limit</label>
+                        <input type="number" id="coupon-limit" min="0"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent transition"
+                            placeholder="Optional">
+                    </div>
+                    <!-- Expiry -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Expires At</label>
+                        <input type="datetime-local" id="coupon-expiry"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent transition">
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" id="coupon-submit-btn"
+                    class="w-full bg-brand-accent text-white py-3 px-6 rounded-xl font-semibold hover:bg-purple-700 transition flex justify-center gap-2">
+                    <span>Create Coupon</span>
                 </button>
             </form>
         </div>
@@ -2513,22 +2656,29 @@
 
         // Tab Switching
         function switchTab(tab) {
-            const ordersSection = document.getElementById('orders-section');
-            const productsSection = document.getElementById('products-section');
             const ordersTab = document.getElementById('tab-orders-main');
             const productsTab = document.getElementById('tab-products-main');
+            const couponsTab = document.getElementById('tab-coupons-main');
+
+            const ordersSection = document.getElementById('orders-section');
+            const productsSection = document.getElementById('products-section');
+            const couponsSection = document.getElementById('coupons-section');
+
+            // Reset classes
+            [ordersTab, productsTab, couponsTab].forEach(t => t.className = 'px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors');
+            [ordersSection, productsSection, couponsSection].forEach(s => s.classList.add('hidden'));
 
             if (tab === 'orders') {
                 ordersSection.classList.remove('hidden');
-                productsSection.classList.add('hidden');
                 ordersTab.className = 'px-6 py-3 font-semibold text-brand-accent border-b-2 border-brand-accent transition-colors';
-                productsTab.className = 'px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors';
-            } else {
-                ordersSection.classList.add('hidden');
+            } else if (tab === 'products') {
                 productsSection.classList.remove('hidden');
-                ordersTab.className = 'px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors';
                 productsTab.className = 'px-6 py-3 font-semibold text-brand-accent border-b-2 border-brand-accent transition-colors';
                 loadProducts();
+            } else if (tab === 'coupons') {
+                couponsSection.classList.remove('hidden');
+                couponsTab.className = 'px-6 py-3 font-semibold text-brand-accent border-b-2 border-brand-accent transition-colors';
+                loadCoupons();
             }
         }
 
@@ -2845,6 +2995,147 @@
         }
 
         // Move Image (Reorder)
+        function moveImage(index, direction) {
+            if (index + direction < 0 || index + direction >= productImages.length) return;
+
+            // Swap
+            const temp = productImages[index];
+            productImages[index] = productImages[index + direction];
+            productImages[index + direction] = temp;
+
+            renderImagePreviews();
+        }
+
+        function removeImage(index) {
+            productImages.splice(index, 1);
+            renderImagePreviews();
+        }
+
+
+        // ==========================================
+        // COUPON MANAGEMENT FUNCTIONS
+        // ==========================================
+
+        async function loadCoupons() {
+            const tbody = document.getElementById('coupons-table-body');
+            const loading = document.getElementById('coupons-loading');
+
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+
+            try {
+                const response = await authenticatedFetch(`${API_URL}?action=getCoupons&_t=${Date.now()}`);
+                const result = await response.json();
+
+                loading.classList.add('hidden');
+
+                if (result.result === 'success') {
+                    renderCouponsTable(result.data);
+                } else {
+                    showToast('Failed to load coupons', 'red');
+                }
+            } catch (e) {
+                console.error(e);
+                loading.classList.add('hidden');
+            }
+        }
+
+        function renderCouponsTable(coupons) {
+            const tbody = document.getElementById('coupons-table-body');
+
+            if (coupons.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400">No coupons found. Create one!</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = coupons.map(c => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 font-mono font-bold text-brand-accent">${c.code}</td>
+                    <td class="px-6 py-4 font-bold text-gray-700">${c.discount_type === 'percent' ? c.discount_value + '%' : '৳' + c.discount_value}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">৳${c.min_order_value || 0}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${c.usage_count} / ${c.usage_limit || '∞'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${c.expires_at ? new Date(c.expires_at).toLocaleDateString() : 'Never'}</td>
+                    <td class="px-6 py-4">
+                        ${c.is_active ?
+                    '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Active</span>' :
+                    '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Inactive</span>'}
+                    </td>
+                    <td class="px-6 py-4">
+                        <button onclick="deleteCoupon(${c.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                </tr>
+             `).join('');
+        }
+
+        function openCouponModal() {
+            document.getElementById('coupon-form').reset();
+            document.getElementById('coupon-modal').classList.remove('hidden');
+        }
+
+        function closeCouponModal() {
+            document.getElementById('coupon-modal').classList.add('hidden');
+        }
+
+        async function handleCouponSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('coupon-submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>`;
+
+            const data = {
+                action: 'createCoupon',
+                code: document.getElementById('coupon-code').value,
+                discountType: document.getElementById('coupon-type').value,
+                discountValue: document.getElementById('coupon-value').value,
+                minOrderValue: document.getElementById('coupon-min').value,
+                maxDiscountAmount: document.getElementById('coupon-max').value,
+                usageLimit: document.getElementById('coupon-limit').value,
+                expiresAt: document.getElementById('coupon-expiry').value,
+                isActive: true
+            };
+
+            try {
+                const response = await authenticatedFetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if (result.result === 'success') {
+                    showToast('Coupon Created!', 'green');
+                    closeCouponModal();
+                    loadCoupons();
+                } else {
+                    showToast(result.message || 'Failed to create', 'red');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Network error', 'red');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Create Coupon';
+            }
+        }
+
+        async function deleteCoupon(id) {
+            if (!confirm('Delete this coupon?')) return;
+
+            try {
+                const response = await authenticatedFetch(`${API_URL}?action=deleteCoupon&id=${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (result.result === 'success') {
+                    showToast('Coupon Deleted', 'green');
+                    loadCoupons();
+                } else {
+                    showToast(result.message, 'red');
+                }
+            } catch (e) {
+                showToast('Error deleting coupon', 'red');
+            }
+        }
         window.moveImage = (index, direction) => {
             const newIndex = index + direction;
             if (newIndex >= 0 && newIndex < productImages.length) {
