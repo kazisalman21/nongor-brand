@@ -766,7 +766,7 @@ function showEmptyState(container) {
             <div class="text-6xl mb-4">🛍️</div>
             <h3 class="text-2xl font-bold text-gray-400 mb-2 font-bengali">কোনো পণ্য পাওয়া যায়নি</h3>
             <p class="text-gray-500 mb-6">শীঘ্রই নতুন পণ্য যোগ করা হবে!</p>
-            <button onclick="initProducts()" class="bg-brand-terracotta text-white px-6 py-3 rounded-full hover:bg-brand-deep transition-colors">
+            <button onclick="clearAllFilters()" class="bg-brand-terracotta text-white px-6 py-3 rounded-full hover:bg-brand-deep transition-colors">
                 আবার চেষ্টা করুন
             </button>
         </div>
