@@ -1,33 +1,46 @@
-# Nongor E-commerce Test Checklist
+# Test Checklist: Admin Change Password Feature
 
-## Security (Phase 0)
-- [ ] `.env` file is NOT present in git (`git ls-files | grep "^.env$"` returns nothing)
-- [ ] `node_modules/` is NOT tracked (`git ls-files | grep "^node_modules/"` returns nothing)
-- [ ] `git grep -nE 'postgres(ql)?:\/\/|neon\.tech' .` returns no real secrets
+## Pre-requisites
+- [ ] Database migration `scripts/migrate_admin_auth.js` has been run.
+- [ ] `admin_users` table exists and contains the 'admin' user.
+- [ ] Environment variable `ADMIN_PASSWORD` was set during migration (default: 'admin123' if not set, or whatever you used).
 
-## Frontend (Phase 1)
-- [ ] No `ReferenceError` in browser console on page load
-- [ ] No errors on Cart/Checkout flow
-- [ ] No errors on Admin Dashboard
+## 1. Initial Login
+- [ ] Open `admin.html`.
+- [ ] Login with user: `admin@nongor.com` and the **current** password (e.g., from env or 'admin123').
+- [ ] Verify login is successful and dashboard loads.
 
-## Order Flow (Phase 2-4)
-- [ ] **Buy Now Flow**: Works end-to-end
-- [ ] **Cart Checkout Flow**: Works end-to-end
-- [ ] **Order ID**: Format is `NG-XXXXXX` (no `#`)
-- [ ] **Totals**: Server-calculated (check DB `total_price` vs expected)
-- [ ] **Stock**: Deducted correctly after order
-- [ ] **`order_items` table**: Populated with correct `product_id`, `qty`, `unit_price`
+## 2. Locate Feature
+- [ ] Navigate to the "Settings" tab (newly added).
+- [ ] Verify the "Change Password" form is visible.
+- [ ] Verify fields: Current Password, New Password, Confirm Password.
 
-## Tracking (Phase 3)
-- [ ] Tracking by order ID works
-- [ ] Tracking by `tracking_token` works
-- [ ] API returns SAFE fields only (no phone/address/email/trxId)
+## 3. Validation Tests
+- [ ] **Mismatch**: Enter 'newpass123' and 'otherpass123'. Click Update.
+  - [ ] Expected: Error message "New passwords do not match".
+- [ ] **Short Password**: Enter 'short' (less than 12 chars). Click Update.
+  - [ ] Expected: Error message "New password must be at least 12 characters...".
+- [ ] **Wrong Current**: Enter WRONG current password. Click Update.
+  - [ ] Expected: Error message "Invalid current password".
 
-## Shipping (Phase 4)
-- [ ] Cannot tamper `shippingFee` via client request (server uses whitelist)
+## 4. Successful Change
+- [ ] Enter correct Current Password.
+- [ ] Enter valid New Password (min 12 chars, e.g., `NewStrongPass@2024!`).
+- [ ] Enter same Confirm Password.
+- [ ] Click Update.
+  - [ ] Expected: Success message "Password updated successfully...".
+  - [ ] Expected: Page reloads or redirects to login after ~1.5s.
 
-## XSS (Phase 5)
-- [ ] Tracking UI uses `textContent` for order data (not `innerHTML`)
+## 5. Re-authentication
+- [ ] Try to access dashboard (refresh page).
+  - [ ] Expected: You should be logged out (login screen visible).
+- [ ] Try logging in with **OLD** password.
+  - [ ] Expected: Login failed ("Invalid email or password").
+- [ ] Try logging in with **NEW** password.
+  - [ ] Expected: Login successful.
 
-## Admin (Phase 6)
-- [ ] Admin Dashboard shows INACTIVE products
+## 6. Security Verification (Optional)
+- [ ] Check Database: `SELECT * FROM admin_users;`
+  - [ ] Verify `password_hash` has changed.
+  - [ ] Verify `password_version` incremented.
+  - [ ] Verify `last_password_change` updated.

@@ -3,8 +3,10 @@
  * Uses connection pooling for faster responses
  */
 const pool = require('./db');
+const pool = require('./db');
 const { checkRateLimit } = require('./cache');
 const { sanitizeObject } = require('./sanitize');
+const bcrypt = require('bcryptjs');
 
 module.exports = async (req, res) => {
     // --- SECURITY: CORS & HEADERS ---
@@ -65,16 +67,66 @@ module.exports = async (req, res) => {
             }
 
             // Verify user credentials
-            const userResult = await client.query('SELECT * FROM auth.verify_user_v3($1::TEXT, $2::TEXT)', [email, password]);
+            // 1. Check admin_users table first (New DB Auth)
+            let adminUser = null;
+            const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin']); // Hardcoded 'admin' or use email? Prompt says "username 'admin'"
 
-            if (userResult.rows.length === 0) {
+            // Logic: If email is 'admin' or 'admin@nongor.com' (or whatever used before), map to 'admin' user
+            // Since previous system used env var, let's allow 'admin' username login or existing email if it maps.
+            // For now, let's try to match the password against the DB hash for the 'admin' user if the input looks like admin.
+
+            // Actually, let's keep it simple: Validate against DB 'admin' user if role is admin.
+            // But we don't know role yet.
+            // STRATEGY: 
+            // 1. Try to find user in admin_users by username (using email as username or just 'admin' if email is admin)
+            // 2. If found, verify hash.
+            // 3. If valid, we need to get the `auth.users` UUID to create a session.
+
+            let isAuthenticated = false;
+            let dbAuthUser = null; // The auth.users record
+
+            if (adminRes.rows.length > 0) {
+                const adminRow = adminRes.rows[0];
+                // Check if password matches
+                if (await bcrypt.compare(password, adminRow.password_hash)) {
+                    isAuthenticated = true;
+                    adminUser = adminRow;
+                }
+            }
+
+            if (isAuthenticated) {
+                // Admin login success via DB.
+                // Now find/ensure `auth.users` record exists for session creation.
+                // We'll search for an admin user in auth.users.
+                const authUserRes = await client.query("SELECT * FROM auth.users WHERE res_role = 'admin' LIMIT 1");
+
+                if (authUserRes.rows.length > 0) {
+                    dbAuthUser = authUserRes.rows[0];
+                } else {
+                    // Fallback?? If no admin in auth.users, we can't create session easily with existing SP.
+                    // But implementation plan assumed it exists. 
+                    // Let's assume the previous login would have worked so a user must exist.
+                    // If not, we might fail here.
+                    return res.status(500).json({ result: 'error', message: 'Admin user configuration error (Migration required)' });
+                }
+            } else {
+                // Fallback to legacy or standard user login (if any)
+                // Existing logic:
+                const userResult = await client.query('SELECT * FROM auth.verify_user_v3($1::TEXT, $2::TEXT)', [email, password]);
+                if (userResult.rows.length > 0) {
+                    dbAuthUser = userResult.rows[0];
+                    isAuthenticated = true;
+                }
+            }
+
+            if (!isAuthenticated) {
                 return res.status(401).json({
                     result: 'error',
                     message: 'Invalid email or password'
                 });
             }
 
-            const user = userResult.rows[0];
+            const user = dbAuthUser;
 
             // Check if user is admin
             if (user.res_role !== 'admin') {

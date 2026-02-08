@@ -1301,7 +1301,8 @@ window.initCheckout = async () => {
                 price: product.price,
                 image: product.image,
                 size: size,
-                quantity: qty
+                quantity: qty,
+                sizeType: 'standard' // Legacy fallback
             });
         }
     } else {
@@ -1325,7 +1326,13 @@ window.initCheckout = async () => {
                 <div class="flex justify-between items-start">
                     <div>
                         <h4 class="font-bold text-gray-900 text-sm line-clamp-1">${item.name}</h4>
-                        <p class="text-xs text-gray-500 mt-1">Size: <span class="font-bold text-brand-deep">${item.size}</span></p>
+                        ${item.sizeType === 'custom'
+            ? `<p class="text-xs text-gray-500 mt-1">Custom: <span class="font-bold text-brand-deep">${item.unit}</span></p>
+                               <p class="text-[10px] text-gray-400 leading-tight mt-0.5">
+                                 ${Object.entries(item.measurements || {}).map(([k, v]) => `${k}:${v}`).join(', ')}
+                               </p>`
+            : `<p class="text-xs text-gray-500 mt-1">Size: <span class="font-bold text-brand-deep">${item.size}</span></p>`
+        }
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-brand-terracotta text-sm">৳${((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)).toLocaleString()}</p>
@@ -1528,6 +1535,7 @@ window.confirmOrderFromPage = async () => {
 
     // Payment Logic
     const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+    const shippingZone = document.querySelector('input[name="shipping_zone"]:checked')?.value || 'inside_dhaka';
     let senderNumber = '', trxId = '';
 
     if (paymentMethod === 'Bkash') {
@@ -1540,7 +1548,13 @@ window.confirmOrderFromPage = async () => {
     }
 
     // Prepare Payload
-    const itemsDescription = window.checkoutPayload.map(i => `${i.name} (${i.size}) x${i.quantity} `).join(', ');
+    const itemsDescription = window.checkoutPayload.map(i => {
+        if (i.sizeType === 'custom') {
+            const m = Object.entries(i.measurements || {}).map(([k, v]) => `${k}:${v}`).join(', ');
+            return `${i.name} [Custom ${i.unit}: ${m}] x${i.quantity}`;
+        }
+        return `${i.name} (${i.size}) x${i.quantity}`;
+    }).join(', ');
     const finalTotal = window.checkoutTotal + window.shippingFee; // Include Shipping
 
     const orderData = {
@@ -1560,7 +1574,8 @@ window.confirmOrderFromPage = async () => {
         senderNumber: senderNumber,
         trxId: trxId,
         couponCode: window.appliedCouponCode,
-        shippingFee: window.shippingFee, // Server validates
+        shippingZone: shippingZone, // Added: explicit zone for backend calculation
+        shippingFee: window.shippingFee, // Server validates/recalculates
         status: 'Pending'
     };
 
@@ -1690,11 +1705,40 @@ window.confirmOrder = async () => {
         }
     }
 
+    // Validation (Custom Size)
+    let measurements = null;
+    let sizeLabel = selectedSize;
+    let unit = 'inch';
+    let notes = '';
+    let sizeType = 'standard';
+
+    if (window.getAndValidateMeasurements) {
+        // If we are in custom mode
+        if (typeof currentSizeType !== 'undefined' && currentSizeType === 'custom') {
+            const val = getAndValidateMeasurements();
+            if (!val.valid) {
+                confirmBtn.innerHTML = "অর্ডার নিশ্চিত করুন";
+                confirmBtn.disabled = false;
+                return;
+            }
+            sizeType = 'custom';
+            measurements = val.measurements;
+            unit = val.unit;
+            notes = val.notes;
+            const mStr = Object.entries(measurements).map(([k, v]) => `${k}:${v}`).join(', ');
+            sizeLabel = `Custom (${unit}): ${mStr}`;
+        }
+    }
+
     // Prepare Items for Backend
     const items = [{
         id: currentProductId,
         quantity: currentQuantity,
-        size: selectedSize
+        size: sizeLabel, // Descriptive
+        sizeType: sizeType,
+        unit: unit,
+        measurements: measurements,
+        notes: notes
     }];
 
     const orderData = {
@@ -1702,10 +1746,10 @@ window.confirmOrder = async () => {
         customerName: name,
         customerPhone: phone,
         address: address,
-        productName: document.getElementById('modal-title').textContent,
+        productName: document.getElementById('modal-title').textContent + (sizeType === 'custom' ? ` - ${sizeLabel}` : ''),
         // price: parseFloat(document.getElementById('modal-price').textContent.replace(/[^\d.]/g, '')),
         items: items, // Send items!
-        size: selectedSize,
+        size: sizeLabel,
         quantity: currentQuantity,
         // totalPrice: Server calculates
         deliveryDate: deliveryDate,
@@ -1811,8 +1855,16 @@ window.trackOrder = async () => {
         `;
         trackBtn.disabled = true;
 
-        // Fetch (GET request with cache busting)
-        const response = await fetch(`${API_URL}?orderId=${encodeURIComponent(idInput)}&_t=${Date.now()}`);
+        // Fetch (GET request with cache busting and token support)
+        let idInput = document.getElementById('track-id-input').value.trim();
+        let queryParam = 'orderId=' + encodeURIComponent(idInput);
+
+        // Auto-detect if input might be a token (length checking or if passed as arg)
+        if (idInput.length > 20) {
+            queryParam = 'tracking_token=' + encodeURIComponent(idInput);
+        }
+
+        const response = await fetch(`${API_URL}?${queryParam}&_t=${Date.now()}`);
         const result = await response.json();
 
         if (result.result === "success") {
@@ -1827,7 +1879,7 @@ window.trackOrder = async () => {
             if (order.status === 'Paid') {
                 paymentStatusEl.innerHTML = `<span class="text-green-600 bg-green-100 px-2 py-1 rounded text-xs">Paid ✅</span>`;
             } else {
-                paymentStatusEl.innerHTML = `<span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs">Due ⚠️</span>`;
+                paymentStatusEl.innerHTML = `<span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs">${order.payment_status || 'Due'} ⚠️</span>`;
             }
 
             // Status Container (XSS FIX: Use textContent)
@@ -1942,6 +1994,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof initProducts === 'function') initProducts();
         if (typeof initCategories === 'function') initCategories();
     }
+
+    // Auto-Tracking from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const trackToken = urlParams.get('track');
+    if (trackToken) {
+        // Clean up URL without reload
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        openTrackingModal();
+        document.getElementById('track-id-input').value = trackToken;
+        setTimeout(() => trackOrder(), 500); // Small delay to ensure modal render
+    }
 });
 // Copy Order ID
 function copyOrderId() {
@@ -1986,3 +2050,192 @@ function copyOrderId() {
 }
 
 
+
+// ==============================================
+// CUSTOM SIZING LOGIC (Appended)
+// ==============================================
+
+// --- Product Modal Logic ---
+let currentProduct = {};
+let currentSizeType = 'standard'; // 'standard' | 'custom'
+let currentMeasurementUnit = 'inch'; // 'inch' | 'cm'
+
+window.openProductModal = (product) => {
+    console.log('Opening modal for:', product.name);
+    currentProduct = product;
+    currentSizeType = 'standard';
+    currentMeasurementUnit = 'inch';
+
+    document.getElementById('product-modal').classList.remove('hidden');
+    document.getElementById('modal-title').textContent = product.name;
+    document.getElementById('modal-category').textContent = product.category || 'Apparel';
+    document.getElementById('modal-description').textContent = product.description || '';
+
+    // Ensure numeric price for display logic
+    const price = parseFloat(product.price) || 0;
+    document.getElementById('modal-price').textContent = `৳${price.toLocaleString()}`;
+
+    const qtyDisp = document.getElementById('quantity-display');
+    if (qtyDisp) qtyDisp.textContent = '1';
+    window.modalQuantity = 1;
+
+    updateSizeTypeUI();
+
+    // Size Selector
+    const sizeContainer = document.getElementById('size-selector');
+    if (sizeContainer) {
+        sizeContainer.innerHTML = '';
+        const sizes = (product.sizes && product.sizes.length > 0) ? product.sizes : ['M', 'L', 'XL', 'XXL'];
+        window.selectedSize = sizes[0];
+
+        sizes.forEach(size => {
+            const btn = document.createElement('button');
+            btn.textContent = size;
+            btn.className = `w-10 h-10 rounded-full border border-gray-200 hover:border-brand-terracotta transition flex items-center justify-center font-bold ${size === window.selectedSize ? 'bg-brand-deep text-white border-brand-deep' : 'text-gray-600'}`;
+            btn.onclick = () => {
+                window.selectedSize = size;
+                Array.from(sizeContainer.children).forEach(b => b.className = 'w-10 h-10 rounded-full border border-gray-200 hover:border-brand-terracotta transition flex items-center justify-center font-bold text-gray-600');
+                btn.className = 'w-10 h-10 rounded-full border border-brand-deep transition flex items-center justify-center font-bold bg-brand-deep text-white';
+            };
+            sizeContainer.appendChild(btn);
+        });
+    }
+
+    // Gallery
+    const galleryContainer = document.getElementById('modal-gallery');
+    const mainImage = document.getElementById('main-modal-image');
+    if (mainImage) mainImage.src = product.image;
+
+    if (galleryContainer && product.images && product.images.length > 0) {
+        galleryContainer.innerHTML = '';
+        [product.image, ...product.images].forEach(img => {
+            const thumb = document.createElement('img');
+            thumb.src = img;
+            thumb.className = "w-16 h-16 object-cover rounded-lg border border-gray-200 cursor-pointer hover:border-brand-terracotta transition";
+            thumb.onclick = () => mainImage.src = img;
+            galleryContainer.appendChild(thumb);
+        });
+    }
+};
+
+window.toggleSizeType = (type) => {
+    currentSizeType = type;
+    updateSizeTypeUI();
+};
+
+window.toggleUnit = (unit) => {
+    currentMeasurementUnit = unit;
+    const btnInch = document.getElementById('btn-unit-inch');
+    const btnCm = document.getElementById('btn-unit-cm');
+
+    if (btnInch) btnInch.className = `px-2 py-0.5 text-xs font-bold rounded-l ${unit === 'inch' ? 'bg-brand-terracotta text-white' : 'text-gray-500 bg-white'}`;
+    if (btnCm) btnCm.className = `px-2 py-0.5 text-xs font-bold rounded-r ${unit === 'cm' ? 'bg-brand-terracotta text-white' : 'text-gray-500 bg-white'}`;
+};
+
+function updateSizeTypeUI() {
+    const stdBtn = document.getElementById('btn-size-standard');
+    const cstBtn = document.getElementById('btn-size-custom');
+    const stdSelector = document.getElementById('size-selector');
+    const cstForm = document.getElementById('custom-size-form');
+
+    if (!stdBtn || !cstBtn || !stdSelector || !cstForm) return;
+
+    if (currentSizeType === 'standard') {
+        stdBtn.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-white shadow-sm text-brand-deep ring-1 ring-gray-200";
+        cstBtn.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all text-gray-500 hover:text-brand-deep";
+        stdSelector.classList.remove('hidden');
+        cstForm.classList.add('hidden');
+    } else {
+        stdBtn.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all text-gray-500 hover:text-brand-deep";
+        cstBtn.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-white shadow-sm text-brand-deep ring-1 ring-gray-200";
+        stdSelector.classList.add('hidden');
+        cstForm.classList.remove('hidden');
+    }
+}
+
+function getAndValidateMeasurements() {
+    if (currentSizeType === 'standard') return { valid: true };
+
+    const inputs = document.querySelectorAll('#custom-size-form input[data-measure]');
+    const measurements = {};
+    let isValid = true;
+
+    inputs.forEach(i => i.classList.remove('border-red-500'));
+
+    inputs.forEach(input => {
+        const val = parseFloat(input.value);
+        const name = input.getAttribute('data-measure');
+
+        if (isNaN(val) || val <= 0) {
+            isValid = false;
+            input.classList.add('border-red-500');
+        } else {
+            // Range checks
+            if (currentMeasurementUnit === 'inch' && (val < 5 || val > 100)) {
+                isValid = false;
+                input.classList.add('border-red-500');
+            } else if (currentMeasurementUnit === 'cm' && (val < 10 || val > 250)) {
+                isValid = false;
+                input.classList.add('border-red-500');
+            }
+            measurements[name] = val;
+        }
+    });
+
+    if (!isValid) {
+        showToast('Please check highlighted measurements', 'error');
+        return { valid: false };
+    }
+
+    const noteEl = document.getElementById('custom-note');
+    const note = noteEl ? noteEl.value.trim() : '';
+    return {
+        valid: true,
+        measurements,
+        unit: currentMeasurementUnit,
+        notes: note
+    };
+}
+
+window.addToCart = () => {
+    const validation = getAndValidateMeasurements();
+    if (!validation.valid) return;
+
+    const cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+
+    const newItem = {
+        id: currentProduct.id,
+        name: currentProduct.name,
+        price: currentProduct.price,
+        image: currentProduct.image,
+        quantity: window.modalQuantity || 1,
+        sizeType: currentSizeType,
+        size: currentSizeType === 'standard' ? window.selectedSize : `Custom (${validation.unit})`,
+        unit: validation.unit,
+        measurements: validation.measurements,
+        notes: validation.notes
+    };
+
+    // Smart merge
+    const existingIndex = cart.findIndex(item =>
+        item.id === newItem.id &&
+        item.sizeType === newItem.sizeType &&
+        item.size === newItem.size &&
+        JSON.stringify(item.measurements) === JSON.stringify(newItem.measurements)
+    );
+
+    if (existingIndex > -1) {
+        cart[existingIndex].quantity += newItem.quantity;
+    } else {
+        cart.push(newItem);
+    }
+
+    localStorage.setItem('nongor_cart', JSON.stringify(cart));
+    updateCartCount();
+    showToast(`${currentProduct.name} added to cart!`);
+
+    const modal = document.getElementById('product-modal');
+    if (modal) modal.classList.add('hidden');
+};
+
+console.log('✅ Custom Sizing Logic Loaded');

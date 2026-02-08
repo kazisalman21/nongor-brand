@@ -9,6 +9,7 @@ const { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit } = require('.
 const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
 const { sanitizeObject } = require('./sanitize');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 module.exports = async (req, res) => {
     // --- SECURITY: CORS & HEADERS ---
@@ -566,6 +567,89 @@ module.exports = async (req, res) => {
                 initialPayment = 'Due';
             }
 
+            // --- CHANGE ADMIN PASSWORD (Protected) ---
+            if (query.action === 'changeAdminPassword') {
+                // 1. Verify Session
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
+
+                // 2. Validate Input
+                const { currentPassword, newPassword, confirmPassword } = data;
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'All fields are required' });
+                }
+                if (newPassword !== confirmPassword) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'New passwords do not match' });
+                }
+                if (newPassword.length < 12) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Password must be at least 12 characters long' });
+                }
+                if (currentPassword === newPassword) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'New password cannot be the same as the current password' });
+                }
+
+                // 3. Verify Current Password (against admin_users)
+                // We assume the user is 'admin' (or we could fetch by ID if we linked them, but for now we look up 'admin')
+                const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin']);
+
+                if (adminRes.rows.length === 0) {
+                    // Should not happen if migration ran and login succeeded via DB
+                    client.release();
+                    return res.status(500).json({ result: 'error', message: 'Admin user not found in database' });
+                }
+
+                const adminUser = adminRes.rows[0];
+                const cleanCurrent = currentPassword.trim(); // trimming just in case, though standard says no
+
+                const isMatch = await bcrypt.compare(cleanCurrent, adminUser.password_hash);
+                if (!isMatch) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Invalid current password' });
+                }
+
+                // 4. Update Password
+                const salt = await bcrypt.genSalt(10);
+                const newHash = await bcrypt.hash(newPassword, salt);
+
+                await client.query(`
+                    UPDATE admin_users 
+                    SET password_hash = $1, 
+                        updated_at = NOW(), 
+                        last_password_change = NOW(),
+                        password_version = password_version + 1
+                    WHERE username = $2
+                `, [newHash, 'admin']);
+
+                // 5. Invalidate Session (Minimal: Login again)
+                // We destroy the *current* session. 
+                // To do this, we need the session token from the request.
+                const sessionToken = req.headers['x-session-token'] || req.headers['authorization']?.replace('Bearer ', '');
+                if (sessionToken) {
+                    await client.query('SELECT auth.delete_session($1::TEXT)', [sessionToken]);
+                }
+
+                client.release();
+
+                console.log(`🔐 Admin password changed. Session invalidated.`);
+
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Password updated successfully. Please log in again.',
+                    reauth: true
+                });
+            }
+
             // --- TRANSACTION START ---
             await client.query('BEGIN');
 
@@ -619,7 +703,13 @@ module.exports = async (req, res) => {
                             qty: item.quantity,
                             unit_price: price,
                             size: item.size || 'M',
-                            line_total: lineTotal
+                            line_total: lineTotal,
+                            // Custom Sizing Fields
+                            size_type: item.sizeType || 'standard',
+                            size_label: item.sizeLabel || (item.sizeType === 'custom' ? 'Custom' : item.size),
+                            measurement_unit: item.unit || 'inch',
+                            measurements: item.measurements || null,
+                            measurement_notes: item.notes || ''
                         });
                     }
                 }
@@ -712,8 +802,22 @@ module.exports = async (req, res) => {
             // 3. Insert Order Items (New Table)
             for (const item of orderItemsToInsert) {
                 await client.query(
-                    'INSERT INTO order_items (order_id, product_id, qty, unit_price, size, line_total) VALUES ($1, $2, $3, $4, $5, $6)',
-                    [generatedOrderId, item.product_id, item.qty, item.unit_price, item.size, item.line_total]
+                    `INSERT INTO order_items 
+                    (order_id, product_id, qty, unit_price, size, line_total, size_type, size_label, measurement_unit, measurements, measurement_notes) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                    [
+                        generatedOrderId,
+                        item.product_id,
+                        item.qty,
+                        item.unit_price,
+                        item.size,
+                        item.line_total,
+                        item.size_type,
+                        item.size_label,
+                        item.measurement_unit,
+                        item.measurements,
+                        item.measurement_notes
+                    ]
                 );
             }
 

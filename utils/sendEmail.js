@@ -58,7 +58,15 @@ function generateOrderEmailHTML(data) {
         productSection = products.map(p => `
             <div class="product-item" style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
                 <strong>${p.name}</strong><br>
-                <span style="color: #666;">Size: ${p.size} | Qty: ${p.quantity} | ৳${p.price}</span>
+                ${p.sizeType === 'custom'
+                ? `<span style="color: #E07A5F; font-weight: bold;">Custom Size (${p.unit}):</span><br>
+                       <span style="font-size: 12px; color: #555;">
+                        ${Object.entries(p.measurements || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                       </span><br>
+                       ${p.notes ? `<i style="font-size: 11px;">Note: ${p.notes}</i><br>` : ''}`
+                : `<span style="color: #666;">Size: ${p.size}</span>`
+            }
+                <span style="color: #666;"> | Qty: ${p.quantity} | ৳${p.price}</span>
             </div>
         `).join('');
     } else {
@@ -113,7 +121,7 @@ function generateOrderEmailHTML(data) {
             <p style="margin: 5px 0;"><strong>Expected Delivery:</strong> ${deliveryDate}</p>
             
             <div style="text-align: center; margin-top: 30px;">
-                <a href="https://nongor-brand.vercel.app/index.html?track=${orderId}" class="button">
+                <a href="https://nongor-brand.vercel.app/index.html?track=${data.trackingToken || orderId}" class="button">
                     Track Your Order
                 </a>
             </div>

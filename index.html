@@ -472,11 +472,84 @@
                 <!-- Size Row -->
                 <div class="flex items-center justify-between mb-8 border-b border-gray-100 pb-4">
                     <span class="text-gray-500 text-sm font-medium">Size:</span>
-                    <div class="flex items-center gap-4">
-                        <!-- Size Buttons Container (Populated by JS) -->
-                        <div id="size-selector" class="flex gap-2"></div>
+                    <div class="flex flex-col gap-4 w-full">
+                        <!-- Size Type Toggle -->
+                        <div class="flex p-1 bg-gray-100 rounded-lg w-fit">
+                            <button onclick="toggleSizeType('standard')" id="btn-size-standard"
+                                class="px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-white shadow-sm text-brand-deep">Standard</button>
+                            <button onclick="toggleSizeType('custom')" id="btn-size-custom"
+                                class="px-4 py-1.5 rounded-md text-sm font-bold transition-all text-gray-500 hover:text-brand-deep">Custom
+                                Mode</button>
+                        </div>
 
+                        <!-- Standard Size Selector -->
+                        <div id="size-selector" class="flex gap-2 transition-all"></div>
 
+                        <!-- Custom Measurements Form (Hidden by default) -->
+                        <div id="custom-size-form"
+                            class="hidden bg-gray-50 p-4 rounded-xl border border-gray-200 animate-fade-in text-left">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500">Enter Measurements
+                                </h4>
+                                <div class="flex bg-white rounded border border-gray-200">
+                                    <button onclick="toggleUnit('inch')" id="btn-unit-inch"
+                                        class="px-2 py-0.5 text-xs font-bold bg-brand-terracotta text-white rounded-l">IN</button>
+                                    <button onclick="toggleUnit('cm')" id="btn-unit-cm"
+                                        class="px-2 py-0.5 text-xs font-bold text-gray-500 rounded-r">CM</button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Bust</label>
+                                    <input type="number" data-measure="bust"
+                                        class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                        placeholder="0">
+                                </div>
+                                <div>
+                                    <label
+                                        class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Waist</label>
+                                    <input type="number" data-measure="waist"
+                                        class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                        placeholder="0">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Hip</label>
+                                    <input type="number" data-measure="hip"
+                                        class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                        placeholder="0">
+                                </div>
+                                <div>
+                                    <label
+                                        class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Shoulder</label>
+                                    <input type="number" data-measure="shoulder"
+                                        class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                        placeholder="0">
+                                </div>
+                                <div>
+                                    <label
+                                        class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Length</label>
+                                    <input type="number" data-measure="length"
+                                        class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                        placeholder="0">
+                                </div>
+                                <div>
+                                    <label
+                                        class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Sleeve</label>
+                                    <input type="number" data-measure="sleeve"
+                                        class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                        placeholder="0">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Note
+                                    (Optional)</label>
+                                <input type="text" id="custom-note"
+                                    class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                    placeholder="Any specific requirements...">
+                            </div>
+                        </div>
 
                     </div>
                 </div>
