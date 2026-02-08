@@ -529,7 +529,7 @@ module.exports = async (req, res) => {
                     if (order.trackingToken) {
                         const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.trackingToken}`;
                         const qrDataUrl = await QRCode.toDataURL(trackUrl);
-                        const qrImage = await pdfDoc.embedPng(qrDataUrl);
+                        const qrImage = await pdfDoc.embedPng(qrDataUrl.split(',')[1]);
                         page.drawImage(qrImage, { x: width - 100, y: height - 180, width: 60, height: 60 });
                     }
 
