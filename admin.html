@@ -3475,12 +3475,14 @@
             };
 
             try {
+                console.log('Sending Coupon Data:', data); // Debug
                 const response = await authenticatedFetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
+                console.log('Coupon Response:', result); // Debug
 
                 if (result.result === 'success') {
                     showToast('Coupon Created!', 'green');

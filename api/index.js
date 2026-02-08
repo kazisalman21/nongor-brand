@@ -894,10 +894,15 @@ module.exports = async (req, res) => {
                     return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
                 }
 
+                console.log('Creating Coupon Payload:', JSON.stringify(data)); // Debug Log
+
                 if (!data.code || !data.discountType || !data.discountValue) {
                     client.release();
                     return res.status(400).json({ result: 'error', message: 'Code, Type, and Value are required' });
                 }
+
+                // Fix: Ensure expiresAt is NULL if empty string or undefined
+                const expiresAt = data.expiresAt ? data.expiresAt : null;
 
                 const insertQuery = `
                     INSERT INTO coupons (code, discount_type, discount_value, min_order_value, max_discount_amount, expires_at, usage_limit, is_active)
@@ -905,12 +910,12 @@ module.exports = async (req, res) => {
                     RETURNING *
                 `;
                 const values = [
-                    data.code.toUpperCase(),
+                    data.code.toUpperCase().trim(),
                     data.discountType,
                     parseFloat(data.discountValue),
                     parseFloat(data.minOrderValue) || 0,
                     data.maxDiscountAmount ? parseFloat(data.maxDiscountAmount) : null,
-                    data.expiresAt || null,
+                    expiresAt,
                     data.usageLimit ? parseInt(data.usageLimit) : null,
                     data.isActive !== false
                 ];
@@ -921,8 +926,12 @@ module.exports = async (req, res) => {
                     return res.status(200).json({ result: 'success', message: 'Coupon created', data: result.rows[0] });
                 } catch (e) {
                     client.release();
+                    console.error('Create Coupon Error:', e); // Debug Log
                     if (e.code === '23505') { // Unique violation
                         return res.status(400).json({ result: 'error', message: 'Coupon code already exists' });
+                    }
+                    if (e.code === '22007') { // Invalid datetime format
+                        return res.status(400).json({ result: 'error', message: 'Invalid Date Format', details: e.message });
                     }
                     throw e;
                 }
