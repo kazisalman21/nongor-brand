@@ -3189,7 +3189,7 @@
             productImages = images.map(url => ({
                 type: 'url',
                 data: url,
-                preview: url.startsWith('http') ? url : `./assets/${url.replace(/^\.?\/?assets\//, '')}`
+                preview: url.startsWith('http') ? url : `/assets/${url.replace(/^\.?\/?assets\//, '')}`
             }));
             renderImagePreviews();
 
@@ -3210,7 +3210,7 @@
             if (images.length > 0) {
                 images.forEach((imgUrl, index) => {
                     const img = document.createElement('img');
-                    img.src = imgUrl.startsWith('http') ? imgUrl : `./assets/${imgUrl}`;
+                    img.src = imgUrl.startsWith('http') ? imgUrl : `/assets/${imgUrl}`;
                     img.className = 'w-16 h-16 object-cover rounded-lg border-2 border-gray-200';
                     img.alt = `Preview ${index + 1}`;
                     previewsContainer.appendChild(img);
