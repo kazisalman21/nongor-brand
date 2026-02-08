@@ -295,7 +295,7 @@ module.exports = async (req, res) => {
                 SELECT 
                     oi.product_id AS "productId",
                     p.name AS "productName",
-                    oi.quantity AS "qty",
+                    oi.qty AS "qty",
                     oi.unit_price AS "unitPrice",
                     oi.size_type AS "sizeType",
                     oi.size_label AS "sizeLabel",
@@ -391,7 +391,7 @@ module.exports = async (req, res) => {
                     // Attempt to fetch from order_items
                     const itemsRes = await client.query(`
                     SELECT 
-                        oi.quantity AS "qty",
+                        oi.qty AS "qty",
                         oi.unit_price AS "unitPrice",
                         oi.size_label AS "sizeLabel",
                         oi.size_type AS "sizeType",
