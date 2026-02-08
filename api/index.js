@@ -855,17 +855,9 @@ module.exports = async (req, res) => {
                 data.name = data.name.trim();
                 data.description = (data.description || '').trim();
 
-                // Generate Slug
-                let slug = data.name.toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-+|-+$/g, '');
-
-                // Append random suffix to ensure uniqueness for new products (simple approach)
-                slug = `${slug}-${Date.now().toString(36)}`;
-
                 const insertQuery = `
-                    INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured, stock_quantity, slug)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured, stock_quantity)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     RETURNING *
                 `;
                 const values = [
@@ -878,8 +870,7 @@ module.exports = async (req, res) => {
                     data.category_name || '',
 
                     data.is_featured || false,
-                    parseInt(data.stock_quantity) || 0,
-                    slug
+                    parseInt(data.stock_quantity) || 0
                 ];
 
                 const result = await client.query(insertQuery, values);
