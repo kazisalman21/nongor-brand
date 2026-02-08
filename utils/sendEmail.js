@@ -7,7 +7,7 @@ if (process.env.SENDGRID_API_KEY) {
     console.warn("⚠️ SENDGRID_API_KEY is not set. Emails will not be sent.");
 }
 
-const SENDER_EMAIL = process.env.SENDER_EMAIL || 'orders@nongor.com';
+const SENDER_EMAIL = process.env.SENDER_EMAIL || 'nongorr.anika@gmail.com';
 
 /**
  * Send Order Confirmation Email
@@ -138,7 +138,8 @@ function generateOrderEmailHTML(data) {
             
             <p style="font-size: 13px; color: #666;">
                 <strong>Need Help?</strong> আমাদের সাথে যোগাযোগ করুন:<br>
-                📱 <a href="https://m.me/857107060814707" style="color: #E07A5F;">Messenger</a>
+                📱 <a href="https://m.me/857107060814707" style="color: #E07A5F;">Messenger</a><br>
+                📧 <a href="mailto:nongorr.anika@gmail.com" style="color: #E07A5F;">nongorr.anika@gmail.com</a>
             </p>
         </div>
         
