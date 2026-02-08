@@ -4617,12 +4617,23 @@
         // ==========================================
         let currentConfirmCallback = null;
 
-        function showConfirmationModal(title, message, callback) {
-            document.getElementById('confirm-title').innerText = title;
-            document.getElementById('confirm-message').innerText = message;
+        function showConfirmationModal(title, message, callback, btnText = 'Confirm', btnColor = 'red') {
+            const titleEl = document.getElementById('confirm-title');
+            const msgEl = document.getElementById('confirm-message');
+            const btnEl = document.getElementById('confirm-action-btn');
+
+            if (titleEl) titleEl.innerText = title;
+            if (msgEl) msgEl.innerText = message;
+            if (btnEl) {
+                btnEl.innerText = btnText;
+                // Update color class if needed (simple removal/add of bg-red vs others if we expanded this)
+            }
+
             currentConfirmCallback = callback;
 
             const modal = document.getElementById('confirmation-modal');
+            if (!modal) return;
+
             modal.classList.remove('hidden');
             // Trigger reflow
             void modal.offsetWidth;
@@ -4633,6 +4644,8 @@
 
         function closeConfirmationModal() {
             const modal = document.getElementById('confirmation-modal');
+            if (!modal) return;
+
             modal.classList.add('opacity-0');
             modal.querySelector('div').classList.remove('scale-100');
             modal.querySelector('div').classList.add('scale-95');
@@ -4643,27 +4656,40 @@
             }, 300);
         }
 
-        document.getElementById('confirm-action-btn').addEventListener('click', () => {
-            if (currentConfirmCallback) currentConfirmCallback();
-            closeConfirmationModal();
+        // Initialize Modal Listeners on Load (Wait for HTML)
+        document.addEventListener('DOMContentLoaded', () => {
+            const confirmBtn = document.getElementById('confirm-action-btn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', () => {
+                    if (currentConfirmCallback) currentConfirmCallback();
+                    closeConfirmationModal();
+                });
+            } else {
+                console.error("Confirmation modal button not found!");
+            }
         });
 
         // Re-implement deleteProduct with new modal
         async function deleteProduct(id) {
-            showConfirmationModal('Delete Product?', 'Are you sure you want to delete this product? This action cannot be undone.', async () => {
-                try {
-                    const res = await authenticatedFetch(`${API_URL}?action=deleteProduct&id=${id}`, { method: 'DELETE' });
-                    const result = await res.json();
-                    if (result.result === 'success') {
-                        showToast('Product deleted', 'green');
-                        loadProducts();
-                    } else {
-                        showToast(result.message, 'red');
+            showConfirmationModal(
+                'Delete Product?',
+                'Are you sure you want to delete this product? This action cannot be undone.',
+                async () => {
+                    try {
+                        const res = await authenticatedFetch(`${API_URL}?action=deleteProduct&id=${id}`, { method: 'DELETE' });
+                        const result = await res.json();
+                        if (result.result === 'success') {
+                            showToast('Product deleted', 'green');
+                            loadProducts();
+                        } else {
+                            showToast(result.message, 'red');
+                        }
+                    } catch (e) {
+                        showToast('Error deleting product', 'red');
                     }
-                } catch (e) {
-                    showToast('Error deleting product', 'red');
-                }
-            });
+                },
+                'Yes, Delete'
+            );
         }
 
     </script>
