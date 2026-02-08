@@ -332,7 +332,10 @@
     <script src="./script.js"></script>
     <script>
         // API_URL is defined in script.js
-        // global variables are defined in script.js (currentProduct, selectedSize, quantity)
+        // Local state for this page
+        // Local state for this page
+        window.quantity = 1;
+        window.selectedSize = null;
 
         // Init on load
         document.addEventListener('DOMContentLoaded', async () => {
@@ -455,7 +458,7 @@
             // Sizes (Populate Standard Selector)
             const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
             document.getElementById('size-selector').innerHTML = sizes.map(s => `
-                <button onclick="selectSize('${s}')" class="size-btn px-4 py-2 border-2 rounded-lg font-medium transition ${s === selectedSize ? 'border-brand-terracotta bg-brand-terracotta/10 text-brand-terracotta' : 'border-gray-200 text-gray-600 hover:border-brand-terracotta'}">${s}</button>
+                <button onclick="selectSize('${s}')" class="size-btn px-4 py-2 border-2 rounded-lg font-medium transition ${s === window.selectedSize ? 'border-brand-terracotta bg-brand-terracotta/10 text-brand-terracotta' : 'border-gray-200 text-gray-600 hover:border-brand-terracotta'}">${s}</button>
             `).join('');
 
             // Initialize UI state
@@ -487,7 +490,7 @@
         }
 
         function selectSize(size) {
-            selectedSize = size;
+            window.selectedSize = size;
             document.querySelectorAll('.size-btn').forEach(btn => {
                 const isSelected = btn.textContent.trim() === size;
                 btn.classList.toggle('border-brand-terracotta', isSelected);
@@ -499,15 +502,15 @@
         }
 
         function updateQty(delta) {
-            quantity = Math.min(10, Math.max(1, quantity + delta));
-            document.getElementById('qty-display').textContent = quantity;
+            window.quantity = Math.min(10, Math.max(1, window.quantity + delta));
+            document.getElementById('qty-display').textContent = window.quantity;
         }
 
         function addToCartFromPage() {
             if (!currentProduct) return;
 
             // Validation logic reused/adapted from script.js
-            let finalSize = selectedSize;
+            let finalSize = window.selectedSize;
             let measurements = null;
             let sizeType = 'standard';
             let unit = 'inch';
@@ -525,7 +528,7 @@
                     finalSize = `Custom (${unit})`;
                 }
             } else {
-                if (!selectedSize) {
+                if (!window.selectedSize) {
                     showToast('Please select a size', 'error');
                     return;
                 }
@@ -542,7 +545,7 @@
                 unit: unit,
                 measurements: measurements,
                 notes: notes,
-                quantity: quantity,
+                quantity: window.quantity,
                 timestamp: Date.now()
             });
             localStorage.setItem('nongor_cart', JSON.stringify(cart));
@@ -558,7 +561,7 @@
             if (!currentProduct) return;
 
             // Validation logic
-            let finalSize = selectedSize;
+            let finalSize = window.selectedSize;
             let measurements = null;
             let sizeType = 'standard';
             let unit = 'inch';
@@ -576,7 +579,7 @@
                     finalSize = `Custom (${unit})`;
                 }
             } else {
-                if (!selectedSize) {
+                if (!window.selectedSize) {
                     showToast('Please select a size', 'error');
                     return;
                 }
@@ -592,7 +595,7 @@
                 unit: unit,
                 measurements: measurements,
                 notes: notes,
-                quantity: quantity
+                quantity: window.quantity
             }];
             localStorage.setItem('nongor_direct_buy', JSON.stringify(buyNowItem));
             window.location.href = `checkout.html?mode=direct`;
