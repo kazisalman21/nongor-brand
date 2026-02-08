@@ -222,7 +222,7 @@
             </div>
 
             <!-- Checkout Form -->
-            <form id="checkout-form" onsubmit="event.preventDefault(); confirmOrderFromPage();"
+            <form id="checkout-form" novalidate onsubmit="event.preventDefault(); handleCheckoutSubmit(event);"
                 class="space-y-6 animate-fade-in-up animate-delay-300">
 
                 <!-- Customer Info -->
@@ -236,6 +236,8 @@
                     <div>
                         <input type="text" id="cust-name" required placeholder="আপনার নাম (Full Name)"
                             class="premium-input w-full shadow-sm placeholder-gray-400 text-brand-deep">
+                        <p id="error-cust-name" class="hidden text-xs text-red-500 font-bold mt-1 ml-1">Please enter
+                            your name</p>
                     </div>
 
                     <div>
@@ -244,6 +246,8 @@
                             class="premium-input w-full shadow-sm placeholder-gray-400 font-mono text-lg text-brand-deep">
                         <p id="phone-feedback"
                             class="text-xs font-bengali ml-1 mt-1 h-4 text-red-500 font-bold transition-all"></p>
+                        <p id="error-cust-phone" class="hidden text-xs text-red-500 font-bold mt-1 ml-1">Please enter a
+                            valid phone number</p>
                     </div>
 
                     <div>
@@ -287,6 +291,8 @@
                         <textarea id="cust-address" required
                             placeholder="আপনার সম্পূর্ণ ঠিকানা (Full Address, Thana, District)" rows="3"
                             class="premium-input w-full shadow-sm placeholder-gray-400 text-brand-deep"></textarea>
+                        <p id="error-cust-address" class="hidden text-xs text-red-500 font-bold mt-1 ml-1">Please enter
+                            your full address</p>
                     </div>
                 </div>
 
@@ -508,6 +514,69 @@
         document.addEventListener('DOMContentLoaded', () => {
             initCheckout();
         });
+
+        // Custom Validation Handler
+        function handleCheckoutSubmit(e) {
+            e.preventDefault();
+
+            let isValid = true;
+
+            // Helper to show/hide error
+            const setError = (id, show, msg) => {
+                const el = document.getElementById(id);
+                const errEl = document.getElementById('error-' + id);
+                if (show) {
+                    el.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                    el.classList.remove('border-gray-200'); // Assuming default has this or similar
+                    if (errEl) {
+                        errEl.textContent = msg;
+                        errEl.classList.remove('hidden');
+                    }
+                } else {
+                    el.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+                    // restore default if needed, or just let premium-input handle it
+                    if (errEl) errEl.classList.add('hidden');
+                }
+            };
+
+            // 1. Name
+            const nameEl = document.getElementById('cust-name');
+            if (!nameEl.value.trim()) {
+                setError('cust-name', true, 'Please enter your name');
+                isValid = false;
+            } else {
+                setError('cust-name', false);
+            }
+
+            // 2. Phone
+            const phoneEl = document.getElementById('cust-phone');
+            const phoneVal = phoneEl.value.trim().replace(/\D/g, '');
+            // Basic length check provided here, but strict check is in backend/script
+            if (!phoneVal || phoneVal.length < 11) {
+                setError('cust-phone', true, 'Please enter a valid phone number (11 digits)');
+                isValid = false;
+            } else {
+                setError('cust-phone', false);
+            }
+
+            // 3. Address
+            const addrEl = document.getElementById('cust-address');
+            if (!addrEl.value.trim()) {
+                setError('cust-address', true, 'Please enter your full address');
+                isValid = false;
+            } else {
+                setError('cust-address', false);
+            }
+
+            // If valid, proceed to main handler
+            if (isValid) {
+                confirmOrderFromPage();
+            } else {
+                // Optional: Scroll to first error or shake button
+                const firstError = document.querySelector('.border-red-500');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
     </script>
 </body>
 
