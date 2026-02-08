@@ -3,7 +3,6 @@
  * Uses connection pooling for faster responses
  */
 const pool = require('./db');
-const pool = require('./db');
 const { checkRateLimit } = require('./cache');
 const { sanitizeObject } = require('./sanitize');
 const bcrypt = require('bcryptjs');

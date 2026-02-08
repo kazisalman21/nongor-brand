@@ -3095,13 +3095,15 @@
             tbody.innerHTML = allProducts.map(product => `
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4">
-                        <img src="${product.image && product.image.startsWith('http') ? product.image : './assets/' + (product.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" 
-                             alt="${product.name}" 
+                        <img src="${product.image ? (product.image.startsWith('http') ? product.image : '/assets/' + product.image.replace(/^\.?\/?assets\//, '')) : '/assets/logo.jpeg'}" 
+                             alt="${product.name || 'Product'}" 
                              class="w-12 h-12 rounded-lg object-cover"
-                             onerror="this.src='./assets/logo.jpeg'">
+                             onerror="this.src='/assets/logo.jpeg'">
                     </td>
-                    <td class="px-6 py-4 font-semibold text-gray-800">${product.name}</td>
-                    <td class="px-6 py-4 text-gray-600">৳${parseFloat(product.price).toLocaleString()}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-semibold text-gray-800">${product.name || 'Untitled'}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 font-medium">৳${parseFloat(product.price || 0).toLocaleString()}</td>
                     <td class="px-6 py-4">
                         ${product.stock_quantity <= 0
                     ? '<span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Out of Stock</span>'
