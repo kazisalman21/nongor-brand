@@ -9,7 +9,9 @@
     "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
     "node-cache": "^5.1.2",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.11.3",
+    "qrcode": "^1.5.3",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1"
   },

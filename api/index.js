@@ -10,6 +10,7 @@ const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendE
 const { sanitizeObject } = require('./sanitize');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 
 module.exports = async (req, res) => {
     // --- SECURITY: CORS & HEADERS ---
