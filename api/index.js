@@ -333,6 +333,30 @@ module.exports = async (req, res) => {
 
                 client.release();
 
+                // --- COMPUTED FIELDS LOGIC ---
+                // Calculate subtotal from items if possible
+                let calculatedSubtotal = 0;
+                items.forEach(item => {
+                    const price = parseFloat(item.unitPrice || 0);
+                    const qty = parseInt(item.qty || 1);
+                    calculatedSubtotal += price * qty;
+                });
+
+                // Adjust subtotal if it seems wrong (e.g. legacy order might only store total)
+                const total = parseFloat(order.total || 0);
+                const orderDiscount = parseFloat(order.discount || 0);
+
+                if (calculatedSubtotal === 0) calculatedSubtotal = total + orderDiscount;
+
+                // Calculate Shipping
+                let shippingFee = total - calculatedSubtotal + orderDiscount;
+                if (shippingFee < 0) shippingFee = 0;
+
+                // Update order object
+                order.subtotal = calculatedSubtotal;
+                order.shippingFee = shippingFee;
+                order.discount = orderDiscount;
+
                 return res.status(200).json({
                     result: 'success',
                     order: order,
