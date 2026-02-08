@@ -53,3 +53,17 @@
 - [ ] **Multi-Item**: Verify slip correctly lists multiple items.
 - [ ] **Custom Measure**: Verify custom measurements are formatted correctly in the items table.
 - [ ] **QR Code**: Scan the QR code on the preview -> Should link to the correct tracking page.
+
+### Phase 7b: Schema Compatibility (Legacy Database)
+- [ ] verify_slip_loads_without_shipping_fee_error
+    - Action: Open `admin-slip.html?orderId=...` for an existing order.
+    - Expected: Slip loads successfully. No "column does not exist" popup.
+- [ ] verify_shipping_fee_calculation
+    - Action: Check the totals on the slip.
+    - Expected: Shipping Fee = Total - (Item Price * Qty) + Discount.
+- [ ] verify_legacy_item_fallback
+    - Action: Open slip for an old order with no `order_items` entries.
+    - Expected: Item table shows the single product from `orders` table columns.
+- [ ] verify_error_display_in_ui
+    - Action: Open `admin-slip.html?orderId=invalid`.
+    - Expected: Error message "Order not found" displayed in the center of the page (not just alert).
