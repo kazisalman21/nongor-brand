@@ -514,7 +514,7 @@
                 const total = (item.quantity || item.qty) * (item.unit_price || item.unitPrice);
 
                 // Size Logic
-                let sizeHtml = `<span class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold border border-gray-200">${item.size || 'Standard'}</span>`;
+                let sizeHtml = `<span class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold border border-gray-200">${item.sizeLabel || item.size || 'Standard'}</span>`;
 
                 // Check if custom measurements exist
                 let measurements = item.measurements;
