@@ -11,6 +11,9 @@ const { sanitizeObject } = require('./sanitize');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+const fontkit = require('@pdf-lib/fontkit');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = async (req, res) => {
     // --- SECURITY: CORS & HEADERS ---
@@ -483,16 +486,43 @@ module.exports = async (req, res) => {
 
                     // PDF Generation
                     const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+                    const fontkit = require('@pdf-lib/fontkit');
                     const QRCode = require('qrcode');
 
                     const pdfDoc = await PDFDocument.create();
+                    pdfDoc.registerFontkit(fontkit);
+
+                    // Load Bengali Font
+                    let bengaliFont = null;
+                    try {
+                        const fontPath = path.join(process.cwd(), 'assets', 'fonts', 'NotoSansBengali-Regular.ttf');
+                        if (fs.existsSync(fontPath)) {
+                            const fontBytes = fs.readFileSync(fontPath);
+                            bengaliFont = await pdfDoc.embedFont(fontBytes);
+                        } else {
+                            console.warn("Bengali font not found at:", fontPath);
+                        }
+                    } catch (fontErr) {
+                        console.error("Error embedding Bengali font:", fontErr);
+                    }
+
                     const page = pdfDoc.addPage([595.28, 841.89]); // A4 Size
                     const { width, height } = page.getSize();
                     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
                     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
                     const drawText = (text, x, y, size = 10, options = {}) => {
-                        page.drawText(String(text || ''), { x, y, size, font: options.font || font, color: options.color || rgb(0, 0, 0), ...options });
+                        const content = String(text || '');
+                        // If it contains Bengali-range characters, use Bengali font
+                        const useBengali = /[\u0980-\u09FF]/.test(content);
+                        const selectedFont = (useBengali && bengaliFont) ? bengaliFont : (options.font || font);
+
+                        page.drawText(content, {
+                            x, y, size,
+                            font: selectedFont,
+                            color: options.color || rgb(0, 0, 0),
+                            ...options
+                        });
                     };
 
                     // Header
@@ -527,10 +557,14 @@ module.exports = async (req, res) => {
 
                     // QR Code
                     if (order.trackingToken) {
-                        const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.trackingToken}`;
-                        const qrDataUrl = await QRCode.toDataURL(trackUrl);
-                        const qrImage = await pdfDoc.embedPng(qrDataUrl.split(',')[1]);
-                        page.drawImage(qrImage, { x: width - 100, y: height - 180, width: 60, height: 60 });
+                        try {
+                            const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.trackingToken}`;
+                            const qrDataUrl = await QRCode.toDataURL(trackUrl);
+                            const qrImage = await pdfDoc.embedPng(qrDataUrl.split(',')[1]);
+                            page.drawImage(qrImage, { x: width - 100, y: height - 180, width: 60, height: 60 });
+                        } catch (qrErr) {
+                            console.error("QR Error:", qrErr);
+                        }
                     }
 
                     // table header
