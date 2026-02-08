@@ -122,7 +122,17 @@ module.exports = async (req, res) => {
                     paramCount++;
                 }
 
-                sql += ' ORDER BY created_at DESC';
+                const sort = query.sort || 'newest';
+
+                // ... (filters)
+
+                // Sort Logic
+                let orderBy = 'ORDER BY created_at DESC'; // Default
+                if (sort === 'price_asc') orderBy = 'ORDER BY price ASC';
+                if (sort === 'price_desc') orderBy = 'ORDER BY price DESC';
+                if (sort === 'name_asc') orderBy = 'ORDER BY name ASC';
+
+                sql += ` ${orderBy}`;
 
                 // Fetch from DB
                 const result = await client.query(sql, params);
@@ -186,6 +196,270 @@ module.exports = async (req, res) => {
                 } else {
                     return res.status(404).json({ result: 'error', message: 'Order not found' });
                 }
+            }
+
+            // --- GET LOW STOCK (Admin) ---
+            if (query.action === 'getLowStock') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const result = await client.query('SELECT id, name, stock_quantity FROM products WHERE stock_quantity < 5 ORDER BY stock_quantity ASC');
+                client.release();
+                return res.status(200).json({ result: 'success', data: result.rows });
+            }
+
+            // --- GET ORDER EVENTS (Admin) ---
+            if (query.action === 'getOrderEvents') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const orderId = query.orderId;
+                if (!orderId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Order ID required' });
+                }
+
+                const result = await client.query('SELECT * FROM order_events WHERE order_id = $1 ORDER BY created_at DESC', [orderId]);
+                client.release();
+                return res.status(200).json({ result: 'success', data: result.rows });
+            }
+
+            // --- GET FULL ORDER DETAILS (Admin) ---
+            if (query.action === 'getOrderDetails') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const orderId = query.orderId;
+                if (!orderId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Order ID required' });
+                }
+
+                // Fetch Order
+                const orderRes = await client.query('SELECT * FROM orders WHERE order_id = $1', [orderId]);
+                if (orderRes.rows.length === 0) {
+                    client.release();
+                    return res.status(404).json({ result: 'error', message: 'Order not found' });
+                }
+                const order = orderRes.rows[0];
+
+                // Fetch Items with Product Details
+                // We join against products to get images/names if needed, 
+                // but order_items table has snapshots of price/name usually.
+                // Nongor's current setup: `orders` table has `product_name`, `size`, `quantity` for single-item simple orders? 
+                // checking migrate_order_items... yes, we introduced `order_items` table.
+                // BUT `orders` table still has legacy columns? 
+                // Let's support both: if `order_items` exist, return them. 
+
+                const itemsRes = await client.query(`
+                    SELECT oi.*, p.name as product_name, p.image 
+                    FROM order_items oi
+                    LEFT JOIN products p ON oi.product_id = p.id
+                    WHERE oi.order_id = $1
+                `, [orderId]);
+
+                let items = itemsRes.rows;
+
+                // Fallback for legacy single-item orders if order_items is empty
+                if (items.length === 0) {
+                    items = [{
+                        product_name: order.product_name,
+                        quantity: order.quantity,
+                        size: order.size,
+                        unit_price: order.total_price, // Approx if shipping included usually, but close enough
+                        total_price: order.total_price,
+                        measurements: order.measurements,
+                        size_type: order.size_type || 'standard',
+                        size_label: order.size
+                    }];
+                }
+
+                client.release();
+
+                // 2. Generate PDF using pdf-lib
+                const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+                const QRCode = require('qrcode');
+
+                try {
+                    const pdfDoc = await PDFDocument.create();
+                    const page = pdfDoc.addPage([595.28, 841.89]); // A4 Size
+                    const { width, height } = page.getSize();
+                    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+                    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+                    // Helpers
+                    const drawText = (text, x, y, size = 10, options = {}) => {
+                        page.drawText(String(text || ''), { x, y, size, font: options.font || font, color: options.color || rgb(0, 0, 0), ...options });
+                    };
+
+                    // Header
+                    drawText('NONGOR', 50, height - 50, 24, { font: fontBold });
+                    drawText('The Clothing Brand', 50, height - 65, 10, { color: rgb(0.4, 0.4, 0.4) });
+
+                    drawText('Packing Slip', width - 150, height - 50, 18, { font: fontBold, align: 'right' });
+                    drawText(`Order ID: ${order.order_id}`, width - 50, height - 70, 10, { align: 'right' });
+                    drawText(`Date: ${new Date(order.created_at).toLocaleDateString()}`, width - 50, height - 85, 10, { align: 'right' });
+
+                    // Customer Info
+                    let y = height - 130;
+                    drawText('Ship To:', 50, y, 12, { font: fontBold });
+                    y -= 15;
+                    drawText(order.customer_name || 'Guest', 50, y);
+                    y -= 15;
+                    drawText(order.phone || '', 50, y);
+                    // Address wrapping simple (split by comma for now or truncate)
+                    y -= 15;
+                    const addressLines = (order.address || '').match(/.{1,60}/g) || [];
+                    addressLines.forEach(line => {
+                        drawText(line, 50, y);
+                        y -= 12;
+                    });
+
+                    // Order Info
+                    y = height - 130;
+                    drawText('Order Details:', 300, y, 12, { font: fontBold });
+                    y -= 15;
+                    drawText(`Status: ${order.status}`, 300, y);
+                    y -= 15;
+                    drawText(`Payment: ${order.payment_status} (${order.payment_method})`, 300, y);
+
+                    // QR Code
+                    if (order.tracking_token) {
+                        const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.tracking_token}`;
+                        const qrDataUrl = await QRCode.toDataURL(trackUrl);
+                        const qrImage = await pdfDoc.embedPng(qrDataUrl);
+                        page.drawImage(qrImage, { x: width - 100, y: height - 180, width: 60, height: 60 });
+                    }
+
+                    // Table Header
+                    y = height - 220;
+                    page.drawRectangle({ x: 40, y: y - 5, width: width - 80, height: 25, color: rgb(0.95, 0.95, 0.95) });
+                    drawText('Item', 50, y, 10, { font: fontBold });
+                    drawText('Size', 250, y, 10, { font: fontBold });
+                    drawText('Qty', 400, y, 10, { font: fontBold });
+                    drawText('Price', 480, y, 10, { font: fontBold });
+
+                    y -= 25;
+
+                    // Items
+                    for (const item of items) {
+                        const itemName = item.product_name;
+                        drawText(itemName, 50, y);
+
+                        // Size Details
+                        let sizeText = item.size_label || item.size || 'N/A';
+                        if (item.size_type === 'custom' || (item.measurements && item.measurements !== '{}')) {
+                            sizeText = 'Custom';
+                        }
+                        drawText(sizeText, 250, y);
+
+                        drawText(String(item.qty || item.quantity), 400, y);
+                        drawText(`Tk ${item.unit_price || item.total_price}`, 480, y);
+
+                        // Custom Measurements Line
+                        if ((item.size_type === 'custom' || item.measurements) && item.measurements) {
+                            y -= 12;
+                            let mStr = '';
+                            try {
+                                const m = typeof item.measurements === 'string' ? JSON.parse(item.measurements) : item.measurements;
+                                mStr = Object.entries(m).map(([k, v]) => `${k}:${v}`).join(', ');
+                            } catch (e) { }
+
+                            if (mStr) {
+                                drawText(`Measurements: ${mStr}`, 50, y, 8, { color: rgb(0.4, 0.4, 0.4) });
+                            }
+                        }
+
+                        y -= 25; // Spacing
+                        page.drawLine({ start: { x: 40, y: y + 10 }, end: { x: width - 40, y: y + 10 }, thickness: 0.5, color: rgb(0.9, 0.9, 0.9) });
+                    }
+
+                    // Totals
+                    y -= 20;
+                    const totalsX = 350;
+                    drawText(`Subtotal:`, totalsX, y);
+                    drawText(`Tk ${order.total_price - (order.delivery_fee || 0)}`, 480, y, 10, { align: 'right' }); // Approx logic
+
+                    y -= 15;
+                    drawText(`Shipping:`, totalsX, y);
+                    drawText(`Tk ${order.delivery_fee || (order.shippingZone === 'outside_dhaka' ? 120 : 70)}`, 480, y, 10, { align: 'right' }); // Fallback logic
+
+                    y -= 15;
+                    drawText(`Discount:`, totalsX, y);
+                    drawText(`- Tk ${order.discount_amount || 0}`, 480, y, 10, { align: 'right' });
+
+                    y -= 20;
+                    drawText(`Total:`, totalsX, y, 12, { font: fontBold });
+                    drawText(`Tk ${order.total_price}`, 480, y, 12, { font: fontBold, align: 'right' });
+
+                    // Footer
+                    drawText('Thank you for shopping with Nongor!', 50, 40, 10, { font: fontBold, align: 'center', width: width - 100 });
+
+
+                    const pdfBytes = await pdfDoc.save();
+
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.setHeader('Content-Disposition', `attachment; filename="order_${orderId}.pdf"`);
+                    return res.status(200).send(Buffer.from(pdfBytes));
+
+                } catch (err) {
+                    console.error('PDF Generation Error:', err);
+                    return res.status(500).send('Error generating PDF');
+                }
+            }
+
+            // --- EXPORT ORDERS CSV (Admin) ---
+            if (query.action === 'exportOrdersCsv') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).send('Unauthorized');
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).send('Forbidden');
+                }
+
+                const result = await client.query('SELECT * FROM orders ORDER BY created_at DESC');
+                client.release();
+
+                // Generate CSV
+                const fields = ['order_id', 'customer_name', 'phone', 'total_price', 'status', 'payment_status', 'created_at', 'address'];
+                const csvRows = [];
+                csvRows.push(fields.join(',')); // Header
+
+                for (const row of result.rows) {
+                    const values = fields.map(field => {
+                        const val = row[field] || '';
+                        return `"${String(val).replace(/"/g, '""')}"`; // Escape quotes
+                    });
+                    csvRows.push(values.join(','));
+                }
+
+                res.setHeader('Content-Type', 'text/csv');
+                res.setHeader('Content-Disposition', 'attachment; filename="orders-export.csv"');
+                return res.status(200).send(csvRows.join('\n'));
             }
 
             // --- GET ALL ORDERS (Admin) ---
@@ -391,9 +665,17 @@ module.exports = async (req, res) => {
                 data.name = data.name.trim();
                 data.description = (data.description || '').trim();
 
+                // Generate Slug
+                let slug = data.name.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+
+                // Append random suffix to ensure uniqueness for new products (simple approach)
+                slug = `${slug}-${Date.now().toString(36)}`;
+
                 const insertQuery = `
-                    INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured, stock_quantity)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured, stock_quantity, slug)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                     RETURNING *
                 `;
                 const values = [
@@ -406,7 +688,8 @@ module.exports = async (req, res) => {
                     data.category_name || '',
 
                     data.is_featured || false,
-                    parseInt(data.stock_quantity) || 0
+                    parseInt(data.stock_quantity) || 0,
+                    slug
                 ];
 
                 const result = await client.query(insertQuery, values);
@@ -848,8 +1131,36 @@ module.exports = async (req, res) => {
         if (method === 'PUT') {
             const data = body; // Body is already sanitized and parsed
 
+            // --- ADD ORDER NOTE (Admin) ---
+            if (query.action === 'addOrderNote') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const { orderId, note } = data;
+                if (!orderId || !note) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Order ID and Note required' });
+                }
+
+                await client.query(
+                    `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, 'note', $2, $3)`,
+                    [orderId, note, 'admin']
+                );
+
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Note added' });
+            }
+
             // --- UPDATE PRODUCT (Protected) ---
             if (query.action === 'updateProduct') {
+                // ... (existing product update logic)
                 const auth = await verifySession(req, client);
                 if (!auth.valid) {
                     client.release();
@@ -908,15 +1219,29 @@ module.exports = async (req, res) => {
 
 
             let updatedOrder;
+            let eventType = 'status_change';
+            let description = '';
+
             if (data.type === 'delivery') {
                 const queryResult = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
                 updatedOrder = queryResult.rows[0];
+                description = `Order status changed to ${data.status}`;
             } else if (data.type === 'payment') {
                 const queryResult = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
                 updatedOrder = queryResult.rows[0];
+                description = `Payment status updated to ${data.status}`;
             } else {
                 const queryResult = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
                 updatedOrder = queryResult.rows[0];
+                description = `Status updated to ${data.status}`;
+            }
+
+            if (updatedOrder) {
+                // Log Event
+                await client.query(
+                    `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, $2, $3, $4)`,
+                    [data.orderId, eventType, description, 'admin']
+                );
             }
 
             client.release();

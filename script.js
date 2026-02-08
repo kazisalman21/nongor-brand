@@ -347,6 +347,9 @@ window.applyPriceFilter = applyAllFilters;
 // ==============================================
 // FETCH AND INITIALIZE PRODUCTS
 // ==============================================
+// ==============================================
+// FETCH AND INITIALIZE PRODUCTS
+// ==============================================
 async function initProducts(params = {}) {
     console.log('🚀 initProducts() called with:', params);
 
@@ -365,6 +368,13 @@ async function initProducts(params = {}) {
         if (params.category && params.category !== 'all') urlP.append('category', params.category);
         if (params.min) urlP.append('min', params.min);
         if (params.max) urlP.append('max', params.max);
+        if (params.sort) urlP.append('sort', params.sort);
+        // Note: 'inStock' is client-side filter for now or we can add API support.
+        // Let's do API support later if needed, for now client-side is fine for small catalog.
+        // Actually, let's keep it client side filtering after fetch if the API doesn't support it yet
+        // OR better: fetch all matching criteria and filter in memory if "In Stock" is toggled?
+        // Since getProducts returns result based on DB query, let's trust the DB params.
+        // We added min/max/sort to API. inStock isn't there yet explicitly but we can filter results.
 
         console.log('📡 Fetching from:', `${API_URL}?${urlP.toString()}`);
 
@@ -379,22 +389,29 @@ async function initProducts(params = {}) {
         console.log('📦 API Result:', result);
 
         if (result.result === 'success' && result.data && Array.isArray(result.data)) {
-            if (result.data.length === 0) {
+            let fetchedProducts = result.data.map(p => ({
+                ...p, // Keep all original props
+                price: parseFloat(p.price),
+                images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
+                category: {
+                    name: p.category_name || 'অন্যান্য',
+                    slug: p.category_slug || 'other'
+                }
+            }));
+
+            // Client-side In-Stock Filter (until API support)
+            if (params.inStock) {
+                fetchedProducts = fetchedProducts.filter(p => parseInt(p.stock_quantity) > 0);
+            }
+
+            allProducts = fetchedProducts; // Update global state
+
+            if (fetchedProducts.length === 0) {
                 console.warn('⚠️ API returned empty array');
                 showEmptyState(container);
             } else {
-                console.log(`✅ Got ${result.data.length} products, rendering...`);
-                // Transform API data to match app structure
-                allProducts = result.data.map(p => ({
-                    ...p, // Keep all original props
-                    price: parseFloat(p.price),
-                    images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
-                    category: {
-                        name: p.category_name || 'অন্যান্য',
-                        slug: p.category_slug || 'other'
-                    }
-                }));
-                renderProducts(allProducts);
+                console.log(`✅ Got ${fetchedProducts.length} products, rendering...`);
+                renderProducts(fetchedProducts);
                 console.log('✅ Render complete');
             }
         } else {
@@ -414,6 +431,39 @@ async function initProducts(params = {}) {
         renderProducts(fallbackProducts);
     }
 }
+
+window.toggleFilterDrawer = () => {
+    const drawer = document.getElementById('filter-drawer');
+    if (drawer) {
+        drawer.classList.toggle('hidden');
+    }
+};
+
+window.applyAllFilters = () => {
+    clearTimeout(filterDebounceTimer);
+    filterDebounceTimer = setTimeout(() => {
+        const searchQuery = document.getElementById('search-input')?.value?.trim() || '';
+        const minPrice = document.getElementById('min-price')?.value;
+        const maxPrice = document.getElementById('max-price')?.value;
+        const sortBy = document.getElementById('sort-select')?.value || 'newest';
+        const inStockOnly = document.getElementById('instock-toggle')?.checked || false;
+
+        console.log('🔍 Applying filters:', { searchQuery, minPrice, maxPrice, sortBy, inStockOnly, category: currentCategory });
+
+        // Update UI active state for category if needed (handled in filterProducts)
+
+        // Call initProducts with ALL params
+        initProducts({
+            search: searchQuery,
+            category: currentCategory,
+            min: minPrice,
+            max: maxPrice,
+            sort: sortBy,
+            inStock: inStockOnly
+        });
+
+    }, 500);
+};
 
 // (filterProducts is now defined in initCategories above with enhanced animations)
 
@@ -719,12 +769,23 @@ function createProductCard(product, index) {
 
     button.onclick = function (e) {
         e.stopPropagation();
-        openModal(product.id);
+        // openModal(product.id); 
+        if (product.slug) {
+            window.location.href = `/p/${product.slug}`;
+        } else {
+            window.location.href = `product.html?id=${product.id}`;
+        }
     };
 
     // Also make card clickable
     card.onclick = function () {
-        openModal(product.id);
+        // openModal(product.id); // Old Modal Logic
+        // Navigate to Single Product Page (Premium)
+        if (product.slug) {
+            window.location.href = `/p/${product.slug}`;
+        } else {
+            window.location.href = `product.html?id=${product.id}`;
+        }
     };
 
     // Assemble footer
@@ -1048,27 +1109,60 @@ window.addToCart = () => {
     const product = allProducts.find(p => p.id === currentProductId);
     if (!product) return;
 
-    const newItem = {
+    let cartItem = {
         id: product.id,
         name: product.name,
         price: product.price,
         image: product.image,
-        size: selectedSize,
         quantity: currentQuantity,
         timestamp: Date.now()
     };
 
-    // Optional: Check if same item (id + size) exists and merge?
-    // For now, let's just push (simple)
-    cart.push(newItem);
+    if (currentSizeType === 'custom') {
+        // validate inputs
+        const inputs = document.querySelectorAll('#custom-size-form input[data-measure]');
+        const measurements = {};
+        let isValid = true;
+
+        inputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (isNaN(val) || val <= 0) {
+                isValid = false;
+                input.classList.add('border-red-500');
+            } else {
+                input.classList.remove('border-red-500');
+                measurements[input.dataset.measure] = val;
+            }
+        });
+
+        if (!isValid) {
+            showToast("Please enter valid measurements for all fields", 'error');
+            return;
+        }
+
+        const note = document.getElementById('custom-note').value.trim();
+
+        cartItem.size = 'Custom';
+        cartItem.sizeType = 'custom';
+        cartItem.measurements = measurements;
+        cartItem.unit = currentMeasurementUnit;
+        cartItem.notes = note;
+        cartItem.sizeLabel = `Custom (${measurements.length || ''})`; // helper for display
+
+    } else {
+        if (!selectedSize) {
+            showToast("Please select a size", 'error');
+            return;
+        }
+        cartItem.size = selectedSize;
+        cartItem.sizeType = 'standard';
+    }
+
+    // Add to cart array
+    cart.push(cartItem);
     saveCart();
     updateCartUI();
-
-    // Feedback
-    // showToast("Added to Cart! 🛒"); // Need toast helper?
-    if (window.showToast) showToast("Added to Cart! 🛒");
-    else alert("Added to Cart! 🛒");
-
+    showToast("Added to Bag");
     closeModal();
     openCart();
 };
@@ -2234,8 +2328,47 @@ window.addToCart = () => {
     updateCartCount();
     showToast(`${currentProduct.name} added to cart!`);
 
+
     const modal = document.getElementById('product-modal');
     if (modal) modal.classList.add('hidden');
 };
 
 console.log('✅ Custom Sizing Logic Loaded');
+
+// ==============================================
+// FORM VALIDATION
+// ==============================================
+window.validatePhoneRealtime = function (input) {
+    const phone = input.value.replace(/\D/g, ''); // Remove non-digits for check
+    const feedback = document.getElementById('phone-feedback');
+    const submitBtn = document.getElementById('btn-complete-order');
+
+    // Regex: Starts with 01, followed by 3-9, and exactly 11 digits total
+    const phoneRegex = /^01[3-9]\d{8}$/;
+
+    if (phone.length === 0) {
+        if (feedback) feedback.textContent = '';
+        input.classList.remove('border-red-500', 'border-green-500', 'bg-red-50', 'bg-green-50');
+        return;
+    }
+
+    if (phoneRegex.test(phone)) {
+        // Valid
+        if (feedback) {
+            feedback.textContent = '✓ Valid Number';
+            feedback.classList.remove('text-red-500');
+            feedback.classList.add('text-green-600');
+        }
+        input.classList.remove('border-red-500', 'bg-red-50');
+        input.classList.add('border-green-500', 'bg-green-50');
+    } else {
+        // Invalid
+        if (feedback) {
+            feedback.textContent = 'Invalid Phone Number (017... 11 digits)';
+            feedback.classList.remove('text-green-600');
+            feedback.classList.add('text-red-500');
+        }
+        input.classList.remove('border-green-500', 'bg-green-50');
+        input.classList.add('border-red-500', 'bg-red-50');
+    }
+};

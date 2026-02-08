@@ -1,46 +1,32 @@
-# Test Checklist: Admin Change Password Feature
+# Test Checklist: Nongor Premium Features
 
-## Pre-requisites
-- [ ] Database migration `scripts/migrate_admin_auth.js` has been run.
-- [ ] `admin_users` table exists and contains the 'admin' user.
-- [ ] Environment variable `ADMIN_PASSWORD` was set during migration (default: 'admin123' if not set, or whatever you used).
+## Phase 0: Stabilize Foundations
+- [ ] **Tracking**: Link (e.g. `index.html?track=TOKEN`) auto-opens modal.
+- [ ] **Tracking**: Modal shows status/timeline but NO PII (phone/address).
+- [ ] **Shipping**: Checkout fee updates correctly when switching zones (Inside Dhaka 70, Outside 120).
+- [ ] **Admin Auth**: Changing admin password invalidates current session (requires re-login).
 
-## 1. Initial Login
-- [ ] Open `admin.html`.
-- [ ] Login with user: `admin@nongor.com` and the **current** password (e.g., from env or 'admin123').
-- [ ] Verify login is successful and dashboard loads.
+## Phase 1: Premium Product Pages & SEO
+- [ ] **Navigation**: Click "More Details" on a product card -> Navigates to `/p/product-slug` (checks URL change).
+- [ ] **Load**: URL `/p/product-slug` loads product details correctly.
+- [ ] **Social Sharing**: Copy the `/p/slug` link and paste into a social debugger (or WhatsApp).
+    - [ ] `og:title` should be "Product Name | নোঙর".
+    - [ ] `og:image` should be the product image.
+    - [ ] `og:description` should be the product description.
+- [ ] **JSON-LD**: Use Google Schema Validator on `/p/slug` page to check for `Product` schema.
+- [ ] **Hydration**: Page loads instantly without a visible second fetch (check network tab for single API call or preloaded data).
 
-## 2. Locate Feature
-- [ ] Navigate to the "Settings" tab (newly added).
-- [ ] Verify the "Change Password" form is visible.
-- [ ] Verify fields: Current Password, New Password, Confirm Password.
+### Phase 2: Search / Filter / Sort
+- [ ] **Search**: Type "Panjabi" in the new search bar. Results should update to show only Panjabis.
+- [ ] **Category**: Click "Kurti" pill. Only Kurtis should be shown.
+- [ ] **Sort**: Select "Price: Low to High". Cheapest products should appear first.
+- [ ] **Filter**: Open Filter Drawer, set price range (e.g., 500-1000). Only products in range should appear.
+- [ ] **Combination**: Select "Panjabi" category AND "Price: High to Low". Should show Panjabis ordered by price.
+- [ ] **Clear**: Click "Clear All Filters" inside drawer. Should reset to all products, default sort.
 
-## 3. Validation Tests
-- [ ] **Mismatch**: Enter 'newpass123' and 'otherpass123'. Click Update.
-  - [ ] Expected: Error message "New passwords do not match".
-- [ ] **Short Password**: Enter 'short' (less than 12 chars). Click Update.
-  - [ ] Expected: Error message "New password must be at least 12 characters...".
-- [ ] **Wrong Current**: Enter WRONG current password. Click Update.
-  - [ ] Expected: Error message "Invalid current password".
-
-## 4. Successful Change
-- [ ] Enter correct Current Password.
-- [ ] Enter valid New Password (min 12 chars, e.g., `NewStrongPass@2024!`).
-- [ ] Enter same Confirm Password.
-- [ ] Click Update.
-  - [ ] Expected: Success message "Password updated successfully...".
-  - [ ] Expected: Page reloads or redirects to login after ~1.5s.
-
-## 5. Re-authentication
-- [ ] Try to access dashboard (refresh page).
-  - [ ] Expected: You should be logged out (login screen visible).
-- [ ] Try logging in with **OLD** password.
-  - [ ] Expected: Login failed ("Invalid email or password").
-- [ ] Try logging in with **NEW** password.
-  - [ ] Expected: Login successful.
-
-## 6. Security Verification (Optional)
-- [ ] Check Database: `SELECT * FROM admin_users;`
-  - [ ] Verify `password_hash` has changed.
-  - [ ] Verify `password_version` incremented.
-  - [ ] Verify `last_password_change` updated.
+### Phase 3: Custom Measurements
+- [ ] **Modal Toggle**: Open product, click "Custom Mode". Standard sizes should hide, inputs should appear.
+- [ ] **Validation**: Try "Add to Cart" with empty inputs. Toast should appear ("Please enter valid measurements").
+- [ ] **Add Custom**: Enter inputs (e.g., 40, 38, 42...), add to cart.
+- [ ] **Cart Display**: Open Cart. Item should show "Size: Custom".
+- [ ] **Order**: Place order. Database `order_items` should contain the JSON measurements.

@@ -1,0 +1,126 @@
+const fs = require('fs');
+const path = require('path');
+const { Pool } = require('pg');
+
+// Reuse existing pool if possible? 
+// Vercel might reuse containers. 
+// Ideally we should export pool from db.js but here we need to be careful about connections.
+// Let's create a new pool for this function to be safe or require the existing one.
+// Assuming db.js is in the same directory.
+const pool = require('./db');
+
+module.exports = async (req, res) => {
+    // Enable CORS/Caching
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300'); // Cache for 60s, serve stale for 5m
+
+    const { slug } = req.query;
+
+    if (!slug) {
+        return res.status(404).send('Product Not Found');
+    }
+
+    let client;
+    try {
+        client = await pool.connect();
+
+        // 1. Fetch Product
+        const result = await client.query('SELECT * FROM products WHERE slug = $1', [slug]);
+        const product = result.rows[0];
+
+        client.release();
+
+        if (!product) {
+            // Redirect to home or show 404 page?
+            // Let's read the 404.html if exists, or redirect.
+            return res.redirect('/404.html');
+        }
+
+        // 2. Read HTML Template
+        const filePath = path.join(process.cwd(), 'product.html');
+        let html = fs.readFileSync(filePath, 'utf8');
+
+        // 3. Prepare Data
+        // Resolve Image URL (ensure absolute for FB/WhatsApp)
+        let mainImage = product.image || 'https://nongor-brand.vercel.app/assets/logo.jpeg';
+        if (!mainImage.startsWith('http')) {
+            // Remove leading ./ or /
+            const cleanPath = mainImage.replace(/^(\.\/|\/)/, '');
+            mainImage = `https://nongor-brand.vercel.app/${cleanPath}`;
+        }
+
+        const title = `${product.name} | নোঙর`;
+        const description = product.description || 'Premium quality Bangladeshi clothing from Nongor.';
+        const price = `${product.price}`;
+        const currency = 'BDT';
+        const url = `https://nongor-brand.vercel.app/p/${slug}`;
+
+        // 4. Inject Meta Tags (Replace Placeholders or Inject in Head)
+        // We will maintain the existing HTML structure and replace specific IDs/meta tags.
+        // However, regex replacement is risky. Best to use a placeholder system if possible.
+        // But since we are editing an existing file, let's use robust replacement on the known meta tags.
+
+        // Strategy: Replace content="..." for known property/id combinations.
+
+        // Title
+        html = html.replace(/<title[^>]*>.*?<\/title>/, `<title>${title}</title>`);
+        html = html.replace(/name="description"\s+id="meta-description"\s+content="[^"]*"/, `name="description" id="meta-description" content="${description.replace(/"/g, '&quot;')}"`);
+
+        // Open Graph
+        html = html.replace(/property="og:url"\s+id="og-url"\s+content="[^"]*"/, `property="og:url" id="og-url" content="${url}"`);
+        html = html.replace(/property="og:title"\s+id="og-title"\s+content="[^"]*"/, `property="og:title" id="og-title" content="${title.replace(/"/g, '&quot;')}"`);
+        html = html.replace(/property="og:description"\s+id="og-description"\s+content="[^"]*"/, `property="og:description" id="og-description" content="${description.replace(/"/g, '&quot;')}"`);
+        html = html.replace(/property="og:image"\s+id="og-image"\s+content="[^"]*"/, `property="og:image" id="og-image" content="${mainImage}"`);
+        html = html.replace(/property="product:price:amount"\s+id="og-price"\s+content="[^"]*"/, `property="product:price:amount" id="og-price" content="${price}"`);
+
+        // Twitter
+        html = html.replace(/name="twitter:title"\s+id="twitter-title"\s+content="[^"]*"/, `name="twitter:title" id="twitter-title" content="${title.replace(/"/g, '&quot;')}"`);
+        html = html.replace(/name="twitter:description"\s+id="twitter-description"\s+content="[^"]*"/, `name="twitter:description" id="twitter-description" content="${description.replace(/"/g, '&quot;')}"`);
+        html = html.replace(/name="twitter:image"\s+id="twitter-image"\s+content="[^"]*"/, `name="twitter:image" id="twitter-image" content="${mainImage}"`);
+
+        // 5. Inject JSON-LD Schema (Structured Data)
+        const schema = {
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": product.name,
+            "image": [mainImage],
+            "description": description,
+            "sku": `SKU-${product.id}`,
+            "offers": {
+                "@type": "Offer",
+                "url": url,
+                "priceCurrency": currency,
+                "price": price,
+                "availability": parseInt(product.stock_quantity) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                "itemCondition": "https://schema.org/NewCondition"
+            }
+        };
+
+        const schemaScript = `
+        <script type="application/ld+json">
+            ${JSON.stringify(schema, null, 2)}
+        </script>
+        `;
+
+        // Insert Schema before </head>
+        html = html.replace('</head>', `${schemaScript}</head>`);
+
+        // 6. Preload Data for Client Side (Hydration)
+        // This avoids the double-fetch in script.js specific to product.html
+        const preloadScript = `
+        <script>
+            window.preloadedProduct = ${JSON.stringify(product)};
+        </script>
+        `;
+        html = html.replace('</body>', `${preloadScript}</body>`);
+
+        // Send Response
+        res.setHeader('Content-Type', 'text/html');
+        res.send(html);
+
+    } catch (e) {
+        console.error('SSR Error:', e);
+        if (client) client.release();
+        res.status(500).send('Internal Server Error');
+    }
+};

@@ -55,20 +55,28 @@ function generateOrderEmailHTML(data) {
     let productSection = '';
 
     if (Array.isArray(products)) {
-        productSection = products.map(p => `
+        productSection = products.map(p => {
+            let sizeInfo = '';
+            if (p.sizeType === 'custom' || p.size_type === 'custom') {
+                const m = p.measurements || {};
+                const measureStr = Object.entries(m)
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(', ');
+                sizeInfo = `<span style="color: #E07A5F; font-weight: bold;">Custom Size (${p.unit || 'in'}):</span><br>
+                           <span style="font-size: 12px; color: #555;">${measureStr}</span>`;
+            } else {
+                sizeInfo = `<span style="color: #666;">Size: ${p.size}</span>`;
+            }
+
+            return `
             <div class="product-item" style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
                 <strong>${p.name}</strong><br>
-                ${p.sizeType === 'custom'
-                ? `<span style="color: #E07A5F; font-weight: bold;">Custom Size (${p.unit}):</span><br>
-                       <span style="font-size: 12px; color: #555;">
-                        ${Object.entries(p.measurements || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}
-                       </span><br>
-                       ${p.notes ? `<i style="font-size: 11px;">Note: ${p.notes}</i><br>` : ''}`
-                : `<span style="color: #666;">Size: ${p.size}</span>`
-            }
-                <span style="color: #666;"> | Qty: ${p.quantity} | ৳${p.price}</span>
+                ${sizeInfo}<br>
+                ${p.notes ? `<i style="font-size: 11px;">Note: ${p.notes}</i><br>` : ''}
+                <span style="color: #666;">Qty: ${p.quantity} | ৳${p.price}</span>
             </div>
-        `).join('');
+        `;
+        }).join('');
     } else {
         productSection = `
             <div class="product-item" style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">

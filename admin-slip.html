@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Slip - Nongor Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            deep: '#3D405B',
+                            light: '#F4F1DE',
+                            accent: '#E07A5F',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- HTML2Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            #slip-container {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* A4 Ratio Container for Screen */
+        #slip-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans text-brand-deep">
+
+    <!-- Controls -->
+    <div class="fixed top-0 left-0 right-0 bg-white shadow-md p-4 flex justify-between items-center z-50 no-print">
+        <div class="font-bold text-gray-700">Order Slip Preview</div>
+        <div class="flex gap-4">
+            <button onclick="downloadPNG()"
+                class="bg-brand-accent hover:bg-red-600 text-white px-4 py-2 rounded shadow flex items-center gap-2">
+                Download PNG (WhatsApp)
+            </button>
+            <button onclick="downloadPDF()"
+                class="bg-brand-deep hover:bg-gray-800 text-white px-4 py-2 rounded shadow flex items-center gap-2">
+                Download PDF (Print)
+            </button>
+        </div>
+    </div>
+
+    <div class="h-20 no-print"></div> <!-- Spacer -->
+
+    <!-- Slip Container -->
+    <div id="slip-container">
+        <!-- Header -->
+        <div class="flex justify-between items-start border-b pb-6 mb-6">
+            <div>
+                <h1 class="text-4xl font-bold tracking-tight text-brand-deep">NONGOR</h1>
+                <p class="text-sm text-gray-500 uppercase tracking-widest mt-1">The Clothing Brand</p>
+                <div class="mt-4 text-sm text-gray-600">
+                    <p>Dhaka, Bangladesh</p>
+                    <p>Phone: +880 1XXX-XXXXXX</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold text-gray-800">PACKING SLIP</div>
+                <div class="mt-2 space-y-1">
+                    <p class="text-sm"><strong>Order ID:</strong> <span id="order-id">LG-0000</span></p>
+                    <p class="text-sm"><strong>Date:</strong> <span id="order-date">Jan 1, 2024</span></p>
+                    <div id="qr-container" class="mt-2 flex justify-end"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Addresses -->
+        <div class="flex justify-between mb-8">
+            <div class="w-1/2">
+                <h3 class="font-bold text-gray-800 text-sm uppercase mb-2 border-b w-24">Ship To</h3>
+                <div class="text-sm text-gray-700 space-y-1">
+                    <p class="font-bold text-lg" id="customer-name">Customer Name</p>
+                    <p id="customer-phone">+880 1700 000000</p>
+                    <p id="customer-address" class="whitespace-pre-line">123 Street Name, Area, City</p>
+                </div>
+            </div>
+            <div class="w-1/3 text-right">
+                <h3 class="font-bold text-gray-800 text-sm uppercase mb-2 border-b inline-block">Order Details</h3>
+                <div class="text-sm text-gray-700 space-y-1 mt-2">
+                    <p>Status: <span id="order-status" class="font-medium">Pending</span></p>
+                    <p>Payment: <span id="payment-status" class="font-medium">Unpaid</span></p>
+                    <p>Method: <span id="payment-method">COD</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="w-full mb-8 border-collapse">
+            <thead>
+                <tr class="bg-gray-50 border-b border-t border-gray-200">
+                    <th class="text-left py-3 px-2 text-sm font-bold text-gray-700 uppercase">Item</th>
+                    <th class="text-left py-3 px-2 text-sm font-bold text-gray-700 uppercase w-1/4">Size Details</th>
+                    <th class="text-center py-3 px-2 text-sm font-bold text-gray-700 uppercase w-16">Qty</th>
+                    <th class="text-right py-3 px-2 text-sm font-bold text-gray-700 uppercase w-24">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="items-body">
+                <!-- Items injected here -->
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="flex justify-end">
+            <div class="w-1/2 space-y-2 border-t pt-4">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Subtotal</span>
+                    <span class="font-medium" id="subtotal">৳0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Shipping</span>
+                    <span class="font-medium" id="shipping-fee">৳0</span>
+                </div>
+                <div class="flex justify-between text-sm text-brand-accent">
+                    <span class="text-gray-600">Discount</span>
+                    <span class="font-medium" id="discount">- ৳0</span>
+                </div>
+                <div class="flex justify-between text-lg font-bold border-t border-gray-300 pt-2 mt-2">
+                    <span>Total</span>
+                    <span id="grand-total">৳0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="absolute bottom-10 left-0 right-0 text-center text-xs text-gray-400">
+            <p>Thank you for shopping with Nongor!</p>
+            <p>www.nongor.com.bd</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const API_URL = '/api';
+        let currentOrderId = null;
+
+        // On Load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentOrderId = urlParams.get('orderId');
+
+            if (!currentOrderId) {
+                alert('No Order ID specified');
+                return;
+            }
+
+            await loadOrderDetails(currentOrderId);
+        });
+
+        async function loadOrderDetails(orderId) {
+            const token = localStorage.getItem('nongor_session_token');
+            if (!token) {
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}?action=getOrderDetails&orderId=${orderId}`, {
+                    headers: { 'x-session-token': token }
+                });
+
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = 'admin.html';
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.result === 'success') {
+                    renderSlip(data.data);
+                } else {
+                    alert('Error loading order: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Network error loading order.');
+            }
+        }
+
+        function renderSlip(order) {
+            // Meta
+            document.getElementById('order-id').innerText = order.order_id;
+            document.getElementById('order-date').innerText = new Date(order.created_at).toLocaleDateString();
+            document.getElementById('order-status').innerText = order.status;
+            document.getElementById('payment-status').innerText = order.payment_status;
+            document.getElementById('payment-method').innerText = order.payment_method;
+
+            // Customer
+            document.getElementById('customer-name').innerText = order.customer_name;
+            document.getElementById('customer-phone').innerText = order.phone;
+            document.getElementById('customer-address').innerText = order.address || 'N/A';
+
+            // Items
+            const tbody = document.getElementById('items-body');
+            tbody.innerHTML = (order.items || []).map(item => {
+                let sizeHtml = `<span class="bg-gray-100 px-2 py-1 rounded text-xs font-semibold">${item.size}</span>`;
+
+                if (item.size_type === 'custom' || (item.measurements && item.measurements !== '{}')) {
+                    // Custom Sizing
+                    sizeHtml = `<div class="mb-1"><span class="text-brand-accent font-bold text-xs uppercase">Custom Size</span></div>`;
+                    if (item.measurements) {
+                        try {
+                            const m = typeof item.measurements === 'string' ? JSON.parse(item.measurements) : item.measurements;
+                            const mStr = Object.entries(m).map(([k, v]) => `${k}: ${v}`).join(', ');
+                            sizeHtml += `<p class="text-xs text-gray-500 leading-tight">${mStr}</p>`;
+                            if (item.measurement_notes) {
+                                sizeHtml += `<p class="text-xs text-gray-400 italic mt-1">Note: ${item.measurement_notes}</p>`;
+                            }
+                        } catch (e) {
+                            sizeHtml += `<span class="text-xs text-red-400">Error parsing measurements</span>`;
+                        }
+                    }
+                } else {
+                    // Standard Size Label
+                    if (item.size_label && item.size_label !== item.size) {
+                        sizeHtml = `<span class="bg-gray-100 px-2 py-1 rounded text-xs font-semibold">${item.size_label}</span>`;
+                    }
+                }
+
+                return `
+                    <tr class="border-b border-gray-100">
+                        <td class="py-3 px-2 align-top">
+                            <p class="font-bold text-gray-800">${item.product_name}</p>
+                            <p class="text-xs text-gray-400 mt-1">Ref: ${item.product_id || '-'}</p>
+                        </td>
+                        <td class="py-3 px-2 align-top">
+                            ${sizeHtml}
+                        </td>
+                        <td class="py-3 px-2 align-top text-center text-gray-800">${item.qty}</td>
+                        <td class="py-3 px-2 align-top text-right font-medium text-gray-800">৳${item.unit_price || item.line_total}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Totals
+            const subtotal = order.total_price - (order.delivery_fee || 0); // Approx
+            // Correction: Backend sends finalized total_price. We need to reconstruct if subtotal field missing.
+            // If discount exists, total = sub - discount + ship.
+            // Let's rely on what we have.
+            // Assuming delivery_fee is in order object (it's not always strict column in lightweight setups, checking fields...)
+            // If missing, infer from zone.
+            const shipping = order.delivery_fee || (order.shippingZone === 'outside_dhaka' ? 120 : 70);
+            const discount = order.discount_amount || 0;
+            const computedSub = parseInt(order.total_price) + parseInt(discount) - parseInt(shipping);
+
+            document.getElementById('subtotal').innerText = '৳' + computedSub;
+            document.getElementById('shipping-fee').innerText = '৳' + shipping;
+            document.getElementById('discount').innerText = '- ৳' + discount;
+            document.getElementById('grand-total').innerText = '৳' + order.total_price;
+
+            // QR Code (Client-side generation for preview)
+            if (order.tracking_token) {
+                // Using a simple QR API/lib if available, or just leave blank for preview since PDF generates it server-side.
+                // The prompt requirements said "QR code to tracking link". 
+                // We can use a simple img src for now.
+                const trackUrl = encodeURIComponent(`https://nongor-brand.vercel.app/index.html?track=${order.tracking_token}`);
+                document.getElementById('qr-container').innerHTML = `
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${trackUrl}" alt="QR" class="w-16 h-16" />
+                `;
+            }
+        }
+
+        async function downloadPDF() {
+            if (!currentOrderId) return;
+            const token = localStorage.getItem('nongor_session_token');
+            const url = `${API_URL}?action=downloadOrder&orderId=${currentOrderId}&format=pdf`;
+
+            // To pass headers for auth, we might need a fetch/blob download trick, 
+            // OR if auth token is in cookie/param. Our API uses header x-session-token.
+            // Standard window.open wont send custom headers.
+            // Workaround: We'll fetch blob and save it.
+
+            try {
+                const button = event.currentTarget;
+                const originalText = button.innerText;
+                button.innerText = 'Generating...';
+                button.disabled = true;
+
+                const res = await fetch(url, {
+                    headers: { 'x-session-token': token }
+                });
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = `order_${currentOrderId}.pdf`;
+                    link.click();
+                } else {
+                    alert('Failed to generate PDF');
+                }
+
+                button.innerText = originalText;
+                button.disabled = false;
+            } catch (e) {
+                console.error(e);
+                alert('Download error');
+            }
+        }
+
+        function downloadPNG() {
+            const container = document.getElementById('slip-container');
+            const button = event.currentTarget;
+            button.innerText = 'Capturing...';
+
+            html2canvas(container, {
+                scale: 2, // High quality
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `order_${currentOrderId}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                button.innerText = 'Download PNG (WhatsApp)';
+            });
+        }
+    </script>
+</body>
+
+</html>
