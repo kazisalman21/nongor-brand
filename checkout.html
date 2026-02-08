@@ -20,6 +20,33 @@
     <link href="./assets/styles.css" rel="stylesheet">
     <!-- Premium Animations CSS -->
     <link rel="stylesheet" href="./assets/animations.css">
+    <style>
+        .premium-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background-color: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            color: #3D405B;
+        }
+
+        .premium-input:focus {
+            border-color: #E07A5F;
+            box-shadow: 0 0 0 4px rgba(224, 122, 95, 0.1);
+        }
+
+        .premium-input::placeholder {
+            color: #9ca3af;
+        }
+
+        textarea.premium-input {
+            min-height: 100px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+    </style>
 </head>
 
 <body
