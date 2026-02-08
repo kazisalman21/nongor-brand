@@ -1772,7 +1772,7 @@
                     </div>
                 </div>
                 <div class="mt-8 text-center">
-                    <p class="text-xs text-gray-400 font-medium">Nongor Brand Admin Panel v2.0 • Secure Connection</p>
+                    <p class="text-xs text-gray-400 font-medium">Nongor Brand Admin Panel v2.2 • Secure Connection</p>
                 </div>
             </div> <!-- End Orders Section -->
 
@@ -3385,6 +3385,34 @@
                 }
             } catch (e) {
                 console.error(e);
+                loading.classList.add('hidden');
+            }
+        }
+
+        async function loadProducts() {
+            const loading = document.getElementById('products-loading');
+            const tbody = document.getElementById('products-table-body');
+
+            loading.classList.remove('hidden');
+            tbody.innerHTML = '';
+
+            try {
+                // Fetch products with cache-busting
+                const response = await authenticatedFetch(`${API_URL}?action=getAllProducts&t=${Date.now()}`);
+                const result = await response.json();
+
+                if (result.result === 'success') {
+                    allProducts = result.data;
+                    console.log('Admin UI v2.2: Loaded products', allProducts); // Debug
+                    renderProductsTable();
+                    updateLowStockCount();
+                } else {
+                    showToast(result.message || 'Failed to load products', 'red');
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                showToast('Error loading products. Check console.', 'red');
+            } finally {
                 loading.classList.add('hidden');
             }
         }
