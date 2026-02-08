@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let ticking = false;
 
     const updateNavbar = () => {
+        if (!navbar) return;
         const isMobile = window.innerWidth < 768;
 
         if (window.scrollY > 50) {
