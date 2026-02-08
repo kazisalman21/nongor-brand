@@ -883,7 +883,8 @@ module.exports = async (req, res) => {
             }
 
             // --- CREATE COUPON (Protected) ---
-            if (query.action === 'createCoupon') {
+            // Fix: Check data.action (body) as well as query.action
+            if (query.action === 'createCoupon' || data.action === 'createCoupon') {
                 const auth = await verifySession(req, client);
                 if (!auth.valid) {
                     client.release();
@@ -996,50 +997,6 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', message: 'Review updated', data: result.rows[0] });
             }
 
-            // --- SECURITY: RATE LIMITING (Priority 1) ---
-            // Get IP Address
-            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            const rateLimit = checkRateLimit('order', ip);
-            if (!rateLimit.allowed) {
-                console.warn(`⚠️ Order Rate Limit Exceeded for IP: ${ip}`);
-                client.release();
-                return res.status(429).json({
-                    result: 'error',
-                    message: `Too many orders. Please try again in ${rateLimit.retryAfter} seconds.`
-                });
-            }
-
-            // --- SECURITY: EMAIL VALIDATION ---
-            if (data.customerEmail) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(data.customerEmail)) {
-                    client.release();
-                    return res.status(400).json({ result: 'error', message: 'Invalid email address' });
-                }
-            }
-
-            // --- SECURITY: PHONE VALIDATION ---
-            if (data.customerPhone) {
-                // Normalize: Remove +88 prefix if present
-                let cleanPhone = data.customerPhone.replace(/^\+88/, '');
-                // Regex: Starts with 01, follows by 3-9, strict 11 digits
-                const phoneRegex = /^01[3-9]\d{8}$/;
-
-                if (!phoneRegex.test(cleanPhone)) {
-                    client.release();
-                    return res.status(400).json({ result: 'error', message: 'Invalid BD Phone Number' });
-                }
-            }
-
-            let initialDelivery = 'Pending';
-            let initialPayment = 'Unpaid';
-
-            if (data.paymentMethod === 'Bkash' || data.paymentMethod === 'Nagad' || data.paymentMethod === 'Bank') {
-                initialPayment = 'Verifying';
-            } else if (data.paymentMethod === 'COD') {
-                initialPayment = 'Due';
-            }
-
             // --- CHANGE ADMIN PASSWORD (Protected) ---
             if (query.action === 'changeAdminPassword') {
                 // 1. Verify Session
@@ -1121,16 +1078,6 @@ module.exports = async (req, res) => {
                     message: 'Password updated successfully. Please log in again.',
                     reauth: true
                 });
-            }
-
-            // --- TRANSACTION START ---
-            await client.query('BEGIN');
-
-            // --- VALIDATE ITEMS REQUIRED ---
-            if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
-                await client.query('ROLLBACK');
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Order must contain at least one item' });
             }
 
             // --- SERVER-SIDE ORDER ID GENERATION ---
