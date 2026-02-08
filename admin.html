@@ -3065,7 +3065,8 @@
         }
 
         function updateLowStockCount(products) {
-            const lowStock = products.filter(p => p.stock_quantity <= 5).length;
+            const list = products || allProducts || [];
+            const lowStock = list.filter(p => p.stock_quantity <= 5).length;
             const el = document.getElementById('low-stock-count');
             if (el) el.textContent = lowStock;
 
