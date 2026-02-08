@@ -30,3 +30,26 @@
 - [ ] **Add Custom**: Enter inputs (e.g., 40, 38, 42...), add to cart.
 - [ ] **Cart Display**: Open Cart. Item should show "Size: Custom".
 - [ ] **Order**: Place order. Database `order_items` should contain the JSON measurements.
+
+### Phase 4: Operations Features
+- [ ] **Order Management**: Change status in Admin -> Dashboard should show update in Tracking modal.
+- [ ] **Emails**: Place order -> Check admin and customer email for confirmation.
+- [ ] **Status Emails**: Update status to "Shipped" -> Customer should receive status update email.
+
+### Phase 5: Trust & Conversion
+- [ ] **Coupon**: Enter valid coupon -> Total should update with discount.
+- [ ] **Coupon**: Enter invalid/expired coupon -> Toast should show error.
+- [ ] **Reviews**: Submit a review -> Check Admin Dashboard -> Reviews tab.
+- [ ] **Reviews**: Approve review in Admin -> Verify it appears on product page.
+
+### Phase 6: Admin Order Slips
+- [ ] **Preview**: Click "Download Slip" in Admin -> Opens preview.
+- [ ] **Fields**: Verify all fields (ID, Date, Ship To, Items, Totals) are populated.
+- [ ] **Download PDF**: Click "Download PDF" -> Check if file is valid.
+- [ ] **Download PNG**: Click "Download PNG" -> Check if image is valid for WhatsApp sharing.
+
+### Phase 7: Order Slip Bug Fix
+- [ ] **Robustness**: Verify no "undefined" fields are shown in the slip.
+- [ ] **Multi-Item**: Verify slip correctly lists multiple items.
+- [ ] **Custom Measure**: Verify custom measurements are formatted correctly in the items table.
+- [ ] **QR Code**: Scan the QR code on the preview -> Should link to the correct tracking page.

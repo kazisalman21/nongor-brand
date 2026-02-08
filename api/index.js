@@ -256,24 +256,52 @@ module.exports = async (req, res) => {
                     return res.status(400).json({ result: 'error', message: 'Order ID required' });
                 }
 
-                // Fetch Order
-                const orderRes = await client.query('SELECT * FROM orders WHERE order_id = $1', [orderId]);
+                // Fetch Order with camelCase aliases
+                const orderRes = await client.query(`
+                    SELECT 
+                        order_id AS "orderId",
+                        created_at AS "createdAt",
+                        status,
+                        delivery_status AS "deliveryStatus",
+                        payment_status AS "paymentStatus",
+                        payment_method AS "paymentMethod",
+                        customer_name AS "customerName",
+                        phone,
+                        address,
+                        total_price AS "total",
+                        delivery_fee AS "shippingFee",
+                        discount_amount AS "discount",
+                        tracking_token AS "trackingToken"
+                    FROM orders 
+                    WHERE order_id = $1
+                `, [orderId]);
+
                 if (orderRes.rows.length === 0) {
                     client.release();
                     return res.status(404).json({ result: 'error', message: 'Order not found' });
                 }
                 const order = orderRes.rows[0];
 
-                // Fetch Items with Product Details
-                // We join against products to get images/names if needed, 
-                // but order_items table has snapshots of price/name usually.
-                // Nongor's current setup: `orders` table has `product_name`, `size`, `quantity` for single-item simple orders? 
-                // checking migrate_order_items... yes, we introduced `order_items` table.
-                // BUT `orders` table still has legacy columns? 
-                // Let's support both: if `order_items` exist, return them. 
+                // Ensure subtotal is calculated if not stored
+                // total = subtotal + shipping - discount => subtotal = total - shipping + discount
+                const total = parseInt(order.total || 0);
+                const shipping = parseInt(order.shippingFee || 0);
+                const discount = parseInt(order.discount || 0);
+                order.subtotal = total - shipping + discount;
 
+                // Fetch Items with Product Details (camelCase)
                 const itemsRes = await client.query(`
-                    SELECT oi.*, p.name as product_name, p.image 
+                    SELECT 
+                        oi.product_id AS "productId",
+                        oi.quantity AS "qty",
+                        oi.unit_price AS "unitPrice",
+                        oi.size,
+                        oi.size_label AS "sizeLabel",
+                        oi.size_type AS "sizeType",
+                        oi.measurements,
+                        oi.measurement_unit AS "measurementUnit",
+                        oi.measurement_notes AS "measurementNotes",
+                        p.name AS "productName"
                     FROM order_items oi
                     LEFT JOIN products p ON oi.product_id = p.id
                     WHERE oi.order_id = $1
@@ -283,32 +311,127 @@ module.exports = async (req, res) => {
 
                 // Fallback for legacy single-item orders if order_items is empty
                 if (items.length === 0) {
-                    items = [{
-                        product_name: order.product_name,
-                        quantity: order.quantity,
-                        size: order.size,
-                        unit_price: order.total_price, // Approx if shipping included usually, but close enough
-                        total_price: order.total_price,
-                        measurements: order.measurements,
-                        size_type: order.size_type || 'standard',
-                        size_label: order.size
-                    }];
+                    // Re-fetch raw order for legacy fields if needed, but we already have them mapped in 'order'
+                    // Wait, those fields (product_name etc) weren't in protected SELECT above.
+                    // Let's re-fetch items from the order object itself as fallback.
+                    // Need to check what legacy orders look like.
+
+                    // Let's do a quick check: if items empty, fetch the legacy columns from orders table
+                    const legacyRes = await client.query('SELECT product_name, quantity, size, total_price, measurements, size_type FROM orders WHERE order_id = $1', [orderId]);
+                    const leg = legacyRes.rows[0];
+                    if (leg && leg.product_name) {
+                        items = [{
+                            productName: leg.product_name,
+                            qty: leg.quantity,
+                            unitPrice: leg.total_price,
+                            size: leg.size,
+                            sizeLabel: leg.size,
+                            sizeType: leg.size_type || 'standard',
+                            measurements: leg.measurements,
+                            measurementUnit: 'in', // Default
+                            measurementNotes: ''
+                        }];
+                    }
                 }
 
                 client.release();
 
-                // 2. Generate PDF using pdf-lib
-                const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
-                const QRCode = require('qrcode');
+                return res.status(200).json({
+                    result: 'success',
+                    order: order,
+                    items: items
+                });
+            }
+
+            // --- DOWNLOAD ORDER PDF (Admin) ---
+            if (query.action === 'downloadOrder' && query.format === 'pdf') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).send('Unauthorized');
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).send('Forbidden');
+                }
+
+                const orderId = query.orderId;
+                if (!orderId) {
+                    client.release();
+                    return res.status(400).send('Order ID required');
+                }
 
                 try {
+                    // Fetch Order with camelCase aliases
+                    const orderRes = await client.query(`
+                        SELECT 
+                            order_id AS "orderId",
+                            created_at AS "createdAt",
+                            status,
+                            delivery_status AS "deliveryStatus",
+                            payment_status AS "paymentStatus",
+                            payment_method AS "paymentMethod",
+                            customer_name AS "customerName",
+                            phone,
+                            address,
+                            total_price AS "total",
+                            delivery_fee AS "shippingFee",
+                            discount_amount AS "discount",
+                            tracking_token AS "trackingToken"
+                        FROM orders 
+                        WHERE order_id = $1
+                    `, [orderId]);
+
+                    if (orderRes.rows.length === 0) {
+                        client.release();
+                        return res.status(404).send('Order not found');
+                    }
+                    const order = orderRes.rows[0];
+
+                    // Fetch Items (camelCase)
+                    const itemsRes = await client.query(`
+                        SELECT 
+                            oi.quantity AS "qty",
+                            oi.unit_price AS "unitPrice",
+                            oi.size_label AS "sizeLabel",
+                            oi.size_type AS "sizeType",
+                            oi.measurements,
+                            p.name AS "productName"
+                        FROM order_items oi
+                        LEFT JOIN products p ON oi.product_id = p.id
+                        WHERE oi.order_id = $1
+                    `, [orderId]);
+
+                    let items = itemsRes.rows;
+
+                    // Fallback for legacy
+                    if (items.length === 0) {
+                        const legacyRes = await client.query('SELECT product_name, quantity, size, total_price, measurements, size_type FROM orders WHERE order_id = $1', [orderId]);
+                        const leg = legacyRes.rows[0];
+                        if (leg && leg.product_name) {
+                            items = [{
+                                productName: leg.product_name,
+                                qty: leg.quantity,
+                                unitPrice: leg.total_price,
+                                sizeLabel: leg.size,
+                                sizeType: leg.size_type || 'standard',
+                                measurements: leg.measurements
+                            }];
+                        }
+                    }
+
+                    client.release();
+
+                    // PDF Generation
+                    const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+                    const QRCode = require('qrcode');
+
                     const pdfDoc = await PDFDocument.create();
                     const page = pdfDoc.addPage([595.28, 841.89]); // A4 Size
                     const { width, height } = page.getSize();
                     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
                     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-                    // Helpers
                     const drawText = (text, x, y, size = 10, options = {}) => {
                         page.drawText(String(text || ''), { x, y, size, font: options.font || font, color: options.color || rgb(0, 0, 0), ...options });
                     };
@@ -316,19 +439,18 @@ module.exports = async (req, res) => {
                     // Header
                     drawText('NONGOR', 50, height - 50, 24, { font: fontBold });
                     drawText('The Clothing Brand', 50, height - 65, 10, { color: rgb(0.4, 0.4, 0.4) });
-
                     drawText('Packing Slip', width - 150, height - 50, 18, { font: fontBold, align: 'right' });
-                    drawText(`Order ID: ${order.order_id}`, width - 50, height - 70, 10, { align: 'right' });
-                    drawText(`Date: ${new Date(order.created_at).toLocaleDateString()}`, width - 50, height - 85, 10, { align: 'right' });
+
+                    drawText(`Order ID: ${order.orderId}`, width - 50, height - 70, 10, { align: 'right' });
+                    drawText(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, width - 50, height - 85, 10, { align: 'right' });
 
                     // Customer Info
                     let y = height - 130;
                     drawText('Ship To:', 50, y, 12, { font: fontBold });
                     y -= 15;
-                    drawText(order.customer_name || 'Guest', 50, y);
+                    drawText(order.customerName || 'Guest', 50, y);
                     y -= 15;
                     drawText(order.phone || '', 50, y);
-                    // Address wrapping simple (split by comma for now or truncate)
                     y -= 15;
                     const addressLines = (order.address || '').match(/.{1,60}/g) || [];
                     addressLines.forEach(line => {
@@ -342,17 +464,17 @@ module.exports = async (req, res) => {
                     y -= 15;
                     drawText(`Status: ${order.status}`, 300, y);
                     y -= 15;
-                    drawText(`Payment: ${order.payment_status} (${order.payment_method})`, 300, y);
+                    drawText(`Payment: ${order.paymentStatus} (${order.paymentMethod || 'N/A'})`, 300, y);
 
                     // QR Code
-                    if (order.tracking_token) {
-                        const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.tracking_token}`;
+                    if (order.trackingToken) {
+                        const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.trackingToken}`;
                         const qrDataUrl = await QRCode.toDataURL(trackUrl);
                         const qrImage = await pdfDoc.embedPng(qrDataUrl);
                         page.drawImage(qrImage, { x: width - 100, y: height - 180, width: 60, height: 60 });
                     }
 
-                    // Table Header
+                    // table header
                     y = height - 220;
                     page.drawRectangle({ x: 40, y: y - 5, width: width - 80, height: 25, color: rgb(0.95, 0.95, 0.95) });
                     drawText('Item', 50, y, 10, { font: fontBold });
@@ -361,71 +483,45 @@ module.exports = async (req, res) => {
                     drawText('Price', 480, y, 10, { font: fontBold });
 
                     y -= 25;
-
-                    // Items
                     for (const item of items) {
-                        const itemName = item.product_name;
-                        drawText(itemName, 50, y);
-
-                        // Size Details
-                        let sizeText = item.size_label || item.size || 'N/A';
-                        if (item.size_type === 'custom' || (item.measurements && item.measurements !== '{}')) {
-                            sizeText = 'Custom';
-                        }
+                        drawText(item.productName || 'Product', 50, y);
+                        let sizeText = item.sizeLabel || 'N/A';
+                        if (item.sizeType === 'custom') sizeText = 'Custom';
                         drawText(sizeText, 250, y);
-
-                        drawText(String(item.qty || item.quantity), 400, y);
-                        drawText(`Tk ${item.unit_price || item.total_price}`, 480, y);
-
-                        // Custom Measurements Line
-                        if ((item.size_type === 'custom' || item.measurements) && item.measurements) {
-                            y -= 12;
-                            let mStr = '';
-                            try {
-                                const m = typeof item.measurements === 'string' ? JSON.parse(item.measurements) : item.measurements;
-                                mStr = Object.entries(m).map(([k, v]) => `${k}:${v}`).join(', ');
-                            } catch (e) { }
-
-                            if (mStr) {
-                                drawText(`Measurements: ${mStr}`, 50, y, 8, { color: rgb(0.4, 0.4, 0.4) });
-                            }
-                        }
-
-                        y -= 25; // Spacing
-                        page.drawLine({ start: { x: 40, y: y + 10 }, end: { x: width - 40, y: y + 10 }, thickness: 0.5, color: rgb(0.9, 0.9, 0.9) });
+                        drawText(String(item.qty), 400, y);
+                        drawText(`Tk ${item.unitPrice}`, 480, y);
+                        y -= 25;
                     }
 
                     // Totals
-                    y -= 20;
+                    y -= 10;
                     const totalsX = 350;
-                    drawText(`Subtotal:`, totalsX, y);
-                    drawText(`Tk ${order.total_price - (order.delivery_fee || 0)}`, 480, y, 10, { align: 'right' }); // Approx logic
+                    const shipping = parseInt(order.shippingFee || 0);
+                    const discount = parseInt(order.discount || 0);
+                    const subtotal = parseInt(order.total || 0) - shipping + discount;
 
+                    drawText(`Subtotal:`, totalsX, y);
+                    drawText(`Tk ${subtotal}`, 480, y);
                     y -= 15;
                     drawText(`Shipping:`, totalsX, y);
-                    drawText(`Tk ${order.delivery_fee || (order.shippingZone === 'outside_dhaka' ? 120 : 70)}`, 480, y, 10, { align: 'right' }); // Fallback logic
-
+                    drawText(`Tk ${shipping}`, 480, y);
                     y -= 15;
                     drawText(`Discount:`, totalsX, y);
-                    drawText(`- Tk ${order.discount_amount || 0}`, 480, y, 10, { align: 'right' });
-
+                    drawText(`- Tk ${discount}`, 480, y);
                     y -= 20;
                     drawText(`Total:`, totalsX, y, 12, { font: fontBold });
-                    drawText(`Tk ${order.total_price}`, 480, y, 12, { font: fontBold, align: 'right' });
-
-                    // Footer
-                    drawText('Thank you for shopping with Nongor!', 50, 40, 10, { font: fontBold, align: 'center', width: width - 100 });
-
+                    drawText(`Tk ${order.total}`, 480, y, 12, { font: fontBold });
 
                     const pdfBytes = await pdfDoc.save();
-
                     res.setHeader('Content-Type', 'application/pdf');
                     res.setHeader('Content-Disposition', `attachment; filename="order_${orderId}.pdf"`);
                     return res.status(200).send(Buffer.from(pdfBytes));
 
                 } catch (err) {
                     console.error('PDF Generation Error:', err);
-                    return res.status(500).send('Error generating PDF');
+                    if (!res.headersSent) {
+                        return res.status(500).send('Error generating PDF');
+                    }
                 }
             }
 
