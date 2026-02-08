@@ -4,6 +4,7 @@
  * - Caches product queries for 90% faster repeated requests
  * - Removed redundant table creation statements
  */
+require('regenerator-runtime/runtime');
 const pool = require('./db');
 const { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit } = require('./cache');
 const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
