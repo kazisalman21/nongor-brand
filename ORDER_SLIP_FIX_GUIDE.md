@@ -54,7 +54,7 @@ SELECT
   payment_status AS "paymentStatus",
   payment_method AS "paymentMethod",
   total_price AS "total",
-  delivery_fee AS "shippingFee",
+  shipping_fee AS "shippingFee",
   discount_amount AS "discount",
   tracking_token AS "trackingToken"
 FROM orders

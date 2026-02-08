@@ -269,7 +269,7 @@ module.exports = async (req, res) => {
                         phone,
                         address,
                         total_price AS "total",
-                        delivery_fee AS "shippingFee",
+                        COALESCE(shipping_fee, 0) AS "shippingFee",
                         discount_amount AS "discount",
                         tracking_token AS "trackingToken"
                     FROM orders 
@@ -375,7 +375,7 @@ module.exports = async (req, res) => {
                             phone,
                             address,
                             total_price AS "total",
-                            delivery_fee AS "shippingFee",
+                            COALESCE(shipping_fee, 0) AS "shippingFee",
                             discount_amount AS "discount",
                             tracking_token AS "trackingToken"
                         FROM orders 
