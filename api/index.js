@@ -1183,8 +1183,8 @@ module.exports = async (req, res) => {
 
             const insertQuery = `
                 INSERT INTO orders 
-                (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount, shipping_fee, subtotal)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+                (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
                 RETURNING *
             `;
 
@@ -1207,9 +1207,7 @@ module.exports = async (req, res) => {
                 data.customerEmail || null,
                 trackingToken,
                 appliedCouponCode,
-                discountAmount,
-                shippingFee,
-                calculatedSubtotal
+                discountAmount
             ];
 
             const result = await client.query(insertQuery, values);
