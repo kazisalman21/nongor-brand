@@ -189,7 +189,8 @@
             }
 
             try {
-                const res = await fetch(`${API_URL}?action=getOrderDetails&orderId=${orderId}`, {
+                const url = `${API_URL}?action=getOrderDetails&orderId=${orderId}`;
+                const res = await fetch(url, {
                     headers: { 'x-session-token': token }
                 });
 
@@ -198,33 +199,48 @@
                     return;
                 }
 
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await res.text();
+                    console.error('Non-JSON response:', text);
+                    alert('Server error: Expected JSON but got: ' + contentType);
+                    return;
+                }
+
                 const data = await res.json();
+                console.log('API Response:', data);
+
                 if (data.result === 'success' && data.order) {
-                    renderSlip(data.order, data.items);
+                    renderSlip(data.order, data.items || []);
                 } else if (data.result === 'success' && !data.order) {
                     console.error('API Error: result was success but order object is missing.', data);
                     alert('Order data missing in API response. Please check server logs.');
                 } else {
-                    alert('Error loading order: ' + data.message);
+                    alert('Error loading order: ' + (data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                alert('Network error loading order.');
+                alert('Network error loading order: ' + error.message);
             }
         }
 
         function renderSlip(order, items = []) {
+            if (!order) {
+                console.error('renderSlip called with null order');
+                return;
+            }
+
             // Meta
-            document.getElementById('order-id').innerText = order.orderId || 'N/A';
-            document.getElementById('order-date').innerText = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A';
+            document.getElementById('order-id').innerText = order.orderId || order.order_id || 'N/A';
+            document.getElementById('order-date').innerText = (order.createdAt || order.created_at) ? new Date(order.createdAt || order.created_at).toLocaleDateString() : 'N/A';
             document.getElementById('order-status').innerText = order.status || 'N/A';
-            document.getElementById('payment-status').innerText = order.paymentStatus || 'N/A';
-            document.getElementById('payment-method').innerText = order.paymentMethod || 'N/A';
+            document.getElementById('payment-status').innerText = order.paymentStatus || order.payment_status || 'N/A';
+            document.getElementById('payment-method').innerText = order.paymentMethod || order.payment_method || 'N/A';
 
             // Customer
-            document.getElementById('customer-name').innerText = order.customerName || 'N/A';
-            document.getElementById('customer-phone').innerText = order.phone || 'N/A';
-            document.getElementById('customer-address').innerText = order.address || 'N/A';
+            document.getElementById('customer-name').innerText = order.customerName || order.customer_name || 'N/A';
+            document.getElementById('customer-phone').innerText = order.phone || order.customer_phone || 'N/A';
+            document.getElementById('customer-address').innerText = order.address || order.customer_address || 'N/A';
 
             // Items
             const tbody = document.getElementById('items-body');
@@ -232,6 +248,11 @@
                 tbody.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-gray-400">No items found for this order.</td></tr>`;
             } else {
                 tbody.innerHTML = items.map(item => {
+                    const productName = item.productName || item.product_name || 'Unknown Product';
+                    const productId = item.productId || item.product_id || 'N/A';
+                    const qty = item.qty || item.quantity || 0;
+                    const unitPrice = parseFloat(item.unitPrice || item.unit_price || 0);
+
                     let sizeHtml = `<span class="bg-gray-100 px-2 py-1 rounded text-xs font-semibold">${item.sizeLabel || item.size || 'N/A'}</span>`;
 
                     if (item.sizeType === 'custom' || (item.measurements && item.measurements !== '{}')) {
@@ -239,10 +260,13 @@
                         if (item.measurements) {
                             try {
                                 const m = typeof item.measurements === 'string' ? JSON.parse(item.measurements) : item.measurements;
-                                const mStr = Object.entries(m).map(([k, v]) => `${k}: ${v}`).join(', ');
-                                sizeHtml += `<p class="text-xs text-gray-700 leading-tight font-mono">${mStr}</p>`;
-                                if (item.measurementNotes) {
-                                    sizeHtml += `<p class="text-xs text-gray-500 italic mt-1">Note: ${item.measurementNotes}</p>`;
+                                if (m && typeof m === 'object' && Object.keys(m).length > 0) {
+                                    const mStr = Object.entries(m).map(([k, v]) => `${k}: ${v}`).join(', ');
+                                    sizeHtml += `<p class="text-xs text-gray-700 leading-tight font-mono">${mStr}</p>`;
+                                }
+                                const notes = item.measurementNotes || item.measurement_notes;
+                                if (notes) {
+                                    sizeHtml += `<p class="text-xs text-gray-500 italic mt-1">Note: ${notes}</p>`;
                                 }
                             } catch (e) {
                                 sizeHtml += `<span class="text-xs text-red-500">Manual review required</span>`;
@@ -253,14 +277,14 @@
                     return `
                         <tr class="border-b border-gray-100 last:border-0">
                             <td class="py-4 px-2 align-top">
-                                <p class="font-bold text-gray-800">${item.productName || 'Unknown Product'}</p>
-                                <p class="text-[10px] text-gray-400 mt-0.5 uppercase tracking-tighter">SKU: ${item.productId || 'N/A'}</p>
+                                <p class="font-bold text-gray-800">${productName}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5 uppercase tracking-tighter">SKU: ${productId}</p>
                             </td>
                             <td class="py-4 px-2 align-top">
                                 ${sizeHtml}
                             </td>
-                            <td class="py-4 px-2 align-top text-center text-gray-800 font-medium">${item.qty}</td>
-                            <td class="py-4 px-2 align-top text-right font-bold text-gray-800">৳${parseInt(item.unitPrice * item.qty).toLocaleString()}</td>
+                            <td class="py-4 px-2 align-top text-center text-gray-800 font-medium">${qty}</td>
+                            <td class="py-4 px-2 align-top text-right font-bold text-gray-800">৳${parseInt(unitPrice * qty).toLocaleString()}</td>
                         </tr>
                     `;
                 }).join('');
@@ -268,13 +292,14 @@
 
             // Totals
             document.getElementById('subtotal').innerText = '৳' + (parseInt(order.subtotal) || 0).toLocaleString();
-            document.getElementById('shipping-fee').innerText = '৳' + (parseInt(order.shippingFee) || 0).toLocaleString();
-            document.getElementById('discount').innerText = '- ৳' + (parseInt(order.discount) || 0).toLocaleString();
-            document.getElementById('grand-total').innerText = '৳' + (parseInt(order.total) || 0).toLocaleString();
+            document.getElementById('shipping-fee').innerText = '৳' + (parseInt(order.shippingFee || order.shipping_fee) || 0).toLocaleString();
+            document.getElementById('discount').innerText = '- ৳' + (parseInt(order.discount || order.discount_amount) || 0).toLocaleString();
+            document.getElementById('grand-total').innerText = '৳' + (parseInt(order.total || order.total_price) || 0).toLocaleString();
 
-            // QR Code (Client-side generation for preview)
-            if (order.trackingToken) {
-                const trackUrl = encodeURIComponent(`https://nongor-brand.vercel.app/index.html?track=${order.trackingToken}`);
+            // QR Code
+            const trackingToken = order.trackingToken || order.tracking_token;
+            if (trackingToken) {
+                const trackUrl = encodeURIComponent(`https://nongor-brand.vercel.app/index.html?track=${trackingToken}`);
                 document.getElementById('qr-container').innerHTML = `
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${trackUrl}" alt="QR" class="w-16 h-16 border p-1" />
                 `;
