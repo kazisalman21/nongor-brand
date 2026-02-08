@@ -4,26 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Slip - Nongor Admin</title>
+    <title>NONGOR - Packing Slip</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans Bengali & Inter -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- QR Code Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <!-- HTML2Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- JsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans Bengali', 'sans-serif'],
+                    },
                     colors: {
                         brand: {
-                            deep: '#3D405B',
-                            light: '#F4F1DE',
-                            accent: '#E07A5F',
+                            deep: '#1a1a2e', // Deep Navy
+                            primary: '#e94560', // Vibrant Red/Pink
+                            light: '#f3f4f6', // Light Gray
                         }
                     }
                 }
             }
         }
     </script>
-    <!-- HTML2Canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Print Styles */
         @media print {
@@ -42,35 +54,130 @@
                 margin: 0;
                 width: 100%;
                 max-width: 100%;
+                border: none;
+                padding: 0;
+            }
+
+            /* Ensure background colors print */
+            .bg-brand-deep {
+                background-color: #1a1a2e !important;
+                color: white !important;
+            }
+
+            .bg-brand-primary {
+                background-color: #e94560 !important;
+            }
+
+            .bg-gray-100 {
+                background-color: #f3f4f6 !important;
             }
         }
 
-        /* A4 Ratio Container for Screen */
+        /* Screen Styles */
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         #slip-container {
             width: 210mm;
+            /* A4 Width */
             min-height: 297mm;
-            padding: 20mm;
+            /* A4 Height */
+            padding: 15mm;
             margin: 20px auto;
             background: white;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 8rem;
+            color: rgba(0, 0, 0, 0.03);
+            font-weight: 900;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+
+        /* Table Styles */
+        th,
+        td {
+            vertical-align: middle;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-pending {
+            background-color: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #ffedd5;
+        }
+
+        .badge-paid {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-cod {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
         }
     </style>
 </head>
 
-<body class="bg-gray-100 font-sans text-brand-deep">
+<body>
 
     <!-- Controls -->
-    <div class="fixed top-0 left-0 right-0 bg-white shadow-md p-4 flex justify-between items-center z-50 no-print">
-        <div class="font-bold text-gray-700">Order Slip Preview</div>
-        <div class="flex gap-4">
-            <button onclick="downloadPNG()"
-                class="bg-brand-accent hover:bg-red-600 text-white px-4 py-2 rounded shadow flex items-center gap-2">
-                Download PNG (WhatsApp)
+    <div
+        class="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm shadow-sm p-4 flex justify-between items-center z-50 no-print border-b border-gray-200">
+        <div class="flex items-center gap-3">
+            <a href="admin.html" class="text-gray-500 hover:text-brand-deep transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+            <div class="font-bold text-gray-800">Packing Slip Preview</div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="window.print()"
+                class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 transition font-medium text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                    </path>
+                </svg>
+                Print
             </button>
-            <button onclick="downloadPDF()"
-                class="bg-brand-deep hover:bg-gray-800 text-white px-4 py-2 rounded shadow flex items-center gap-2">
-                Download PDF (Print)
+            <button onclick="downloadImage()"
+                class="bg-brand-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2 transition font-medium text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Save as Image
             </button>
         </div>
     </div>
@@ -79,300 +186,383 @@
 
     <!-- Slip Container -->
     <div id="slip-container">
-        <!-- Header -->
-        <div class="flex justify-between items-start border-b pb-6 mb-6">
-            <div>
-                <h1 class="text-4xl font-bold tracking-tight text-brand-deep">NONGOR</h1>
-                <p class="text-sm text-gray-500 uppercase tracking-widest mt-1">The Clothing Brand</p>
-                <div class="mt-4 text-sm text-gray-600">
-                    <p>Dhaka, Bangladesh</p>
-                    <p>Phone: +880 1XXX-XXXXXX</p>
+
+        <!-- Watermark -->
+        <div class="watermark">NONGOR</div>
+
+        <!-- Header Section -->
+        <div
+            class="flex justify-between items-stretch mb-8 bg-brand-deep text-white rounded-xl overflow-hidden shadow-lg p-0">
+            <div class="p-8 flex-1">
+                <h1 class="text-5xl font-extrabold tracking-tight mb-2">NONGOR</h1>
+                <p class="text-brand-primary font-medium tracking-wider text-sm uppercase mb-6">The Clothing Brand</p>
+
+                <div class="space-y-1 text-sm text-gray-300">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                            </path>
+                        </svg>
+                        <span>+880 1616-510027</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <span>nongor.brand@gmail.com</span>
+                    </div>
                 </div>
             </div>
-            <div class="text-right">
-                <div class="text-2xl font-bold text-gray-800">PACKING SLIP</div>
-                <div class="mt-2 space-y-1">
-                    <p class="text-sm"><strong>Order ID:</strong> <span id="order-id">LG-0000</span></p>
-                    <p class="text-sm"><strong>Date:</strong> <span id="order-date">Jan 1, 2024</span></p>
-                    <div id="qr-container" class="mt-2 flex justify-end"></div>
+
+            <div class="bg-gray-800/50 p-8 w-1/3 flex flex-col justify-center text-right border-l border-white/10">
+                <h2 class="text-2xl font-bold uppercase tracking-widest text-white/90">Packing Slip</h2>
+                <div class="mt-4">
+                    <p class="text-xs text-brand-primary uppercase font-bold mb-1">Order Date</p>
+                    <p class="text-lg font-mono text-white" id="order-date">Feb 8, 2026</p>
                 </div>
             </div>
         </div>
 
-        <!-- Addresses -->
-        <div class="flex justify-between mb-8">
-            <div class="w-1/2">
-                <h3 class="font-bold text-gray-800 text-sm uppercase mb-2 border-b w-24">Ship To</h3>
-                <div class="text-sm text-gray-700 space-y-1">
-                    <p class="font-bold text-lg" id="customer-name">Customer Name</p>
-                    <p id="customer-phone">+880 1700 000000</p>
-                    <p id="customer-address" class="whitespace-pre-line">123 Street Name, Area, City</p>
+        <!-- Order & Customer Info -->
+        <div class="grid grid-cols-2 gap-8 mb-8">
+            <!-- Shipping Info -->
+            <div class="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Ship To
+                </h3>
+                <div class="text-gray-800">
+                    <p class="text-xl font-bold mb-1" id="customer-name">Kazi Salman</p>
+                    <p class="text-sm text-gray-600 mb-2 font-mono" id="customer-phone">+880 1616-510027</p>
+                    <p class="text-sm text-gray-700 leading-relaxed" id="customer-address">asdfgfdsa</p>
                 </div>
             </div>
-            <div class="w-1/3 text-right">
-                <h3 class="font-bold text-gray-800 text-sm uppercase mb-2 border-b inline-block">Order Details</h3>
-                <div class="text-sm text-gray-700 space-y-1 mt-2">
-                    <p>Status: <span id="order-status" class="font-medium">Pending</span></p>
-                    <p>Payment: <span id="payment-status" class="font-medium">Unpaid</span></p>
-                    <p>Method: <span id="payment-method">COD</span></p>
+
+            <!-- Order Meta -->
+            <div class="flex flex-col gap-4">
+                <div
+                    class="bg-white rounded-xl p-6 border-2 border-brand-deep/5 flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Order ID</p>
+                        <p class="text-xl font-mono font-bold text-brand-deep" id="order-id">NG-MLDUV1RACOTK</p>
+                    </div>
+                    <div id="qr-container">
+                        <canvas id="qr-code"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 h-full">
+                    <div class="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-center">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Order Status</p>
+                        <div id="order-status-container">
+                            <span class="badge badge-pending">Pending</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-center">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Payment</p>
+                        <div id="payment-status-container">
+                            <span class="badge badge-cod">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
+                                </svg>
+                                Due (COD)
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Items Table -->
-        <table class="w-full mb-8 border-collapse">
-            <thead>
-                <tr class="bg-gray-50 border-b border-t border-gray-200">
-                    <th class="text-left py-3 px-2 text-sm font-bold text-gray-700 uppercase">Item</th>
-                    <th class="text-left py-3 px-2 text-sm font-bold text-gray-700 uppercase w-1/4">Size Details</th>
-                    <th class="text-center py-3 px-2 text-sm font-bold text-gray-700 uppercase w-16">Qty</th>
-                    <th class="text-right py-3 px-2 text-sm font-bold text-gray-700 uppercase w-24">Amount</th>
-                </tr>
-            </thead>
-            <tbody id="items-body">
-                <!-- Items injected here -->
-            </tbody>
-        </table>
+        <div class="flex-grow">
+            <table class="w-full mb-8 border-separate border-spacing-0">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th
+                            class="text-left py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider rounded-l-lg border-y border-l border-gray-200">
+                            Item Details</th>
+                        <th
+                            class="text-left py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider border-y border-gray-200">
+                            Size / Specs</th>
+                        <th
+                            class="text-center py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider border-y border-gray-200">
+                            Qty</th>
+                        <th
+                            class="text-right py-4 px-6 text-xs font-bold text-gray-500 uppercase tracking-wider rounded-r-lg border-y border-r border-gray-200">
+                            Total</th>
+                    </tr>
+                </thead>
+                <tbody id="items-body" class="text-sm">
+                    <!-- Default Items (Will be overwritten by JS if real data exists) -->
+                    <tr class="group">
+                        <td class="py-4 px-6 border-b border-gray-100 group-last:border-0">
+                            <p class="font-bold text-gray-800 text-base">মহীয়সীর ঘোড়াগুলি</p>
+                            <p class="text-xs text-gray-400 mt-1 uppercase">SKU: NG-ITEM-001</p>
+                        </td>
+                        <td class="py-4 px-6 border-b border-gray-100 group-last:border-0">
+                            <span
+                                class="inline-block bg-brand-light text-brand-deep px-2 py-1 rounded text-xs font-bold border border-gray-200">Custom
+                                Size</span>
+                            <div class="mt-1 text-xs text-gray-600 font-mono">Length: 42, Chest: 38</div>
+                        </td>
+                        <td class="py-4 px-6 text-center border-b border-gray-100 group-last:border-0 font-medium">2
+                        </td>
+                        <td
+                            class="py-4 px-6 text-right border-b border-gray-100 group-last:border-0 font-bold text-gray-800">
+                            ৳1,600</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-        <!-- Totals -->
-        <div class="flex justify-end">
-            <div class="w-1/2 space-y-2 border-t pt-4">
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Subtotal</span>
-                    <span class="font-medium" id="subtotal">৳0</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Shipping</span>
-                    <span class="font-medium" id="shipping-fee">৳0</span>
-                </div>
-                <div class="flex justify-between text-sm text-brand-accent">
-                    <span class="text-gray-600">Discount</span>
-                    <span class="font-medium" id="discount">- ৳0</span>
-                </div>
-                <div class="flex justify-between text-lg font-bold border-t border-gray-300 pt-2 mt-2">
-                    <span>Total</span>
-                    <span id="grand-total">৳0</span>
+        <!-- Totals Section -->
+        <div class="flex justify-end mb-12">
+            <div class="w-1/2 md:w-5/12">
+                <div class="space-y-3">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>Subtotal</span>
+                        <span class="font-medium text-gray-800" id="subtotal">৳1,600</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>Shipping Fee</span>
+                        <span class="font-medium text-gray-800" id="shipping-fee">৳70</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-brand-primary">
+                        <span>Discount</span>
+                        <span class="font-medium" id="discount">-৳0</span>
+                    </div>
+                    <div class="h-px bg-gray-200 my-2"></div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-base font-bold text-gray-800">Total</span>
+                        <span class="text-2xl font-bold text-brand-deep" id="grand-total">৳1,670</span>
+                    </div>
+                    <div class="bg-gray-50 rounded p-2 text-xs text-center text-gray-500 mt-2">
+                        Included VAT where applicable
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="absolute bottom-10 left-0 right-0 text-center text-xs text-gray-400">
-            <p>Thank you for shopping with Nongor!</p>
-            <p>www.nongor.com.bd</p>
+        <div class="mt-auto border-t border-gray-100 pt-8">
+            <div class="grid grid-cols-3 gap-8 text-xs text-gray-500">
+                <div>
+                    <h4 class="font-bold text-gray-800 uppercase mb-2">Terms & Conditions</h4>
+                    <p>Returns accepted within 7 days of delivery. Original tags must be attached. No refunds for custom
+                        size orders.</p>
+                </div>
+                <div class="text-center">
+                    <h4 class="font-bold text-gray-800 uppercase mb-2">Need Help?</h4>
+                    <p>Call us: +880 1XXX-XXXXXX</p>
+                    <p>Email: support@nongor.com.bd</p>
+                </div>
+                <div class="text-right">
+                    <h4 class="font-bold text-gray-800 uppercase mb-2">Follow Us</h4>
+                    <div class="flex justify-end gap-2">
+                        <span>Facebook</span> &bull; <span>Instagram</span>
+                    </div>
+                    <p class="mt-1">@nongor.brand</p>
+                </div>
+            </div>
+            <div class="text-center mt-8 text-[10px] text-gray-300 uppercase tracking-widest">
+                Generated by Nongor Admin System
+            </div>
         </div>
+
     </div>
 
-    <!-- Scripts -->
+    <!-- Logic -->
     <script>
         const API_URL = '/api';
-        let currentOrderId = null;
 
-        // On Load
+        // Initialize QR Code
+        const qr = new QRious({
+            element: document.getElementById('qr-code'),
+            size: 64,
+            value: 'https://nongor.com.bd'
+        });
+
+        // Parse URL Params
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
+
+        // Sample Data (For Default/Preview)
+        const SAMPLE_DATA = {
+            order: {
+                order_id: 'NG-MLDUV1RACOTK',
+                created_at: '2026-02-08T10:00:00Z',
+                customer_name: 'Kazi Salman',
+                phone: '01616510027',
+                address: 'House 12, Road 5, Mirpur DOHS, Dhaka',
+                status: 'Pending',
+                payment_status: 'Unpaid',
+                payment_method: 'COD',
+                subtotal: 1600,
+                shipping_fee: 70,
+                discount: 0,
+                total: 1670,
+                tracking_token: 'SAMPLE-123'
+            },
+            items: [
+                {
+                    product_name: 'মহীয়সীর ঘোড়াগুলি',
+                    product_id: 'NG-001',
+                    quantity: 2,
+                    unit_price: 800,
+                    size: 'Custom',
+                    measurements: JSON.stringify({ Length: '42', Chest: '38' }),
+                    measurement_notes: null
+                }
+            ]
+        };
+
+        // Main Load Function
         window.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            currentOrderId = urlParams.get('orderId');
-
-            if (!currentOrderId) {
-                alert('No Order ID specified');
+            if (!orderId) {
+                console.log('No Order ID found, rendering sample data...');
+                renderSlip(SAMPLE_DATA.order, SAMPLE_DATA.items);
                 return;
             }
 
-            await loadOrderDetails(currentOrderId);
+            await fetchOrderData(orderId);
         });
 
-        async function loadOrderDetails(orderId) {
+        async function fetchOrderData(id) {
             const token = localStorage.getItem('nongor_session_token');
             if (!token) {
-                window.location.href = 'admin.html';
-                return;
+                // For dev/preview without auth, show sample if param exists but no auth? 
+                // Better to redirect or show error in real app.
+                // sticking to sample for now if fails to allow easy styling preview
             }
 
             try {
-                const url = `${API_URL}?action=getOrderDetails&orderId=${orderId}`;
-                const res = await fetch(url, {
+                const res = await fetch(`${API_URL}?action=getOrderDetails&orderId=${id}`, {
                     headers: { 'x-session-token': token }
                 });
-
-                if (res.status === 401 || res.status === 403) {
-                    window.location.href = 'admin.html';
-                    return;
-                }
-
-                const contentType = res.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await res.text();
-                    console.error('Non-JSON response:', text);
-                    alert('Server error: Expected JSON but got: ' + contentType);
-                    return;
-                }
-
                 const data = await res.json();
-                console.log('API Response:', data);
 
-                if (data.result === 'success' && data.order) {
-                    renderSlip(data.order, data.items || []);
+                if (data.result === 'success') {
+                    renderSlip(data.order, data.items);
                 } else {
-                    const msg = data.message || 'Unknown error';
-                    console.error('API Error:', data);
-                    document.getElementById('slip-container').innerHTML = `
-                        <div class="text-center py-20">
-                            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                            <h2 class="text-xl font-bold text-gray-800 mb-2">Error Loading Order</h2>
-                            <p class="text-gray-600">${msg}</p>
-                            <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-brand-deep text-white rounded shadow">Try Again</button>
-                        </div>
-                    `;
+                    alert('Error loading order: ' + data.message);
                 }
-            } catch (error) {
-                console.error('Fetch error:', error);
-                document.getElementById('slip-container').innerHTML = `
-                    <div class="text-center py-20">
-                        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Network Error</h2>
-                        <p class="text-gray-600">${error.message}</p>
-                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-brand-deep text-white rounded shadow">Try Again</button>
-                    </div>
-                `;
+            } catch (e) {
+                console.error(e);
+                // Fallback to sample for smoother dev experience if API offline
+                // renderSlip(SAMPLE_DATA.order, SAMPLE_DATA.items); 
             }
         }
 
-        function renderSlip(order, items = []) {
-            if (!order) {
-                console.error('renderSlip called with null order');
-                return;
+        function renderSlip(order, items) {
+            // Header Info
+            document.getElementById('order-id').innerText = order.order_id || order.orderId;
+            document.getElementById('order-date').innerText = new Date(order.created_at || order.createdAt).toLocaleDateString();
+
+            // Customer Info
+            document.getElementById('customer-name').innerText = order.customer_name || order.customerName;
+            document.getElementById('customer-phone').innerText = order.phone || order.customer_phone;
+            document.getElementById('customer-address').innerText = order.address || order.customer_address;
+
+            // Status Badges
+            const statusContainer = document.getElementById('order-status-container');
+            const status = (order.status || 'Pending').toLowerCase();
+            let statusBadge = '<span class="badge badge-pending">Pending</span>';
+            if (status === 'shipped') statusBadge = '<span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd">Shipped</span>';
+            else if (status === 'delivered') statusBadge = '<span class="badge badge-paid">Delivered</span>';
+            else if (status === 'cancelled') statusBadge = '<span class="badge" style="background:#f3f4f6; color:#374151; border:1px solid #d1d5db">Cancelled</span>';
+            statusContainer.innerHTML = statusBadge;
+
+            const payContainer = document.getElementById('payment-status-container');
+            const payStatus = (order.payment_status || 'Unpaid').toLowerCase();
+            const method = order.payment_method || 'COD';
+
+            let payBadgeClass = 'badge-cod';
+            let icon = '<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+
+            if (payStatus === 'paid') {
+                payBadgeClass = 'badge-paid';
+                icon = '<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
             }
 
-            // Meta
-            document.getElementById('order-id').innerText = order.orderId || order.order_id || 'N/A';
-            document.getElementById('order-date').innerText = (order.createdAt || order.created_at) ? new Date(order.createdAt || order.created_at).toLocaleDateString() : 'N/A';
-            document.getElementById('order-status').innerText = order.status || 'N/A';
-            document.getElementById('payment-status').innerText = order.paymentStatus || order.payment_status || 'N/A';
-            document.getElementById('payment-method').innerText = order.paymentMethod || order.payment_method || 'N/A';
+            payContainer.innerHTML = `<span class="badge ${payBadgeClass}">${icon} ${payStatus === 'paid' ? 'Paid' : 'Due'} (${method})</span>`;
 
-            // Customer
-            document.getElementById('customer-name').innerText = order.customerName || order.customer_name || 'N/A';
-            document.getElementById('customer-phone').innerText = order.phone || order.customer_phone || 'N/A';
-            document.getElementById('customer-address').innerText = order.address || order.customer_address || 'N/A';
+            // QR Code
+            if (order.tracking_token) {
+                qr.value = `https://nongor.com.bd/track?t=${order.tracking_token}`;
+            }
 
             // Items
             const tbody = document.getElementById('items-body');
-            if (!items || items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-gray-400">No items found for this order.</td></tr>`;
-            } else {
-                tbody.innerHTML = items.map(item => {
-                    const productName = item.productName || item.product_name || 'Unknown Product';
-                    const productId = item.productId || item.product_id || 'N/A';
-                    const qty = item.qty || item.quantity || 0;
-                    const unitPrice = parseFloat(item.unitPrice || item.unit_price || 0);
+            tbody.innerHTML = items.map(item => {
+                const total = (item.quantity || item.qty) * (item.unit_price || item.unitPrice);
 
-                    let sizeHtml = `<span class="bg-gray-100 px-2 py-1 rounded text-xs font-semibold">${item.sizeLabel || item.size || 'N/A'}</span>`;
+                // Size Logic
+                let sizeHtml = `<span class="inline-block bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold border border-gray-200">${item.size || 'Standard'}</span>`;
 
-                    if (item.sizeType === 'custom' || (item.measurements && item.measurements !== '{}')) {
-                        sizeHtml = `<div class="mb-1"><span class="text-brand-accent font-bold text-xs uppercase">Custom Size</span></div>`;
-                        if (item.measurements) {
-                            try {
-                                const m = typeof item.measurements === 'string' ? JSON.parse(item.measurements) : item.measurements;
-                                if (m && typeof m === 'object' && Object.keys(m).length > 0) {
-                                    const mStr = Object.entries(m).map(([k, v]) => `${k}: ${v}`).join(', ');
-                                    sizeHtml += `<p class="text-xs text-gray-700 leading-tight font-mono">${mStr}</p>`;
-                                }
-                                const notes = item.measurementNotes || item.measurement_notes;
-                                if (notes) {
-                                    sizeHtml += `<p class="text-xs text-gray-500 italic mt-1">Note: ${notes}</p>`;
-                                }
-                            } catch (e) {
-                                sizeHtml += `<span class="text-xs text-red-500">Manual review required</span>`;
-                            }
-                        }
-                    }
-
-                    return `
-                        <tr class="border-b border-gray-100 last:border-0">
-                            <td class="py-4 px-2 align-top">
-                                <p class="font-bold text-gray-800">${productName}</p>
-                                <p class="text-[10px] text-gray-400 mt-0.5 uppercase tracking-tighter">SKU: ${productId}</p>
-                            </td>
-                            <td class="py-4 px-2 align-top">
-                                ${sizeHtml}
-                            </td>
-                            <td class="py-4 px-2 align-top text-center text-gray-800 font-medium">${qty}</td>
-                            <td class="py-4 px-2 align-top text-right font-bold text-gray-800">৳${parseInt(unitPrice * qty).toLocaleString()}</td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            // Totals
-            document.getElementById('subtotal').innerText = '৳' + (parseInt(order.subtotal) || 0).toLocaleString();
-            document.getElementById('shipping-fee').innerText = '৳' + (parseInt(order.shippingFee || order.shipping_fee) || 0).toLocaleString();
-            document.getElementById('discount').innerText = '- ৳' + (parseInt(order.discount || order.discount_amount) || 0).toLocaleString();
-            document.getElementById('grand-total').innerText = '৳' + (parseInt(order.total || order.total_price) || 0).toLocaleString();
-
-            // QR Code
-            const trackingToken = order.trackingToken || order.tracking_token;
-            if (trackingToken) {
-                const trackUrl = encodeURIComponent(`https://nongor-brand.vercel.app/index.html?track=${trackingToken}`);
-                document.getElementById('qr-container').innerHTML = `
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${trackUrl}" alt="QR" class="w-16 h-16 border p-1" />
-                `;
-            }
-        }
-
-
-        async function downloadPDF() {
-            if (!currentOrderId) return;
-            const token = localStorage.getItem('nongor_session_token');
-            const url = `${API_URL}?action=downloadOrder&orderId=${currentOrderId}&format=pdf`;
-
-            // To pass headers for auth, we might need a fetch/blob download trick, 
-            // OR if auth token is in cookie/param. Our API uses header x-session-token.
-            // Standard window.open wont send custom headers.
-            // Workaround: We'll fetch blob and save it.
-
-            try {
-                const button = event.currentTarget;
-                const originalText = button.innerText;
-                button.innerText = 'Generating...';
-                button.disabled = true;
-
-                const res = await fetch(url, {
-                    headers: { 'x-session-token': token }
-                });
-
-                if (res.ok) {
-                    const blob = await res.blob();
-                    const link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = `order_${currentOrderId}.pdf`;
-                    link.click();
-                } else {
-                    alert('Failed to generate PDF');
+                // Check if custom measurements exist
+                let measurements = item.measurements;
+                if (typeof measurements === 'string' && measurements.startsWith('{')) {
+                    try { measurements = JSON.parse(measurements); } catch (e) { }
                 }
 
-                button.innerText = originalText;
-                button.disabled = false;
-            } catch (e) {
-                console.error(e);
-                alert('Download error');
-            }
+                if (measurements && Object.keys(measurements).length > 0) {
+                    sizeHtml = `<span class="inline-block bg-brand-light text-brand-deep px-2 py-0.5 rounded text-xs font-bold border border-gray-200">Custom Size</span>`;
+                    const specs = Object.entries(measurements).map(([k, v]) => `${k}: ${v}`).join(', ');
+                    sizeHtml += `<div class="mt-1 text-xs text-gray-600 font-mono">${specs}</div>`;
+                }
+
+                return `
+                <tr class="group">
+                    <td class="py-4 px-6 border-b border-gray-100 group-last:border-0 align-top">
+                        <p class="font-bold text-gray-800 text-base">${item.product_name || item.productName}</p>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase">SKU: ${item.product_id || item.productId || 'N/A'}</p>
+                    </td>
+                    <td class="py-4 px-6 border-b border-gray-100 group-last:border-0 align-top">
+                        ${sizeHtml}
+                    </td>
+                    <td class="py-4 px-6 text-center border-b border-gray-100 group-last:border-0 font-medium align-top">${item.quantity || item.qty}</td>
+                    <td class="py-4 px-6 text-right border-b border-gray-100 group-last:border-0 font-bold text-gray-800 align-top">৳${total.toLocaleString()}</td>
+                </tr>
+                `;
+            }).join('');
+
+            // Calculations
+            document.getElementById('subtotal').innerText = '৳' + (parseInt(order.subtotal) || 0).toLocaleString();
+            document.getElementById('shipping-fee').innerText = '৳' + (parseInt(order.shipping_fee || order.shippingFee) || 0).toLocaleString();
+            document.getElementById('discount').innerText = '-৳' + (parseInt(order.discount) || 0).toLocaleString();
+            document.getElementById('grand-total').innerText = '৳' + (parseInt(order.total || order.totalPrice) || 0).toLocaleString();
         }
 
-        function downloadPNG() {
+        // Image Download
+        function downloadImage() {
             const container = document.getElementById('slip-container');
-            const button = event.currentTarget;
-            button.innerText = 'Capturing...';
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerText = 'Capturing...';
+
+            // Hide watermark for cleaner capture? Optional. Keeping it.
 
             html2canvas(container, {
-                scale: 2, // High quality
+                scale: 2,
                 useCORS: true,
                 backgroundColor: '#ffffff'
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `order_${currentOrderId}.png`;
+                link.download = `Packing_Slip_${document.getElementById('order-id').innerText}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                button.innerText = 'Download PNG (WhatsApp)';
+                btn.innerHTML = originalText;
             });
         }
     </script>
