@@ -2151,15 +2151,16 @@ function copyOrderId() {
 // ==============================================
 
 // --- Product Modal Logic ---
-let currentProduct = {};
-let currentSizeType = 'standard'; // 'standard' | 'custom'
-let currentMeasurementUnit = 'inch'; // 'inch' | 'cm'
+// --- Product Modal Logic ---
+window.currentProduct = {};
+window.currentSizeType = 'standard'; // 'standard' | 'custom'
+window.currentMeasurementUnit = 'inch'; // 'inch' | 'cm'
 
 window.openProductModal = (product) => {
     console.log('Opening modal for:', product.name);
-    currentProduct = product;
-    currentSizeType = 'standard';
-    currentMeasurementUnit = 'inch';
+    window.currentProduct = product;
+    window.currentSizeType = 'standard';
+    window.currentMeasurementUnit = 'inch';
 
     document.getElementById('product-modal').classList.remove('hidden');
     document.getElementById('modal-title').textContent = product.name;

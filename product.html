@@ -140,8 +140,80 @@
 
                 <!-- Size Selector -->
                 <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-3">Size</label>
-                    <div id="size-options" class="flex flex-wrap gap-3"></div>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-sm font-bold text-gray-700">Size</label>
+                        <div class="flex p-1 bg-gray-100 rounded-lg">
+                            <button onclick="window.toggleSizeType('standard')" id="btn-size-standard"
+                                class="px-3 py-1 rounded-md text-xs font-bold transition-all bg-white shadow-sm text-brand-deep border border-gray-200">Standard</button>
+                            <button onclick="window.toggleSizeType('custom')" id="btn-size-custom"
+                                class="px-3 py-1 rounded-md text-xs font-bold transition-all text-gray-500 hover:text-brand-deep">Custom
+                                Size</button>
+                        </div>
+                    </div>
+
+                    <!-- Standard Selector -->
+                    <div id="size-selector" class="flex flex-wrap gap-3 mb-3"></div>
+
+                    <!-- Custom Form (Hidden by default) -->
+                    <div id="custom-size-form"
+                        class="hidden bg-gray-50 p-4 rounded-xl border border-gray-200 animate-fade-in text-left">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500">Enter Measurements</h4>
+                            <div class="flex bg-white rounded border border-gray-200">
+                                <button onclick="window.toggleUnit('inch')" id="btn-unit-inch"
+                                    class="px-2 py-0.5 text-xs font-bold bg-brand-terracotta text-white rounded-l">IN</button>
+                                <button onclick="window.toggleUnit('cm')" id="btn-unit-cm"
+                                    class="px-2 py-0.5 text-xs font-bold text-gray-500 rounded-r">CM</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Bust</label>
+                                <input type="number" data-measure="bust"
+                                    class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                    placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Waist</label>
+                                <input type="number" data-measure="waist"
+                                    class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                    placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Hip</label>
+                                <input type="number" data-measure="hip"
+                                    class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                    placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Shoulder</label>
+                                <input type="number" data-measure="shoulder"
+                                    class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                    placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Length</label>
+                                <input type="number" data-measure="length"
+                                    class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                    placeholder="0">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Sleeve</label>
+                                <input type="number" data-measure="sleeve"
+                                    class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                    placeholder="0">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] uppercase text-gray-400 font-bold block mb-1">Note
+                                (Optional)</label>
+                            <textarea id="custom-note" rows="2"
+                                class="w-full p-2 text-sm border border-gray-200 rounded focus:border-brand-terracotta outline-none"
+                                placeholder="Any specific requirements..."></textarea>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Quantity -->
@@ -264,6 +336,10 @@
 
         // Init on load
         document.addEventListener('DOMContentLoaded', async () => {
+            // Reset state
+            window.currentSizeType = 'standard';
+            window.currentMeasurementUnit = 'inch';
+
             // 1. Check for Preloaded Data (SSR)
             if (window.preloadedProduct) {
                 console.log('⚡ Hydrating from SSR data...');
@@ -376,11 +452,14 @@
                 return `<img src="${src}" alt="Thumbnail ${i + 1}" onclick="changeMainImage('${src}')" class="w-16 h-20 object-cover rounded-lg cursor-pointer border-2 ${i === 0 ? 'border-brand-terracotta' : 'border-gray-200'} hover:border-brand-terracotta transition">`;
             }).join('');
 
-            // Sizes
+            // Sizes (Populate Standard Selector)
             const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-            document.getElementById('size-options').innerHTML = sizes.map(s => `
+            document.getElementById('size-selector').innerHTML = sizes.map(s => `
                 <button onclick="selectSize('${s}')" class="size-btn px-4 py-2 border-2 rounded-lg font-medium transition ${s === selectedSize ? 'border-brand-terracotta bg-brand-terracotta/10 text-brand-terracotta' : 'border-gray-200 text-gray-600 hover:border-brand-terracotta'}">${s}</button>
             `).join('');
+
+            // Initialize UI state
+            if (window.updateSizeTypeUI) window.updateSizeTypeUI();
         }
 
         function updateMetaTags(product) {
@@ -426,28 +505,93 @@
 
         function addToCartFromPage() {
             if (!currentProduct) return;
+
+            // Validation logic reused/adapted from script.js
+            let finalSize = selectedSize;
+            let measurements = null;
+            let sizeType = 'standard';
+            let unit = 'inch';
+            let notes = '';
+
+            if (window.currentSizeType === 'custom') {
+                if (window.getAndValidateMeasurements) {
+                    const val = window.getAndValidateMeasurements();
+                    if (!val.valid) return;
+
+                    sizeType = 'custom';
+                    measurements = val.measurements;
+                    unit = val.unit;
+                    notes = val.notes;
+                    finalSize = `Custom (${unit})`;
+                }
+            } else {
+                if (!selectedSize) {
+                    showToast('Please select a size', 'error');
+                    return;
+                }
+            }
+
             const cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
             cart.push({
                 id: currentProduct.id,
                 name: currentProduct.name,
                 price: currentProduct.price,
                 image: currentProduct.image,
-                size: selectedSize,
+                size: finalSize,
+                sizeType: sizeType,
+                unit: unit,
+                measurements: measurements,
+                notes: notes,
                 quantity: quantity,
                 timestamp: Date.now()
             });
             localStorage.setItem('nongor_cart', JSON.stringify(cart));
+
+            // Update Cart UI if function exists
+            if (window.updateCartUI) window.updateCartUI();
+            if (window.openCart) window.openCart();
+
             showToast('Added to cart! 🛒');
         }
 
         function buyNowFromPage() {
             if (!currentProduct) return;
+
+            // Validation logic
+            let finalSize = selectedSize;
+            let measurements = null;
+            let sizeType = 'standard';
+            let unit = 'inch';
+            let notes = '';
+
+            if (window.currentSizeType === 'custom') {
+                if (window.getAndValidateMeasurements) {
+                    const val = window.getAndValidateMeasurements();
+                    if (!val.valid) return;
+
+                    sizeType = 'custom';
+                    measurements = val.measurements;
+                    unit = val.unit;
+                    notes = val.notes;
+                    finalSize = `Custom (${unit})`;
+                }
+            } else {
+                if (!selectedSize) {
+                    showToast('Please select a size', 'error');
+                    return;
+                }
+            }
+
             const buyNowItem = [{
                 id: currentProduct.id,
                 name: currentProduct.name,
                 price: currentProduct.price,
                 image: currentProduct.image,
-                size: selectedSize,
+                size: finalSize,
+                sizeType: sizeType,
+                unit: unit,
+                measurements: measurements,
+                notes: notes,
                 quantity: quantity
             }];
             localStorage.setItem('nongor_direct_buy', JSON.stringify(buyNowItem));
