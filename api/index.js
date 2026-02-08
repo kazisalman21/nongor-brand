@@ -165,7 +165,7 @@ module.exports = async (req, res) => {
             }
 
             // --- TRACKING (Public) ---
-            if (query.orderId || query.tracking_token) {
+            if ((query.orderId || query.tracking_token) && !query.action) {
                 let result;
                 if (query.tracking_token) {
                     result = await client.query('SELECT * FROM orders WHERE tracking_token = $1', [query.tracking_token]);

@@ -98,6 +98,31 @@ Use `|| 'N/A'` or `|| 0` for all rendered fields to prevent `undefined` from app
 
 ---
 
+---
+
+## Common Pitfalls
+
+### Pitfall 1: Order ID Mismatch
+**Problem:** Order created with ID 'LG-0001' but items stored with 'NG-0001'
+**Solution:** Ensure `order_items.order_id` exactly matches `orders.order_id`
+
+### Pitfall 2: Case Sensitivity
+**Problem:** Database returns `customer_name` but code expects `customerName`
+**Solution:** Use SQL aliases as shown in Step 1.1.
+
+### Pitfall 3: API Hijacking (CRITICAL)
+**Problem:** Public tracking logic `if (query.orderId)` catching admin requests.
+**Solution:** Use specific conditions: `if ((query.orderId || query.tracking_token) && !query.action)`.
+
+### Pitfall 4: Null Values
+**Problem:** Database has NULLs instead of empty strings
+**Solution:** Use `COALESCE` in SQL:
+```sql
+SELECT COALESCE(customer_name, 'N/A') AS "customerName"
+```
+
+---
+
 ### Step 3: Testing Checklist
 - [x] **Robustness**: Verify no "undefined" fields are shown in the slip.
 - [x] **Multi-Item**: Verify slip correctly lists multiple items.

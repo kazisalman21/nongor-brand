@@ -199,8 +199,11 @@
                 }
 
                 const data = await res.json();
-                if (data.result === 'success') {
+                if (data.result === 'success' && data.order) {
                     renderSlip(data.order, data.items);
+                } else if (data.result === 'success' && !data.order) {
+                    console.error('API Error: result was success but order object is missing.', data);
+                    alert('Order data missing in API response. Please check server logs.');
                 } else {
                     alert('Error loading order: ' + data.message);
                 }
