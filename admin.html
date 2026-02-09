@@ -2713,8 +2713,13 @@
         async function loadMfaStatus() {
             try {
                 const sessionToken = localStorage.getItem('nongor_session_token');
-                const res = await fetch(`${AUTH_API_URL}?action=getResetMethods`, {
-                    headers: { 'x-session-token': sessionToken }
+                const res = await fetch(AUTH_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-session-token': sessionToken
+                    },
+                    body: JSON.stringify({ action: 'getResetMethods' })
                 });
                 const data = await res.json();
 
@@ -2753,8 +2758,13 @@
             try {
                 showToast("Initiating TOTP...", "blue");
                 const sessionToken = localStorage.getItem('nongor_session_token');
-                const res = await fetch(`${AUTH_API_URL}?action=totpSetupStart`, {
-                    headers: { 'x-session-token': sessionToken }
+                const res = await fetch(AUTH_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-session-token': sessionToken
+                    },
+                    body: JSON.stringify({ action: 'totpSetupStart' })
                 });
                 const data = await res.json();
 
