@@ -1,19 +1,20 @@
 require('dotenv').config();
-const { Pool } = require('pg');
+const { Client } = require('pg');
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+const client = new Client({
+    connectionString: process.env.NETLIFY_DATABASE_URL,
     ssl: { rejectUnauthorized: false },
     connectionTimeoutMillis: 5000 // 5s timeout
 });
 
-console.log("Connecting to DB...");
+console.log('Testing connection to:', process.env.NETLIFY_DATABASE_URL.split('@')[1]); // Log host only
 
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-        console.error('Connection Error:', err);
-    } else {
-        console.log('Connected successfully:', res.rows[0]);
-    }
-    pool.end();
-});
+client.connect()
+    .then(() => {
+        console.log('✅ Connected successfully!');
+        return client.end();
+    })
+    .catch(err => {
+        console.error('❌ Connection failed:', err.message);
+        process.exit(1);
+    });
