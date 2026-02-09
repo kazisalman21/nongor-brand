@@ -1,2 +1,20 @@
-python-telegram-bot==20.7
+# NONGOR PREMIUM BOT v3.0 - Python 3.14 Compatible List
+
+# Telegram Bot (Unpinned for Python 3.14 beta support)
+python-telegram-bot
+
+# Database (Pure Python driver for 3.14)
+pg8000
+
+# AI (Latest version for Gemini 1.5 Flash support)
+google-generativeai
+
+# Utilities
+python-dotenv==1.0.1
 requests==2.31.0
+python-dateutil
+aiohttp
+
+# Analytics (Matplotlib/Pandas disabled - incompatible with Python 3.14 yet)
+# matplotlib
+# pandas
