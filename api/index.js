@@ -7,8 +7,9 @@
 require('regenerator-runtime/runtime');
 const pool = require('./db');
 const { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit } = require('./cache');
-const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail');
+// const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail'); // Deprecated
 const { sanitizeObject } = require('./sanitize');
+const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/email'); // Unified Service
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
@@ -285,7 +286,7 @@ module.exports = async (req, res) => {
 
                 if (orderRes.rows.length === 0) {
                     client.release();
-                    window.location.href = 'admin.html'; // In case of direct API hit, though meaningful JSON is better
+                    // window.location.href = 'admin.html'; // Removed during hardening
                     return res.status(404).json({ result: 'error', message: 'Order not found' });
                 }
 
@@ -1048,10 +1049,11 @@ module.exports = async (req, res) => {
                     return res.status(401).json({ result: 'error', message: 'Invalid current password' });
                 }
 
-                // 4. Update Password
+                // 4. Update Password (SYNC BOTH TABLES)
                 const salt = await bcrypt.genSalt(10);
                 const newHash = await bcrypt.hash(newPassword, salt);
 
+                // Update Legacy Table
                 await client.query(`
                     UPDATE admin_users 
                     SET password_hash = $1, 
@@ -1060,6 +1062,14 @@ module.exports = async (req, res) => {
                         password_version = password_version + 1
                     WHERE username = $2
                 `, [newHash, 'admin']);
+
+                // Update Standard Table (auth.users) - Ensure Sync
+                await client.query(`
+                    UPDATE auth.users 
+                    SET password_hash = crypt($1, gen_salt('bf', 10)), 
+                        updated_at = NOW() 
+                    WHERE res_role = 'admin'
+                `, [newPassword]);
 
                 // 5. Invalidate Session (Minimal: Login again)
                 // We destroy the *current* session. 
@@ -1081,6 +1091,8 @@ module.exports = async (req, res) => {
             }
 
             // --- SERVER-SIDE ORDER ID GENERATION ---
+            // Start Transaction for Order Creation (Ensures atomic stock updates)
+            await client.query('BEGIN');
             const generatedOrderId = 'NG-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
 
             let calculatedSubtotal = 0;
@@ -1248,17 +1260,27 @@ module.exports = async (req, res) => {
 
             // Send Email Confirmation (Async - don't block response)
             if (data.customerEmail) {
-                // We don't await this to keep API fast, but we log errors inside the function
-                sendOrderConfirmation({
+                // Pass structured data to email helper
+                const emailData = {
                     orderId: generatedOrderId,
                     customerName: data.customerName,
                     customerEmail: data.customerEmail,
-                    products: data.productName, // passing string description for now 
+                    products: orderItemsToInsert.map(i => ({
+                        name: data.productName, // Simplification: Usage of main product name if multiple items not fully supported in frontend yet, but structure is ready. 
+                        // Actually, let's just pass the string description for now or improve `data.items` mapping if available.
+                        // Better: Pass the aggregated items logic if available
+                        size: i.size,
+                        quantity: i.qty,
+                        price: i.unit_price
+                    })),
                     totalPrice: finalTotal,
                     address: data.address,
                     deliveryDate: data.deliveryDate,
-                    trackingToken: trackingToken // Include token for email link
-                }).catch(err => console.error('Email trigger failed:', err));
+                    trackingToken: trackingToken
+                };
+
+                // Fire and forget (catch errors inside the function)
+                sendOrderConfirmation(emailData);
             }
 
             return res.status(200).json({ result: 'success', message: 'Order Placed', data: { order_id: generatedOrderId, tracking_token: trackingToken } });

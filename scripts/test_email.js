@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sendOrderConfirmation } = require('../utils/sendEmail');
+const { sendOrderConfirmation, sendPasswordResetEmail } = require('../utils/email');
 
 async function testEmail() {
     console.log("📧 Testing Email System...");
@@ -36,6 +36,11 @@ async function testEmail() {
     } else {
         console.error("❌ Email Failed:", result.error);
     }
+
+    // TEST PASSWORD RESET
+    const resetLink = 'https://nongor-brand.vercel.app/admin-reset.html?token=12345&email=test@example.com';
+    console.log("Subject: Testing Password Reset Email...");
+    await sendPasswordResetEmail('test@example.com', resetLink);
 }
 
 testEmail();

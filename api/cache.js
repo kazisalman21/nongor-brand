@@ -30,13 +30,20 @@ function invalidateProductCache() {
 // Rate Limiting Maps (In-Memory)
 const rateLimits = {
     login: new Map(), // IP -> { count, expires }
-    order: new Map()  // IP -> { count, expires }
+    order: new Map(),  // IP -> { count, expires }
+    passwordReset: new Map() // IP -> { count, expires }
 };
 
 // Rate Limit Checker
 function checkRateLimit(type, ip) {
-    const limit = type === 'login' ? 5 : 10; // 5 attempts for login, 10 for orders
-    const window = type === 'login' ? 15 * 60 * 1000 : 60 * 60 * 1000; // 15 mins vs 60 mins
+    // Limits: Login (5/15m), Order (10/60m), Password Reset (5/15m)
+    let limit = 10;
+    let window = 60 * 60 * 1000;
+
+    if (type === 'login' || type === 'passwordReset') {
+        limit = 5;
+        window = 15 * 60 * 1000; // 15 mins
+    }
 
     const now = Date.now();
     const record = rateLimits[type].get(ip);

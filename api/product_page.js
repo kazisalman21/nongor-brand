@@ -9,6 +9,17 @@ const { Pool } = require('pg');
 // Assuming db.js is in the same directory.
 const pool = require('./db');
 
+// Helper: Escape HTML characters
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 module.exports = async (req, res) => {
     // Enable CORS/Caching
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -63,20 +74,20 @@ module.exports = async (req, res) => {
         // Strategy: Replace content="..." for known property/id combinations.
 
         // Title
-        html = html.replace(/<title[^>]*>.*?<\/title>/, `<title>${title}</title>`);
-        html = html.replace(/name="description"\s+id="meta-description"\s+content="[^"]*"/, `name="description" id="meta-description" content="${description.replace(/"/g, '&quot;')}"`);
+        html = html.replace(/<title[^>]*>.*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
+        html = html.replace(/name="description"\s+id="meta-description"\s+content="[^"]*"/, `name="description" id="meta-description" content="${escapeHtml(description)}"`);
 
         // Open Graph
-        html = html.replace(/property="og:url"\s+id="og-url"\s+content="[^"]*"/, `property="og:url" id="og-url" content="${url}"`);
-        html = html.replace(/property="og:title"\s+id="og-title"\s+content="[^"]*"/, `property="og:title" id="og-title" content="${title.replace(/"/g, '&quot;')}"`);
-        html = html.replace(/property="og:description"\s+id="og-description"\s+content="[^"]*"/, `property="og:description" id="og-description" content="${description.replace(/"/g, '&quot;')}"`);
-        html = html.replace(/property="og:image"\s+id="og-image"\s+content="[^"]*"/, `property="og:image" id="og-image" content="${mainImage}"`);
-        html = html.replace(/property="product:price:amount"\s+id="og-price"\s+content="[^"]*"/, `property="product:price:amount" id="og-price" content="${price}"`);
+        html = html.replace(/property="og:url"\s+id="og-url"\s+content="[^"]*"/, `property="og:url" id="og-url" content="${escapeHtml(url)}"`);
+        html = html.replace(/property="og:title"\s+id="og-title"\s+content="[^"]*"/, `property="og:title" id="og-title" content="${escapeHtml(title)}"`);
+        html = html.replace(/property="og:description"\s+id="og-description"\s+content="[^"]*"/, `property="og:description" id="og-description" content="${escapeHtml(description)}"`);
+        html = html.replace(/property="og:image"\s+id="og-image"\s+content="[^"]*"/, `property="og:image" id="og-image" content="${escapeHtml(mainImage)}"`);
+        html = html.replace(/property="product:price:amount"\s+id="og-price"\s+content="[^"]*"/, `property="product:price:amount" id="og-price" content="${escapeHtml(price)}"`);
 
         // Twitter
-        html = html.replace(/name="twitter:title"\s+id="twitter-title"\s+content="[^"]*"/, `name="twitter:title" id="twitter-title" content="${title.replace(/"/g, '&quot;')}"`);
-        html = html.replace(/name="twitter:description"\s+id="twitter-description"\s+content="[^"]*"/, `name="twitter:description" id="twitter-description" content="${description.replace(/"/g, '&quot;')}"`);
-        html = html.replace(/name="twitter:image"\s+id="twitter-image"\s+content="[^"]*"/, `name="twitter:image" id="twitter-image" content="${mainImage}"`);
+        html = html.replace(/name="twitter:title"\s+id="twitter-title"\s+content="[^"]*"/, `name="twitter:title" id="twitter-title" content="${escapeHtml(title)}"`);
+        html = html.replace(/name="twitter:description"\s+id="twitter-description"\s+content="[^"]*"/, `name="twitter:description" id="twitter-description" content="${escapeHtml(description)}"`);
+        html = html.replace(/name="twitter:image"\s+id="twitter-image"\s+content="[^"]*"/, `name="twitter:image" id="twitter-image" content="${escapeHtml(mainImage)}"`);
 
         // 5. Inject JSON-LD Schema (Structured Data)
         const schema = {
@@ -98,7 +109,7 @@ module.exports = async (req, res) => {
 
         const schemaScript = `
         <script type="application/ld+json">
-            ${JSON.stringify(schema, null, 2)}
+            ${JSON.stringify(schema, null, 2).replace(/</g, '\\u003c')}
         </script>
         `;
 
@@ -109,7 +120,7 @@ module.exports = async (req, res) => {
         // This avoids the double-fetch in script.js specific to product.html
         const preloadScript = `
         <script>
-            window.preloadedProduct = ${JSON.stringify(product)};
+            window.preloadedProduct = ${JSON.stringify(product).replace(/</g, '\\u003c')};
         </script>
         `;
         html = html.replace('</body>', `${preloadScript}</body>`);
