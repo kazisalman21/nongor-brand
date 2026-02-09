@@ -2435,16 +2435,18 @@
                         btn.innerHTML = "Updating...";
 
                         const sessionToken = localStorage.getItem('nongor_session_token');
-                        const res = await fetch('/api?action=changeAdminPassword', {
+
+                        // Use new Auth API
+                        const res = await fetch('/api/auth', {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
-                                'x-session-token': sessionToken
+                                'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
+                                action: 'changePassword',
+                                sessionToken: sessionToken,
                                 currentPassword: current,
-                                newPassword: newPass,
-                                confirmPassword: confirm
+                                newPassword: newPass
                             })
                         });
 
@@ -2457,13 +2459,12 @@
                             // Clear form
                             e.target.reset();
 
-                            if (data.reauth) {
-                                setTimeout(() => {
-                                    alert("Password changed. Please log in again.");
-                                    localStorage.removeItem('nongor_session_token');
-                                    handleLogout();
-                                }, 1500);
-                            }
+                            // Force Logout for security
+                            setTimeout(() => {
+                                alert("Password changed. Please log in again.");
+                                localStorage.removeItem('nongor_session_token');
+                                handleLogout();
+                            }, 1500);
                         } else {
                             msgEl.textContent = data.message || "Failed to update password.";
                             msgEl.className = "block p-3 rounded-lg text-xs font-bold bg-red-50 text-red-600";
