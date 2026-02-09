@@ -2546,6 +2546,7 @@
 
                 loadOrders(); // Initial load
                 loadProductsBackground(); // Fetch products for low stock alert
+                loadLowStock(); // Initial load for low stock alert
 
             } else {
                 loginScreen.classList.remove('hidden');
@@ -4424,10 +4425,6 @@
             }
         }
 
-        // Call this on init
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLowStock();
-        });
 
         // 2. CSV Export
         async function exportOrdersCsv() {
