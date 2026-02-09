@@ -37,131 +37,207 @@
         <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-serif text-brand-deep font-bold mb-2">NOÑGOR</h1>
-            <p class="text-xs uppercase tracking-[0.3em] text-brand-terracotta">Set New Password</p>
+            <p class="text-xs uppercase tracking-[0.3em] text-brand-terracotta">Password Recovery</p>
         </div>
 
-        <!-- Form -->
-        <form id="resetForm" class="space-y-6">
-            <input type="hidden" id="token" name="token">
-            <input type="hidden" id="email" name="email">
+        <!-- Step 1: Request OTP -->
+        <div id="step1" class="space-y-6">
+            <p class="text-gray-600 text-sm text-center">Click below to receive a verification code on the registered
+                admin phone number.</p>
+
+            <div id="step1Message" class="hidden p-3 rounded-lg text-sm text-center"></div>
+
+            <button id="sendOtpBtn" onclick="sendOtp()"
+                class="w-full bg-brand-deep text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg">
+                Send Verification Code
+            </button>
+        </div>
+
+        <!-- Step 2: Verify OTP -->
+        <div id="step2" class="hidden space-y-6">
+            <p class="text-gray-600 text-sm text-center">Enter the 6-digit code sent to your phone.</p>
+
+            <input type="text" id="otpInput" maxlength="6" pattern="[0-9]*" inputmode="numeric"
+                class="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20"
+                placeholder="000000">
+
+            <div id="step2Message" class="hidden p-3 rounded-lg text-sm text-center"></div>
+
+            <button id="verifyOtpBtn" onclick="verifyOtp()"
+                class="w-full bg-brand-deep text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg">
+                Verify Code
+            </button>
+        </div>
+
+        <!-- Step 3: Set New Password -->
+        <div id="step3" class="hidden space-y-6">
+            <p class="text-gray-600 text-sm text-center">Set your new password (minimum 12 characters).</p>
 
             <div>
                 <label class="block text-sm font-bold text-brand-deep mb-2">New Password</label>
-                <input type="password" id="newPassword" required minlength="12"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20 transition-all"
-                    placeholder="Enter new password (min 12 chars)">
+                <input type="password" id="newPassword" minlength="12"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20"
+                    placeholder="Min 12 characters">
             </div>
 
             <div>
                 <label class="block text-sm font-bold text-brand-deep mb-2">Confirm Password</label>
-                <input type="password" id="confirmPassword" required minlength="12"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20 transition-all"
-                    placeholder="Confirm new password">
+                <input type="password" id="confirmPassword" minlength="12"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20"
+                    placeholder="Confirm password">
             </div>
 
-            <div id="message" class="hidden p-3 rounded-lg text-sm text-center"></div>
+            <div id="step3Message" class="hidden p-3 rounded-lg text-sm text-center"></div>
 
-            <button type="submit" id="submitBtn"
-                class="w-full bg-brand-deep text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                Set New Password
+            <button id="resetPasswordBtn" onclick="resetPassword()"
+                class="w-full bg-brand-terracotta text-white font-bold py-3.5 rounded-lg hover:bg-orange-700 transition-all duration-300 shadow-lg">
+                Reset Password
             </button>
-        </form>
+        </div>
 
         <p class="mt-8 text-center text-sm text-gray-500">
-            Remembered it? <a href="admin.html" class="text-brand-terracotta hover:underline font-bold">Back to
-                Login</a>
+            <a href="admin.html" class="text-brand-terracotta hover:underline font-bold">Back to Login</a>
         </p>
     </div>
 
     <script>
-        // Parse URL params
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        const email = params.get('email');
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000/api/auth'
+            : '/api/auth';
 
-        if (!token || !email) {
-            document.body.innerHTML = '<div class="text-center p-10 font-bold text-red-500">Error: Invalid Reset Link. Please try submitting the request again.</div>';
-        } else {
-            document.getElementById('token').value = token;
-            document.getElementById('email').value = email;
+        let resetToken = null; // Stored in memory only
+
+        function showMessage(elId, msg, type) {
+            const el = document.getElementById(elId);
+            el.textContent = msg;
+            el.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-blue-100', 'text-blue-700');
+            el.classList.add(type === 'error' ? 'bg-red-100' : type === 'success' ? 'bg-green-100' : 'bg-blue-100');
+            el.classList.add(type === 'error' ? 'text-red-700' : type === 'success' ? 'text-green-700' : 'text-blue-700');
         }
 
-        const form = document.getElementById('resetForm');
-        const messageDiv = document.getElementById('message');
-        const submitBtn = document.getElementById('submitBtn');
+        async function sendOtp() {
+            const btn = document.getElementById('sendOtpBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'requestPasswordResetOtp' })
+                });
+                const data = await res.json();
 
+                showMessage('step1Message', data.message, 'info');
+
+                // Show step 2 after short delay
+                setTimeout(() => {
+                    document.getElementById('step1').classList.add('hidden');
+                    document.getElementById('step2').classList.remove('hidden');
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                showMessage('step1Message', 'Network error. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Send Verification Code';
+            }
+        }
+
+        async function verifyOtp() {
+            const otp = document.getElementById('otpInput').value.trim();
+            const btn = document.getElementById('verifyOtpBtn');
+
+            if (!otp || !/^\d{4,10}$/.test(otp)) {
+                showMessage('step2Message', 'Please enter a valid code.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'verifyPasswordResetOtp', otp })
+                });
+                const data = await res.json();
+
+                if (data.result === 'success' && data.resetToken) {
+                    resetToken = data.resetToken; // Store in memory
+                    showMessage('step2Message', 'Code verified!', 'success');
+
+                    setTimeout(() => {
+                        document.getElementById('step2').classList.add('hidden');
+                        document.getElementById('step3').classList.remove('hidden');
+                    }, 1000);
+                } else {
+                    showMessage('step2Message', data.message || 'Invalid code.', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Verify Code';
+                }
+
+            } catch (err) {
+                console.error(err);
+                showMessage('step2Message', 'Network error. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Verify Code';
+            }
+        }
+
+        async function resetPassword() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('resetPasswordBtn');
 
-            // Client-side Validation
             if (newPassword.length < 12) {
-                showMessage('Password must be at least 12 characters.', 'error');
+                showMessage('step3Message', 'Password must be at least 12 characters.', 'error');
                 return;
             }
             if (newPassword !== confirmPassword) {
-                showMessage('Passwords do not match.', 'error');
+                showMessage('step3Message', 'Passwords do not match.', 'error');
+                return;
+            }
+            if (!resetToken) {
+                showMessage('step3Message', 'Session expired. Please start over.', 'error');
                 return;
             }
 
-            // Disable button
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Updating...';
-            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.disabled = true;
+            btn.textContent = 'Resetting...';
 
             try {
-                // Determine API URL (Local vs Prod)
-                const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                    ? 'http://localhost:3000/api/auth'
-                    : '/api/auth';
-
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'resetPassword',
-                        token,
-                        email,
+                        action: 'resetPasswordWithToken',
+                        resetToken,
                         newPassword,
                         confirmPassword
                     })
                 });
-
                 const data = await res.json();
 
                 if (data.result === 'success') {
-                    showMessage('Password reset successful! Redirecting...', 'success');
+                    showMessage('step3Message', 'Password reset successful! Redirecting...', 'success');
+                    resetToken = null; // Clear token
                     setTimeout(() => {
                         window.location.href = 'admin.html?reset=success';
                     }, 2000);
                 } else {
-                    showMessage(data.message || 'Reset failed.', 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Set New Password';
-                    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    showMessage('step3Message', data.message || 'Reset failed.', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Reset Password';
                 }
 
             } catch (err) {
-                showMessage('Network error. Please try again.', 'error');
                 console.error(err);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Set New Password';
-                submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                showMessage('step3Message', 'Network error. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Reset Password';
             }
-        });
-
-        function showMessage(msg, type) {
-            messageDiv.textContent = msg;
-            messageDiv.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
-
-            if (type === 'error') {
-                messageDiv.classList.add('bg-red-100', 'text-red-700');
-            } else {
-                messageDiv.classList.add('bg-green-100', 'text-green-700');
-            }
-            messageDiv.classList.remove('hidden');
         }
     </script>
 </body>

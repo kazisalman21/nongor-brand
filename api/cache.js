@@ -31,17 +31,22 @@ function invalidateProductCache() {
 const rateLimits = {
     login: new Map(), // IP -> { count, expires }
     order: new Map(),  // IP -> { count, expires }
-    passwordReset: new Map() // IP -> { count, expires }
+    passwordReset: new Map(), // IP -> { count, expires }
+    otpRequest: new Map(), // IP -> { count, expires } - for SMS OTP
+    otpVerify: new Map() // IP -> { count, expires } - for OTP verification
 };
 
 // Rate Limit Checker
 function checkRateLimit(type, ip) {
-    // Limits: Login (5/15m), Order (10/60m), Password Reset (5/15m)
+    // Limits: Login (5/15m), Order (10/60m), Password Reset (5/15m), OTP Request (5/15m), OTP Verify (10/15m)
     let limit = 10;
     let window = 60 * 60 * 1000;
 
-    if (type === 'login' || type === 'passwordReset') {
+    if (type === 'login' || type === 'passwordReset' || type === 'otpRequest') {
         limit = 5;
+        window = 15 * 60 * 1000; // 15 mins
+    } else if (type === 'otpVerify') {
+        limit = 10;
         window = 15 * 60 * 1000; // 15 mins
     }
 

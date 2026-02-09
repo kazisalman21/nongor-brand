@@ -280,6 +280,182 @@ module.exports = async (req, res) => {
             return res.status(200).json({ result: 'success', message: 'Logged out' });
         }
 
+        // ============================================
+        // ACTION: REQUEST PASSWORD RESET OTP (SMS via Twilio Verify)
+        // ============================================
+        if (action === 'requestPasswordResetOtp') {
+            const rateLimit = checkRateLimit('otpRequest', ip);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({ result: 'error', message: 'Too many requests. Try again later.' });
+            }
+
+            // Always return success to prevent enumeration
+            const genericSuccess = { result: 'success', message: 'If eligible, a verification code has been sent.' };
+
+            const adminPhone = process.env.ADMIN_PHONE_E164;
+            if (!adminPhone) {
+                console.error('ADMIN_PHONE_E164 not configured');
+                return res.status(200).json(genericSuccess);
+            }
+
+            // Twilio Verify
+            const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+            const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
+            const twilioVerifyService = process.env.TWILIO_VERIFY_SERVICE_SID;
+
+            if (!twilioSid || !twilioAuth || !twilioVerifyService) {
+                console.error('Twilio credentials missing. OTP not sent.');
+                return res.status(200).json(genericSuccess);
+            }
+
+            try {
+                const twilio = require('twilio')(twilioSid, twilioAuth);
+                await twilio.verify.v2.services(twilioVerifyService)
+                    .verifications.create({ to: adminPhone, channel: 'sms' });
+                console.log(`📱 OTP sent to ${adminPhone}`);
+            } catch (twilioErr) {
+                console.error('Twilio error:', twilioErr.message);
+            }
+
+            return res.status(200).json(genericSuccess);
+        }
+
+        // ============================================
+        // ACTION: VERIFY PASSWORD RESET OTP
+        // ============================================
+        if (action === 'verifyPasswordResetOtp') {
+            const { otp } = body;
+
+            const rateLimit = checkRateLimit('otpVerify', ip);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({ result: 'error', message: 'Too many attempts. Try again later.' });
+            }
+
+            if (!otp || !/^\d{4,10}$/.test(otp)) {
+                return res.status(400).json({ result: 'error', message: 'Invalid verification code format.' });
+            }
+
+            const adminPhone = process.env.ADMIN_PHONE_E164;
+            const twilioSid = process.env.TWILIO_ACCOUNT_SID;
+            const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
+            const twilioVerifyService = process.env.TWILIO_VERIFY_SERVICE_SID;
+
+            if (!adminPhone || !twilioSid || !twilioAuth || !twilioVerifyService) {
+                return res.status(400).json({ result: 'error', message: 'Invalid or expired code.' });
+            }
+
+            try {
+                const twilio = require('twilio')(twilioSid, twilioAuth);
+                const verification = await twilio.verify.v2.services(twilioVerifyService)
+                    .verificationChecks.create({ to: adminPhone, code: otp });
+
+                if (verification.status !== 'approved') {
+                    return res.status(400).json({ result: 'error', message: 'Invalid or expired code.' });
+                }
+
+                // OTP Approved! Generate reset token
+                const resetToken = crypto.randomBytes(32).toString('hex');
+                const pepper = process.env.RESET_TOKEN_PEPPER || 'default-pepper';
+                const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex');
+                const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+                await client.query(`
+                    INSERT INTO auth.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
+                    VALUES ($1, $2, $3, $4)
+                `, [tokenHash, expiresAt, ip, userAgent]);
+
+                return res.status(200).json({
+                    result: 'success',
+                    resetToken: resetToken,
+                    message: 'Code verified.'
+                });
+
+            } catch (twilioErr) {
+                console.error('Twilio verify error:', twilioErr.message);
+                return res.status(400).json({ result: 'error', message: 'Invalid or expired code.' });
+            }
+        }
+
+        // ============================================
+        // ACTION: RESET PASSWORD WITH TOKEN (after OTP)
+        // ============================================
+        if (action === 'resetPasswordWithToken') {
+            const { resetToken } = body;
+
+            const rateLimit = checkRateLimit('passwordReset', ip);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({ result: 'error', message: 'Too many attempts. Try again later.' });
+            }
+
+            if (!resetToken || !newPassword || !confirmPassword) {
+                return res.status(400).json({ result: 'error', message: 'Missing required fields.' });
+            }
+
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({ result: 'error', message: 'Passwords do not match.' });
+            }
+
+            if (newPassword.length < 12) {
+                return res.status(400).json({ result: 'error', message: 'Password must be at least 12 characters.' });
+            }
+
+            const pepper = process.env.RESET_TOKEN_PEPPER || 'default-pepper';
+            const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex');
+
+            // Find valid token
+            const tokenRes = await client.query(`
+                SELECT * FROM auth.password_reset_tokens 
+                WHERE token_hash = $1 
+                  AND used_at IS NULL 
+                  AND expires_at > NOW()
+            `, [tokenHash]);
+
+            if (tokenRes.rows.length === 0) {
+                return res.status(400).json({ result: 'error', message: 'Invalid or expired token.' });
+            }
+
+            // Token Valid! Update password
+            await client.query('BEGIN');
+
+            try {
+                // 1. Update admin_users
+                const salt = await bcrypt.genSalt(10);
+                const bcryptHash = await bcrypt.hash(newPassword, salt);
+
+                await client.query(`
+                    UPDATE admin_users 
+                    SET password_hash = $1, updated_at = NOW(), last_password_change = NOW()
+                    WHERE username = 'admin'
+                `, [bcryptHash]);
+
+                // 2. Update auth.users (if used)
+                await client.query(`
+                    UPDATE auth.users 
+                    SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW()
+                    WHERE role = 'admin'
+                `, [newPassword]);
+
+                // 3. Mark token used
+                await client.query(`
+                    UPDATE auth.password_reset_tokens SET used_at = NOW() WHERE token_hash = $1
+                `, [tokenHash]);
+
+                // 4. Invalidate sessions
+                await client.query(`DELETE FROM auth.sessions WHERE user_id IN (SELECT id FROM auth.users WHERE role = 'admin')`);
+
+                await client.query('COMMIT');
+
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Password reset successful. Please log in.'
+                });
+
+            } catch (err) {
+                await client.query('ROLLBACK');
+                throw err;
+            }
+        }
+
         return res.status(400).json({ result: 'error', message: 'Invalid action' });
 
     } catch (error) {
