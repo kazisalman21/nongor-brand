@@ -4,99 +4,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password | Nongor Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap"
+    <title>Password Recovery | Nongor Admin</title>
+    <link href="./assets/styles.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
         rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            deep: '#3D405B',
-                            terracotta: '#E07A5F',
-                            sand: '#F4F1DE',
-                            sage: '#81B29A'
-                        }
-                    },
-                    fontFamily: {
-                        serif: ['Cinzel', 'serif'],
-                        sans: ['Lato', 'sans-serif']
-                    }
-                }
+    <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg">
+
+    <style>
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Premium Background */
+        .premium-bg {
+            background: linear-gradient(-45deg, #F8FAFC, #E2E8F0, #CBD5E1, #94A3B8);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
             }
         }
-    </script>
+
+        /* Floating Particles */
+        .particles-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.05);
+            border-radius: 50%;
+            animation: float-particle 20s infinite ease-in-out;
+        }
+
+        @keyframes float-particle {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0.1;
+            }
+
+            25% {
+                transform: translate(100px, -100px) rotate(90deg);
+                opacity: 0.15;
+            }
+
+            50% {
+                transform: translate(-50px, -150px) rotate(180deg);
+                opacity: 0.1;
+            }
+
+            75% {
+                transform: translate(-150px, 50px) rotate(270deg);
+                opacity: 0.15;
+            }
+        }
+
+        /* Glass Card */
+        .premium-glass-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(40px) saturate(150%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 20px 60px rgba(0, 0, 0, 0.08);
+            border-radius: 24px;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .premium-glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 25px 70px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animated Logo Ring */
+        .logo-ring-animated {
+            position: relative;
+        }
+
+        .logo-ring-animated::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #94A3B8, #CBD5E1, #FFFFFF, #94A3B8);
+            background-size: 300% 300%;
+            animation: rotate-gradient 8s linear infinite;
+            z-index: -1;
+            filter: blur(12px);
+            opacity: 0.6;
+        }
+
+        @keyframes rotate-gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .logo-pulse {
+            animation: logo-pulse-animation 3s ease-in-out infinite;
+        }
+
+        @keyframes logo-pulse-animation {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Floating Animation */
+        @keyframes animate-float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-float {
+            animation: animate-float 6s ease-in-out infinite;
+        }
+
+        /* Slide In Animation */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in-up {
+            animation: slideInUp 0.6s ease-out forwards;
+        }
+
+        /* Premium Input */
+        .premium-input {
+            width: 100%;
+            height: 56px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .premium-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .premium-input:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* OTP Input */
+        .otp-input {
+            width: 100%;
+            height: 64px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5em;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+        }
+
+        /* Premium Button */
+        .premium-button {
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .premium-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .premium-button:hover::before {
+            left: 100%;
+        }
+
+        .premium-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .premium-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .premium-button.success {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            width: 28px;
+            border-radius: 5px;
+        }
+
+        .step-dot.completed {
+            background: #10B981;
+        }
+
+        /* Message Box */
+        .message-box {
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .message-box.info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #4f46e5;
+        }
+
+        .message-box.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #059669;
+        }
+
+        .message-box.error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #dc2626;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Label */
+        .input-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
 </head>
 
-<body class="bg-brand-sand min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-50 min-h-screen antialiased">
 
-    <div class="bg-white/90 backdrop-blur-md w-full max-w-md p-8 rounded-xl shadow-2xl border border-white/50">
+    <div class="min-h-screen premium-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
 
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-serif text-brand-deep font-bold mb-2">NOÑGOR</h1>
-            <p class="text-xs uppercase tracking-[0.3em] text-brand-terracotta">Password Recovery</p>
-        </div>
+        <!-- Particles Container (JS will inject) -->
+        <div class="particles-container" id="particles"></div>
 
-        <!-- Step 1: Request OTP -->
-        <div id="step1" class="space-y-6">
-            <p class="text-gray-600 text-sm text-center">Click below to receive a verification code on the registered
-                admin phone number.</p>
-
-            <div id="step1Message" class="hidden p-3 rounded-lg text-sm text-center"></div>
-
-            <button id="sendOtpBtn" onclick="sendOtp()"
-                class="w-full bg-brand-deep text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg">
-                Send Verification Code
-            </button>
-        </div>
-
-        <!-- Step 2: Verify OTP -->
-        <div id="step2" class="hidden space-y-6">
-            <p class="text-gray-600 text-sm text-center">Enter the 6-digit code sent to your phone.</p>
-
-            <input type="text" id="otpInput" maxlength="6" pattern="[0-9]*" inputmode="numeric"
-                class="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20"
-                placeholder="000000">
-
-            <div id="step2Message" class="hidden p-3 rounded-lg text-sm text-center"></div>
-
-            <button id="verifyOtpBtn" onclick="verifyOtp()"
-                class="w-full bg-brand-deep text-white font-bold py-3.5 rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg">
-                Verify Code
-            </button>
-        </div>
-
-        <!-- Step 3: Set New Password -->
-        <div id="step3" class="hidden space-y-6">
-            <p class="text-gray-600 text-sm text-center">Set your new password (minimum 12 characters).</p>
-
-            <div>
-                <label class="block text-sm font-bold text-brand-deep mb-2">New Password</label>
-                <input type="password" id="newPassword" minlength="12"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20"
-                    placeholder="Min 12 characters">
+        <!-- Logo & Title -->
+        <div class="sm:mx-auto sm:w-full sm:max-w-md animate-slide-in-up relative z-10">
+            <div class="logo-ring-animated animate-float mx-auto w-20 h-20 mb-6">
+                <img class="logo-pulse relative w-full h-full rounded-full ring-4 ring-white/30 shadow-2xl object-cover"
+                    src="./assets/logo.jpeg" alt="Nongor">
             </div>
-
-            <div>
-                <label class="block text-sm font-bold text-brand-deep mb-2">Confirm Password</label>
-                <input type="password" id="confirmPassword" minlength="12"
-                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-terracotta focus:ring-2 focus:ring-brand-terracotta/20"
-                    placeholder="Confirm password">
-            </div>
-
-            <div id="step3Message" class="hidden p-3 rounded-lg text-sm text-center"></div>
-
-            <button id="resetPasswordBtn" onclick="resetPassword()"
-                class="w-full bg-brand-terracotta text-white font-bold py-3.5 rounded-lg hover:bg-orange-700 transition-all duration-300 shadow-lg">
-                Reset Password
-            </button>
+            <h2 class="text-center text-3xl font-extrabold text-white drop-shadow-md tracking-tight">
+                Password Recovery
+            </h2>
+            <p class="mt-2 text-center text-sm text-white/70">
+                Secure Admin Account Reset
+            </p>
         </div>
 
-        <p class="mt-8 text-center text-sm text-gray-500">
-            <a href="admin.html" class="text-brand-terracotta hover:underline font-bold">Back to Login</a>
+        <!-- Glass Card -->
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+            <div class="premium-glass-card py-8 px-6 sm:px-8 shadow-2xl">
+
+                <!-- Step Indicator -->
+                <div class="step-indicator">
+                    <div class="step-dot active" id="dot1"></div>
+                    <div class="step-dot" id="dot2"></div>
+                    <div class="step-dot" id="dot3"></div>
+                </div>
+
+                <!-- Step 1: Request OTP -->
+                <div id="step1" class="space-y-5">
+                    <div class="text-center">
+                        <div
+                            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 text-sm">We'll send a verification code to the registered admin phone
+                            number.</p>
+                    </div>
+
+                    <div id="step1Message" class="hidden message-box"></div>
+
+                    <button id="sendOtpBtn" onclick="sendOtp()" class="premium-button">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        <span>Send Verification Code</span>
+                    </button>
+                </div>
+
+                <!-- Step 2: Verify OTP -->
+                <div id="step2" class="hidden space-y-5">
+                    <div class="text-center">
+                        <div
+                            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 text-sm">Enter the 6-digit code sent to your phone.</p>
+                    </div>
+
+                    <input type="text" id="otpInput" maxlength="6" pattern="[0-9]*" inputmode="numeric"
+                        class="otp-input" placeholder="000000">
+
+                    <div id="step2Message" class="hidden message-box"></div>
+
+                    <button id="verifyOtpBtn" onclick="verifyOtp()" class="premium-button">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Verify Code</span>
+                    </button>
+                </div>
+
+                <!-- Step 3: Set New Password -->
+                <div id="step3" class="hidden space-y-5">
+                    <div class="text-center">
+                        <div
+                            class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 text-sm">Create a strong new password (minimum 12 characters).</p>
+                    </div>
+
+                    <div>
+                        <label class="input-label">New Password</label>
+                        <input type="password" id="newPassword" minlength="12" class="premium-input"
+                            placeholder="Min 12 characters">
+                    </div>
+
+                    <div>
+                        <label class="input-label">Confirm Password</label>
+                        <input type="password" id="confirmPassword" minlength="12" class="premium-input"
+                            placeholder="Confirm your password">
+                    </div>
+
+                    <div id="step3Message" class="hidden message-box"></div>
+
+                    <button id="resetPasswordBtn" onclick="resetPassword()" class="premium-button">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                        </svg>
+                        <span>Reset Password</span>
+                    </button>
+                </div>
+
+                <!-- Back to Login -->
+                <p class="mt-6 text-center text-sm text-gray-500">
+                    <a href="admin.html"
+                        class="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Login
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <p class="mt-8 text-center text-xs text-white/50 relative z-10">
+            © 2026 Nongor Brand. All Rights Reserved.
         </p>
     </div>
 
@@ -105,20 +507,49 @@
             ? 'http://localhost:3000/api/auth'
             : '/api/auth';
 
-        let resetToken = null; // Stored in memory only
+        let resetToken = null;
+
+        // Create Particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 300 + 50 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        function updateStepIndicator(step) {
+            document.querySelectorAll('.step-dot').forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i < step - 1) dot.classList.add('completed');
+                if (i === step - 1) dot.classList.add('active');
+            });
+        }
 
         function showMessage(elId, msg, type) {
             const el = document.getElementById(elId);
-            el.textContent = msg;
-            el.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-blue-100', 'text-blue-700');
-            el.classList.add(type === 'error' ? 'bg-red-100' : type === 'success' ? 'bg-green-100' : 'bg-blue-100');
-            el.classList.add(type === 'error' ? 'text-red-700' : type === 'success' ? 'text-green-700' : 'text-blue-700');
+            el.innerHTML = `<span>${type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️'}</span> ${msg}`;
+            el.classList.remove('hidden', 'info', 'success', 'error');
+            el.classList.add('message-box', type);
+        }
+
+        function setButtonLoading(btnId, loading, text) {
+            const btn = document.getElementById(btnId);
+            btn.disabled = loading;
+            if (loading) {
+                btn.innerHTML = `<div class="spinner"></div> <span>${text || 'Processing...'}</span>`;
+            }
         }
 
         async function sendOtp() {
-            const btn = document.getElementById('sendOtpBtn');
-            btn.disabled = true;
-            btn.textContent = 'Sending...';
+            setButtonLoading('sendOtpBtn', true, 'Sending...');
 
             try {
                 const res = await fetch(API_URL, {
@@ -130,31 +561,33 @@
 
                 showMessage('step1Message', data.message, 'info');
 
-                // Show step 2 after short delay
                 setTimeout(() => {
                     document.getElementById('step1').classList.add('hidden');
                     document.getElementById('step2').classList.remove('hidden');
+                    updateStepIndicator(2);
                 }, 1500);
 
             } catch (err) {
                 console.error(err);
                 showMessage('step1Message', 'Network error. Please try again.', 'error');
-                btn.disabled = false;
-                btn.textContent = 'Send Verification Code';
+                setButtonLoading('sendOtpBtn', false);
+                document.getElementById('sendOtpBtn').innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>Send Verification Code</span>`;
             }
         }
 
         async function verifyOtp() {
             const otp = document.getElementById('otpInput').value.trim();
-            const btn = document.getElementById('verifyOtpBtn');
 
             if (!otp || !/^\d{4,10}$/.test(otp)) {
                 showMessage('step2Message', 'Please enter a valid code.', 'error');
                 return;
             }
 
-            btn.disabled = true;
-            btn.textContent = 'Verifying...';
+            setButtonLoading('verifyOtpBtn', true, 'Verifying...');
 
             try {
                 const res = await fetch(API_URL, {
@@ -165,31 +598,39 @@
                 const data = await res.json();
 
                 if (data.result === 'success' && data.resetToken) {
-                    resetToken = data.resetToken; // Store in memory
+                    resetToken = data.resetToken;
                     showMessage('step2Message', 'Code verified!', 'success');
 
                     setTimeout(() => {
                         document.getElementById('step2').classList.add('hidden');
                         document.getElementById('step3').classList.remove('hidden');
+                        updateStepIndicator(3);
                     }, 1000);
                 } else {
                     showMessage('step2Message', data.message || 'Invalid code.', 'error');
-                    btn.disabled = false;
-                    btn.textContent = 'Verify Code';
+                    setButtonLoading('verifyOtpBtn', false);
+                    document.getElementById('verifyOtpBtn').innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Verify Code</span>`;
                 }
 
             } catch (err) {
                 console.error(err);
                 showMessage('step2Message', 'Network error. Please try again.', 'error');
-                btn.disabled = false;
-                btn.textContent = 'Verify Code';
+                setButtonLoading('verifyOtpBtn', false);
+                document.getElementById('verifyOtpBtn').innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Verify Code</span>`;
             }
         }
 
         async function resetPassword() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const btn = document.getElementById('resetPasswordBtn');
 
             if (newPassword.length < 12) {
                 showMessage('step3Message', 'Password must be at least 12 characters.', 'error');
@@ -204,8 +645,7 @@
                 return;
             }
 
-            btn.disabled = true;
-            btn.textContent = 'Resetting...';
+            setButtonLoading('resetPasswordBtn', true, 'Resetting...');
 
             try {
                 const res = await fetch(API_URL, {
@@ -222,21 +662,35 @@
 
                 if (data.result === 'success') {
                     showMessage('step3Message', 'Password reset successful! Redirecting...', 'success');
-                    resetToken = null; // Clear token
+                    document.getElementById('resetPasswordBtn').classList.add('success');
+                    document.getElementById('resetPasswordBtn').innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Success!</span>`;
+                    resetToken = null;
                     setTimeout(() => {
                         window.location.href = 'admin.html?reset=success';
                     }, 2000);
                 } else {
                     showMessage('step3Message', data.message || 'Reset failed.', 'error');
-                    btn.disabled = false;
-                    btn.textContent = 'Reset Password';
+                    setButtonLoading('resetPasswordBtn', false);
+                    document.getElementById('resetPasswordBtn').innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                        </svg>
+                        <span>Reset Password</span>`;
                 }
 
             } catch (err) {
                 console.error(err);
                 showMessage('step3Message', 'Network error. Please try again.', 'error');
-                btn.disabled = false;
-                btn.textContent = 'Reset Password';
+                setButtonLoading('resetPasswordBtn', false);
+                document.getElementById('resetPasswordBtn').innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                    </svg>
+                    <span>Reset Password</span>`;
             }
         }
     </script>

@@ -273,6 +273,77 @@ module.exports = async (req, res) => {
         }
 
         // ============================================
+        // ACTION: CHANGE PASSWORD (Logged-in User)
+        // ============================================
+        if (action === 'changePassword') {
+            const { currentPassword } = body;
+
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Session token required.' });
+            }
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ result: 'error', message: 'Current and new passwords are required.' });
+            }
+            if (newPassword.length < 12) {
+                return res.status(400).json({ result: 'error', message: 'New password must be at least 12 characters.' });
+            }
+
+            // Verify session
+            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
+            if (sessionResult.rows.length === 0) {
+                return res.status(401).json({ result: 'error', message: 'Invalid or expired session.' });
+            }
+            const user = sessionResult.rows[0];
+
+            // Verify current password against admin_users
+            const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin']);
+            if (adminRes.rows.length === 0) {
+                return res.status(400).json({ result: 'error', message: 'Admin account not found.' });
+            }
+
+            const isValidPassword = await bcrypt.compare(currentPassword, adminRes.rows[0].password_hash);
+            if (!isValidPassword) {
+                return res.status(400).json({ result: 'error', message: 'Invalid current password.' });
+            }
+
+            // Update password
+            await client.query('BEGIN');
+            try {
+                const salt = await bcrypt.genSalt(10);
+                const bcryptHash = await bcrypt.hash(newPassword, salt);
+
+                // 1. Update admin_users
+                await client.query(`
+                    UPDATE admin_users 
+                    SET password_hash = $1, updated_at = NOW(), last_password_change = NOW()
+                    WHERE username = 'admin'
+                `, [bcryptHash]);
+
+                // 2. Update auth.users
+                await client.query(`
+                    UPDATE auth.users 
+                    SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW()
+                    WHERE role = 'admin'
+                `, [newPassword]);
+
+                // 3. Invalidate all sessions except current
+                await client.query(`DELETE FROM auth.sessions WHERE user_id = $1 AND session_token != $2`, [user.user_id, sessionToken]);
+
+                await client.query('COMMIT');
+
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Password updated successfully.',
+                    reauth: true
+                });
+
+            } catch (err) {
+                await client.query('ROLLBACK');
+                throw err;
+            }
+        }
+
+        // ============================================
         // ACTION: LOGOUT
         // ============================================
         if (action === 'logout') {
