@@ -33,20 +33,26 @@ const rateLimits = {
     order: new Map(),  // IP -> { count, expires }
     passwordReset: new Map(), // IP -> { count, expires }
     otpRequest: new Map(), // IP -> { count, expires } - for SMS OTP
-    otpVerify: new Map() // IP -> { count, expires } - for OTP verification
+    otpVerify: new Map(), // IP -> { count, expires } - for OTP verification
+    telegramOtpRequest: new Map(), // IP -> { count, expires } - Telegram OTP request
+    telegramOtpVerify: new Map(), // IP -> { count, expires } - Telegram OTP verify
+    totpVerify: new Map() // IP -> { count, expires } - TOTP verify (higher limit)
 };
 
 // Rate Limit Checker
 function checkRateLimit(type, ip) {
-    // Limits: Login (5/15m), Order (10/60m), Password Reset (5/15m), OTP Request (5/15m), OTP Verify (10/15m)
+    // Limits configuration
     let limit = 10;
     let window = 60 * 60 * 1000;
 
-    if (type === 'login' || type === 'passwordReset' || type === 'otpRequest') {
+    if (type === 'login' || type === 'passwordReset' || type === 'otpRequest' || type === 'telegramOtpRequest') {
         limit = 5;
         window = 15 * 60 * 1000; // 15 mins
-    } else if (type === 'otpVerify') {
+    } else if (type === 'otpVerify' || type === 'telegramOtpVerify') {
         limit = 10;
+        window = 15 * 60 * 1000; // 15 mins
+    } else if (type === 'totpVerify') {
+        limit = 30; // Higher limit for TOTP to avoid lockout
         window = 15 * 60 * 1000; // 15 mins
     }
 

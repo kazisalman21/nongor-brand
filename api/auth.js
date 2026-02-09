@@ -527,6 +527,466 @@ module.exports = async (req, res) => {
             }
         }
 
+        // ============================================
+        // ACTION: GET RESET METHODS (for MFA reset flow)
+        // ============================================
+        if (action === 'getResetMethods') {
+            // Returns which MFA methods are enabled for password reset
+            const adminRes = await client.query(`
+                SELECT totp_enabled, telegram_enabled 
+                FROM admin_users 
+                LIMIT 1
+            `);
+
+            if (adminRes.rows.length === 0) {
+                return res.status(200).json({
+                    result: 'success',
+                    methods: { totp: false, telegram: false }
+                });
+            }
+
+            const admin = adminRes.rows[0];
+            return res.status(200).json({
+                result: 'success',
+                methods: {
+                    totp: admin.totp_enabled || false,
+                    telegram: admin.telegram_enabled || false
+                }
+            });
+        }
+
+        // ============================================
+        // ACTION: REQUEST TELEGRAM RESET OTP
+        // ============================================
+        if (action === 'requestTelegramResetOtp') {
+            const rateLimit = checkRateLimit('telegramOtpRequest', ip);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({
+                    result: 'error',
+                    message: `Too many requests. Try again in ${rateLimit.retryAfter} seconds.`
+                });
+            }
+
+            // Always return success to prevent enumeration
+            const genericResponse = {
+                result: 'success',
+                message: 'If eligible, a verification code has been sent.'
+            };
+
+            try {
+                // Check if Telegram is enabled
+                const adminRes = await client.query(`
+                    SELECT telegram_enabled, telegram_chat_id 
+                    FROM admin_users 
+                    WHERE telegram_enabled = true 
+                    LIMIT 1
+                `);
+
+                const botToken = process.env.TELEGRAM_BOT_TOKEN;
+                const defaultChatId = process.env.ADMIN_TELEGRAM_CHAT_ID;
+
+                if (adminRes.rows.length === 0 || !botToken) {
+                    return res.status(200).json(genericResponse);
+                }
+
+                const chatId = adminRes.rows[0].telegram_chat_id || defaultChatId;
+                if (!chatId) {
+                    return res.status(200).json(genericResponse);
+                }
+
+                // Generate 6-digit OTP
+                const otp = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+
+                // Hash OTP for storage
+                const pepper = process.env.TELEGRAM_OTP_PEPPER || 'default-pepper';
+                const otpHash = crypto.createHash('sha256').update(otp + pepper).digest('hex');
+
+                // Calculate expiry
+                const ttlMinutes = parseInt(process.env.TELEGRAM_OTP_TTL_MINUTES) || 7;
+                const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
+
+                // Store hashed OTP
+                await client.query(`
+                    INSERT INTO auth.telegram_reset_otps (otp_hash, expires_at, requested_ip, user_agent)
+                    VALUES ($1, $2, $3, $4)
+                `, [otpHash, expiresAt, ip, userAgent]);
+
+                // Send OTP via Telegram Bot API
+                const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+                const message = `🔐 Nongor Admin Reset Code:\n\n**${otp}**\n\n⏰ Expires in ${ttlMinutes} minutes.\n\n⚠️ Do not share this code with anyone.`;
+
+                await fetch(telegramUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                console.log(`Telegram OTP sent to chat ${chatId}`);
+            } catch (err) {
+                console.error('Telegram OTP error:', err.message);
+            }
+
+            return res.status(200).json(genericResponse);
+        }
+
+        // ============================================
+        // ACTION: VERIFY TELEGRAM RESET OTP
+        // ============================================
+        if (action === 'verifyTelegramResetOtp') {
+            const { code } = body;
+
+            const rateLimit = checkRateLimit('telegramOtpVerify', ip);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({
+                    result: 'error',
+                    message: `Too many attempts. Try again in ${rateLimit.retryAfter} seconds.`
+                });
+            }
+
+            // Validate format
+            if (!code || !/^\d{6}$/.test(code)) {
+                return res.status(400).json({ result: 'error', message: 'Invalid code format.' });
+            }
+
+            // Find latest valid OTP
+            const otpRes = await client.query(`
+                SELECT * FROM auth.telegram_reset_otps
+                WHERE used_at IS NULL AND expires_at > NOW()
+                ORDER BY created_at DESC
+                LIMIT 1
+            `);
+
+            if (otpRes.rows.length === 0) {
+                return res.status(400).json({ result: 'error', message: 'Invalid or expired code.' });
+            }
+
+            const otpRow = otpRes.rows[0];
+            const maxAttempts = parseInt(process.env.OTP_MAX_ATTEMPTS) || 5;
+
+            // Check attempts
+            if (otpRow.attempts >= maxAttempts) {
+                await client.query(`UPDATE auth.telegram_reset_otps SET used_at = NOW() WHERE id = $1`, [otpRow.id]);
+                return res.status(400).json({ result: 'error', message: 'Too many failed attempts. Request a new code.' });
+            }
+
+            // Verify hash
+            const pepper = process.env.TELEGRAM_OTP_PEPPER || 'default-pepper';
+            const inputHash = crypto.createHash('sha256').update(code + pepper).digest('hex');
+
+            if (inputHash !== otpRow.otp_hash) {
+                await client.query(`UPDATE auth.telegram_reset_otps SET attempts = attempts + 1 WHERE id = $1`, [otpRow.id]);
+                return res.status(400).json({ result: 'error', message: 'Invalid code.' });
+            }
+
+            // Mark OTP as used
+            await client.query(`UPDATE auth.telegram_reset_otps SET used_at = NOW() WHERE id = $1`, [otpRow.id]);
+
+            // Generate reset token
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const tokenPepper = process.env.RESET_TOKEN_PEPPER || 'default-reset-pepper';
+            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
+            const tokenTtl = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 10;
+            const tokenExpiry = new Date(Date.now() + tokenTtl * 60 * 1000);
+
+            await client.query(`
+                INSERT INTO auth.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
+                VALUES ($1, $2, $3, $4)
+            `, [tokenHash, tokenExpiry, ip, userAgent]);
+
+            return res.status(200).json({
+                result: 'success',
+                resetToken: resetToken,
+                message: 'Code verified. You can now reset your password.'
+            });
+        }
+
+        // ============================================
+        // ACTION: VERIFY TOTP FOR RESET
+        // ============================================
+        if (action === 'verifyTotpForReset') {
+            const { code } = body;
+            const speakeasy = require('speakeasy');
+
+            const rateLimit = checkRateLimit('totpVerify', ip);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({
+                    result: 'error',
+                    message: `Too many attempts. Try again in ${rateLimit.retryAfter} seconds.`
+                });
+            }
+
+            // Validate format
+            if (!code || !/^\d{6}$/.test(code)) {
+                return res.status(400).json({ result: 'error', message: 'Invalid code format.' });
+            }
+
+            // Get admin TOTP secret
+            const adminRes = await client.query(`
+                SELECT totp_enabled, totp_secret_enc 
+                FROM admin_users 
+                WHERE totp_enabled = true 
+                LIMIT 1
+            `);
+
+            if (adminRes.rows.length === 0 || !adminRes.rows[0].totp_secret_enc) {
+                return res.status(400).json({ result: 'error', message: 'TOTP not configured.' });
+            }
+
+            const secret = adminRes.rows[0].totp_secret_enc;
+
+            // Verify TOTP
+            const isValid = speakeasy.totp.verify({
+                secret: secret,
+                encoding: 'base32',
+                token: code,
+                window: 1
+            });
+
+            if (!isValid) {
+                return res.status(400).json({ result: 'error', message: 'Invalid code.' });
+            }
+
+            // Generate reset token (same as Telegram flow)
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const tokenPepper = process.env.RESET_TOKEN_PEPPER || 'default-reset-pepper';
+            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
+            const tokenTtl = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 10;
+            const tokenExpiry = new Date(Date.now() + tokenTtl * 60 * 1000);
+
+            await client.query(`
+                INSERT INTO auth.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
+                VALUES ($1, $2, $3, $4)
+            `, [tokenHash, tokenExpiry, ip, userAgent]);
+
+            return res.status(200).json({
+                result: 'success',
+                resetToken: resetToken,
+                message: 'Code verified. You can now reset your password.'
+            });
+        }
+
+        // ============================================
+        // ACTION: RESET PASSWORD WITH TOKEN (MFA verified)
+        // ============================================
+        if (action === 'resetPasswordWithToken') {
+            const { resetToken, newPassword: newPwd, confirmPassword: confirmPwd } = body;
+
+            const rateLimit = checkRateLimit('passwordReset', ip);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({
+                    result: 'error',
+                    message: `Too many attempts. Try again in ${rateLimit.retryAfter} seconds.`
+                });
+            }
+
+            // Validate inputs
+            if (!resetToken || !newPwd || !confirmPwd) {
+                return res.status(400).json({ result: 'error', message: 'Missing required fields.' });
+            }
+
+            if (newPwd !== confirmPwd) {
+                return res.status(400).json({ result: 'error', message: 'Passwords do not match.' });
+            }
+
+            if (newPwd.length < 12) {
+                return res.status(400).json({ result: 'error', message: 'Password must be at least 12 characters.' });
+            }
+
+            // Verify token
+            const tokenPepper = process.env.RESET_TOKEN_PEPPER || 'default-reset-pepper';
+            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
+
+            const tokenRes = await client.query(`
+                SELECT * FROM auth.password_reset_tokens
+                WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()
+                LIMIT 1
+            `, [tokenHash]);
+
+            if (tokenRes.rows.length === 0) {
+                return res.status(400).json({ result: 'error', message: 'Invalid or expired token.' });
+            }
+
+            // Update password
+            await client.query('BEGIN');
+
+            try {
+                const salt = await bcrypt.genSalt(10);
+                const bcryptHash = await bcrypt.hash(newPwd, salt);
+
+                // Update admin_users
+                await client.query(`
+                    UPDATE admin_users 
+                    SET password_hash = $1, updated_at = NOW(), last_password_change = NOW()
+                    WHERE username = 'admin'
+                `, [bcryptHash]);
+
+                // Update auth.users (if used)
+                await client.query(`
+                    UPDATE auth.users 
+                    SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW()
+                    WHERE role = 'admin'
+                `, [newPwd]);
+
+                // Mark token used
+                await client.query(`
+                    UPDATE auth.password_reset_tokens SET used_at = NOW() WHERE token_hash = $1
+                `, [tokenHash]);
+
+                // Invalidate all admin sessions
+                await client.query(`
+                    DELETE FROM auth.sessions 
+                    WHERE user_id IN (SELECT id FROM auth.users WHERE role = 'admin')
+                `);
+
+                await client.query('COMMIT');
+
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Password reset successful. Please log in with your new password.'
+                });
+
+            } catch (err) {
+                await client.query('ROLLBACK');
+                throw err;
+            }
+        }
+
+        // ============================================
+        // ACTION: TOTP SETUP START (authenticated)
+        // ============================================
+        if (action === 'totpSetupStart') {
+            const speakeasy = require('speakeasy');
+
+            // Verify session
+            const sessionToken = req.headers['x-session-token'];
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== 'admin') {
+                return res.status(401).json({ result: 'error', message: 'Admin access required.' });
+            }
+
+            // Generate new TOTP secret
+            const issuer = process.env.TOTP_ISSUER || 'Nongor';
+            const label = process.env.TOTP_LABEL || 'NongorAdmin';
+
+            const secret = speakeasy.generateSecret({
+                length: 20,
+                name: `${issuer}:${label}`,
+                issuer: issuer
+            });
+
+            // Store secret (not enabled yet)
+            await client.query(`
+                UPDATE admin_users 
+                SET totp_secret_enc = $1, totp_enabled = false
+                WHERE username = 'admin'
+            `, [secret.base32]);
+
+            return res.status(200).json({
+                result: 'success',
+                secret: secret.base32,
+                otpauthUrl: secret.otpauth_url,
+                message: 'Scan the QR code with your authenticator app, then verify.'
+            });
+        }
+
+        // ============================================
+        // ACTION: TOTP SETUP CONFIRM (authenticated)
+        // ============================================
+        if (action === 'totpSetupConfirm') {
+            const { code } = body;
+            const speakeasy = require('speakeasy');
+
+            // Verify session
+            const sessionToken = req.headers['x-session-token'];
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== 'admin') {
+                return res.status(401).json({ result: 'error', message: 'Admin access required.' });
+            }
+
+            if (!code || !/^\d{6}$/.test(code)) {
+                return res.status(400).json({ result: 'error', message: 'Invalid code format.' });
+            }
+
+            // Get stored secret
+            const adminRes = await client.query(`
+                SELECT totp_secret_enc FROM admin_users WHERE username = 'admin'
+            `);
+
+            if (adminRes.rows.length === 0 || !adminRes.rows[0].totp_secret_enc) {
+                return res.status(400).json({ result: 'error', message: 'TOTP not set up. Start setup first.' });
+            }
+
+            const secret = adminRes.rows[0].totp_secret_enc;
+
+            // Verify code
+            const isValid = speakeasy.totp.verify({
+                secret: secret,
+                encoding: 'base32',
+                token: code,
+                window: 1
+            });
+
+            if (!isValid) {
+                return res.status(400).json({ result: 'error', message: 'Invalid code. Try again.' });
+            }
+
+            // Enable TOTP
+            await client.query(`
+                UPDATE admin_users SET totp_enabled = true WHERE username = 'admin'
+            `);
+
+            return res.status(200).json({
+                result: 'success',
+                message: 'TOTP enabled successfully! You can now use your authenticator app for password recovery.'
+            });
+        }
+
+        // ============================================
+        // ACTION: TELEGRAM SETUP SAVE (authenticated)
+        // ============================================
+        if (action === 'telegramSetupSave') {
+            const { chatId } = body;
+
+            // Verify session
+            const sessionToken = req.headers['x-session-token'];
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== 'admin') {
+                return res.status(401).json({ result: 'error', message: 'Admin access required.' });
+            }
+
+            if (!chatId || !/^\d+$/.test(chatId.toString())) {
+                return res.status(400).json({ result: 'error', message: 'Invalid chat ID format.' });
+            }
+
+            // Save and enable Telegram
+            await client.query(`
+                UPDATE admin_users 
+                SET telegram_chat_id = $1, telegram_enabled = true
+                WHERE username = 'admin'
+            `, [chatId.toString()]);
+
+            return res.status(200).json({
+                result: 'success',
+                message: 'Telegram enabled successfully! You can now receive password reset codes via Telegram.'
+            });
+        }
+
         return res.status(400).json({ result: 'error', message: 'Invalid action' });
 
     } catch (error) {

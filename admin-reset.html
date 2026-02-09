@@ -40,776 +40,676 @@
             }
         }
 
-        /* Floating Particles */
-        .particles-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .particle {
-            position: absolute;
-            background: rgba(15, 23, 42, 0.05);
-            border-radius: 50%;
-            animation: float-particle 20s infinite ease-in-out;
-        }
-
-        @keyframes float-particle {
-
-            0%,
-            100% {
-                transform: translate(0, 0) rotate(0deg);
-                opacity: 0.1;
-            }
-
-            25% {
-                transform: translate(100px, -100px) rotate(90deg);
-                opacity: 0.15;
-            }
-
-            50% {
-                transform: translate(-50px, -150px) rotate(180deg);
-                opacity: 0.1;
-            }
-
-            75% {
-                transform: translate(-150px, 50px) rotate(270deg);
-                opacity: 0.15;
-            }
-        }
-
         /* Glass Card */
         .premium-glass-card {
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(40px) saturate(150%);
             border: 1px solid rgba(0, 0, 0, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 20px 60px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
             border-radius: 24px;
-            position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .premium-glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 25px 70px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Animated Logo Ring */
+        /* Animated Logo */
         .logo-ring-animated {
+            width: 80px;
+            height: 80px;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
         }
 
         .logo-ring-animated::before {
             content: '';
             position: absolute;
-            top: -8px;
-            left: -8px;
-            right: -8px;
-            bottom: -8px;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
-            background: linear-gradient(45deg, #94A3B8, #CBD5E1, #FFFFFF, #94A3B8);
-            background-size: 300% 300%;
-            animation: rotate-gradient 8s linear infinite;
-            z-index: -1;
-            filter: blur(12px);
-            opacity: 0.6;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
+            animation: pulse-ring 3s ease-in-out infinite;
         }
 
-        @keyframes rotate-gradient {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
+        .logo-ring-animated img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            border-radius: 50%;
+            padding: 6px;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        .logo-pulse {
-            animation: logo-pulse-animation 3s ease-in-out infinite;
-        }
-
-        @keyframes logo-pulse-animation {
+        @keyframes pulse-ring {
 
             0%,
             100% {
                 transform: scale(1);
+                opacity: 0.5;
             }
 
             50% {
-                transform: scale(1.05);
+                transform: scale(1.15);
+                opacity: 0.3;
             }
         }
 
-        /* Floating Animation */
-        @keyframes animate-float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
+        /* Method Cards */
+        .method-card {
+            padding: 1.25rem;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            background: linear-gradient(#fff, #fff) padding-box,
+                linear-gradient(135deg, #e2e8f0, #f1f5f9) border-box;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .animate-float {
-            animation: animate-float 6s ease-in-out infinite;
+        .method-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
         }
 
-        /* Slide In Animation */
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .method-card.selected {
+            background: linear-gradient(#fff, #fff) padding-box,
+                linear-gradient(135deg, #8b5cf6, #6366f1) border-box;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
         }
 
-        .animate-slide-in-up {
-            animation: slideInUp 0.6s ease-out forwards;
+        .method-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .method-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .method-icon.totp {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        }
+
+        .method-icon.telegram {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
         }
 
         /* Premium Input */
         .premium-input {
             width: 100%;
-            height: 56px;
-            padding: 16px 20px;
-            background: linear-gradient(135deg, #1e293b, #334155);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            color: white;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 16px;
-            font-weight: 500;
+            background: #fafafa;
             transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .premium-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
         }
 
         .premium-input:focus {
             outline: none;
-            border-color: rgba(139, 92, 246, 0.5);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            border-color: #8b5cf6;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
         }
 
         /* OTP Input */
         .otp-input {
             width: 100%;
-            height: 64px;
-            padding: 16px 20px;
-            background: linear-gradient(135deg, #1e293b, #334155);
-            border: 2px solid rgba(139, 92, 246, 0.3);
-            border-radius: 16px;
-            color: white;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 0.5em;
+            padding: 18px;
             text-align: center;
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            background: #fafafa;
             transition: all 0.3s ease;
         }
 
         .otp-input:focus {
             outline: none;
-            border-color: rgba(139, 92, 246, 0.8);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
         }
 
         /* Premium Button */
         .premium-button {
             width: 100%;
-            height: 56px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            color: white;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 14px;
             font-size: 16px;
             font-weight: 600;
-            border: none;
-            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            transition: all 0.3s ease;
         }
 
-        .premium-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .premium-button:hover::before {
-            left: 100%;
-        }
-
-        .premium-button:hover {
+        .premium-button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
         }
 
         .premium-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .premium-button.success {
-            background: linear-gradient(135deg, #10B981, #059669);
+        .premium-button.secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .premium-button.secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Message Box */
+        .message-box {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 1rem;
+        }
+
+        .message-box.success {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message-box.error {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
 
         /* Step Indicator */
         .step-indicator {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 24px;
+            gap: 12px;
+            margin-bottom: 1.5rem;
         }
 
         .step-dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.15);
+            background: #e2e8f0;
             transition: all 0.3s ease;
         }
 
         .step-dot.active {
             background: linear-gradient(135deg, #8b5cf6, #6366f1);
             width: 28px;
-            border-radius: 5px;
+            border-radius: 6px;
         }
 
         .step-dot.completed {
-            background: #10B981;
+            background: #10b981;
         }
 
-        /* Message Box */
-        .message-box {
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
+        /* Step Icons */
+        .step-header-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            animation: slideInUp 0.3s ease;
+            justify-content: center;
+            margin: 0 auto 1rem;
         }
 
-        .message-box.info {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: #4f46e5;
+        /* Hidden */
+        .hidden {
+            display: none !important;
         }
 
-        .message-box.success {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #059669;
-        }
-
-        .message-box.error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #dc2626;
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Label */
+        /* Input Label */
         .input-label {
             display: block;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 500;
             color: #475569;
             margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Interactive Jelly Blob - Enhanced */
-        .jelly-blob {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%,
-                    rgba(139, 92, 246, 0.4),
-                    rgba(99, 102, 241, 0.3),
-                    rgba(79, 70, 229, 0.15),
-                    transparent 70%);
-            pointer-events: none;
-            z-index: 2;
-            filter: blur(60px);
-            will-change: transform;
-            mix-blend-mode: normal;
-        }
-
-        .jelly-blob::before {
-            content: '';
-            position: absolute;
-            top: 15%;
-            left: 15%;
-            width: 70%;
-            height: 70%;
-            border-radius: 50%;
-            background: radial-gradient(circle,
-                    rgba(236, 72, 153, 0.35),
-                    rgba(168, 85, 247, 0.2),
-                    transparent 60%);
-            animation: jelly-morph 6s ease-in-out infinite;
-        }
-
-        .jelly-blob::after {
-            content: '';
-            position: absolute;
-            top: 5%;
-            right: 5%;
-            width: 60%;
-            height: 60%;
-            border-radius: 50%;
-            background: radial-gradient(circle,
-                    rgba(59, 130, 246, 0.3),
-                    rgba(14, 165, 233, 0.15),
-                    transparent 60%);
-            animation: jelly-morph 5s ease-in-out infinite reverse;
-        }
-
-        @keyframes jelly-morph {
-
-            0%,
-            100% {
-                transform: scale(1) translate(0, 0) rotate(0deg);
-                border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-            }
-
-            25% {
-                transform: scale(1.1) translate(10px, -10px) rotate(5deg);
-                border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
-            }
-
-            50% {
-                transform: scale(0.9) translate(-10px, 10px) rotate(-5deg);
-                border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%;
-            }
-
-            75% {
-                transform: scale(1.05) translate(5px, 5px) rotate(3deg);
-                border-radius: 40% 60% 30% 70% / 70% 40% 60% 30%;
-            }
-        }
-
-        /* Secondary Blob - Enhanced */
-        .jelly-blob-secondary {
-            position: fixed;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 70% 70%,
-                    rgba(16, 185, 129, 0.35),
-                    rgba(5, 150, 105, 0.2),
-                    transparent 60%);
-            pointer-events: none;
-            z-index: 2;
-            filter: blur(50px);
-            will-change: transform;
-        }
-
-        .jelly-blob-secondary::before {
-            content: '';
-            position: absolute;
-            top: 20%;
-            left: 20%;
-            width: 60%;
-            height: 60%;
-            border-radius: 50%;
-            background: radial-gradient(circle,
-                    rgba(34, 211, 238, 0.25),
-                    rgba(6, 182, 212, 0.15),
-                    transparent 60%);
-            animation: jelly-morph 7s ease-in-out infinite;
-        }
-
-        /* Tertiary Blob for extra depth */
-        .jelly-blob-tertiary {
-            position: fixed;
-            width: 350px;
-            height: 350px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 50% 50%,
-                    rgba(251, 146, 60, 0.25),
-                    rgba(249, 115, 22, 0.15),
-                    transparent 60%);
-            pointer-events: none;
-            z-index: 2;
-            filter: blur(45px);
-            will-change: transform;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen antialiased">
+<body class="premium-bg min-h-screen flex items-center justify-center p-4">
 
-    <div class="min-h-screen premium-bg flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative"
-        id="mainContainer">
-
-        <!-- Interactive Jelly Blobs -->
-        <div class="jelly-blob" id="jellyBlob"></div>
-        <div class="jelly-blob-secondary" id="jellyBlobSecondary"></div>
-        <div class="jelly-blob-tertiary" id="jellyBlobTertiary"></div>
-
-        <!-- Particles Container (JS will inject) -->
-        <div class="particles-container" id="particles"></div>
-
-        <!-- Logo & Title -->
-        <div class="sm:mx-auto sm:w-full sm:max-w-md animate-slide-in-up relative z-10">
-            <div class="logo-ring-animated animate-float mx-auto w-20 h-20 mb-6">
-                <img class="logo-pulse relative w-full h-full rounded-full ring-4 ring-white/30 shadow-2xl object-cover"
-                    src="./assets/logo.jpeg" alt="Nongor">
+    <div class="w-full max-w-md">
+        <!-- Main Card -->
+        <div class="premium-glass-card p-8">
+            <!-- Logo -->
+            <div class="logo-ring-animated">
+                <img src="./assets/logo.jpeg" alt="Nongor Logo">
             </div>
-            <h2 class="text-center text-3xl font-extrabold text-white drop-shadow-md tracking-tight">
-                Password Recovery
-            </h2>
-            <p class="mt-2 text-center text-sm text-white/70">
-                Secure Admin Account Reset
-            </p>
-        </div>
 
-        <!-- Glass Card -->
-        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-            <div class="premium-glass-card py-8 px-6 sm:px-8 shadow-2xl">
+            <!-- Title -->
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-1">Password Recovery</h1>
+            <p class="text-center text-gray-500 text-sm mb-6">Secure Admin Account Reset</p>
 
-                <!-- Step Indicator -->
-                <div class="step-indicator">
-                    <div class="step-dot active" id="dot1"></div>
-                    <div class="step-dot" id="dot2"></div>
-                    <div class="step-dot" id="dot3"></div>
-                </div>
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot active" id="dot1"></div>
+                <div class="step-dot" id="dot2"></div>
+                <div class="step-dot" id="dot3"></div>
+            </div>
 
-                <!-- Step 1: Request OTP -->
-                <div id="step1" class="space-y-5">
-                    <div class="text-center">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg"
-                            style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Step 1: Choose Method -->
+            <div id="step1" class="space-y-4">
+                <p class="text-gray-600 text-sm text-center mb-4">Choose your verification method:</p>
+
+                <!-- TOTP Method -->
+                <div class="method-card" id="totpCard" onclick="selectMethod('totp')">
+                    <div class="flex items-center gap-4">
+                        <div class="method-icon totp">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <p class="text-gray-600 text-sm">We'll send a verification code to the registered admin phone
-                            number.</p>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Authenticator App</h3>
+                            <p class="text-sm text-gray-500">Use Google/Microsoft Authenticator</p>
+                        </div>
+                    </div>
+                    <div id="totpStatus" class="text-xs text-gray-400 mt-2"></div>
+                </div>
+
+                <!-- Telegram Method -->
+                <div class="method-card" id="telegramCard" onclick="selectMethod('telegram')">
+                    <div class="flex items-center gap-4">
+                        <div class="method-icon telegram">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Telegram</h3>
+                            <p class="text-sm text-gray-500">Receive code via Telegram bot</p>
+                        </div>
+                    </div>
+                    <div id="telegramStatus" class="text-xs text-gray-400 mt-2"></div>
+                </div>
+
+                <div id="step1Message" class="message-box hidden"></div>
+            </div>
+
+            <!-- Step 2: Enter Code -->
+            <div id="step2" class="hidden space-y-5">
+                <!-- TOTP Verification -->
+                <div id="totpVerify" class="hidden">
+                    <div class="step-header-icon" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 text-sm text-center mb-4">Enter the 6-digit code from your authenticator
+                        app.</p>
+                </div>
+
+                <!-- Telegram Verification -->
+                <div id="telegramVerify" class="hidden">
+                    <div class="step-header-icon" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+                        </svg>
                     </div>
 
-                    <div id="step1Message" class="hidden message-box"></div>
-
-                    <button id="sendOtpBtn" onclick="sendOtp()" class="premium-button">
+                    <button id="sendCodeBtn" onclick="sendTelegramOtp()" class="premium-button secondary mb-4">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
-                        <span>Send Verification Code</span>
+                        <span>Send Code to Telegram</span>
                     </button>
+
+                    <p class="text-gray-600 text-sm text-center mb-4" id="telegramInstructions">Click to send a
+                        verification code to your Telegram.</p>
                 </div>
 
-                <!-- Step 2: Verify OTP -->
-                <div id="step2" class="hidden space-y-5">
-                    <div class="text-center">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg"
-                            style="background: linear-gradient(135deg, #10b981, #0d9488);">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                        </div>
-                        <p class="text-gray-600 text-sm">Enter the 6-digit code sent to your phone.</p>
-                    </div>
+                <input type="text" id="codeInput" maxlength="6" pattern="[0-9]*" inputmode="numeric" class="otp-input"
+                    placeholder="000000">
 
-                    <input type="text" id="otpInput" maxlength="6" pattern="[0-9]*" inputmode="numeric"
-                        class="otp-input" placeholder="000000">
+                <div id="step2Message" class="message-box hidden"></div>
 
-                    <div id="step2Message" class="hidden message-box"></div>
+                <button id="verifyBtn" onclick="verifyCode()" class="premium-button" disabled>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Verify Code</span>
+                </button>
 
-                    <button id="verifyOtpBtn" onclick="verifyOtp()" class="premium-button">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Verify Code</span>
-                    </button>
-                </div>
-
-                <!-- Step 3: Set New Password -->
-                <div id="step3" class="hidden space-y-5">
-                    <div class="text-center">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg"
-                            style="background: linear-gradient(135deg, #f59e0b, #ea580c);">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                            </svg>
-                        </div>
-                        <p class="text-gray-600 text-sm">Create a strong new password (minimum 12 characters).</p>
-                    </div>
-
-                    <div>
-                        <label class="input-label">New Password</label>
-                        <input type="password" id="newPassword" minlength="12" class="premium-input"
-                            placeholder="Min 12 characters">
-                    </div>
-
-                    <div>
-                        <label class="input-label">Confirm Password</label>
-                        <input type="password" id="confirmPassword" minlength="12" class="premium-input"
-                            placeholder="Confirm your password">
-                    </div>
-
-                    <div id="step3Message" class="hidden message-box"></div>
-
-                    <button id="resetPasswordBtn" onclick="resetPassword()" class="premium-button">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                        </svg>
-                        <span>Reset Password</span>
-                    </button>
-                </div>
-
-                <!-- Back to Login -->
-                <p class="mt-6 text-center text-sm text-gray-500">
-                    <a href="admin.html"
-                        class="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors flex items-center justify-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Back to Login
-                    </a>
-                </p>
+                <button onclick="goToStep1()" class="premium-button secondary">
+                    ← Back
+                </button>
             </div>
+
+            <!-- Step 3: Set New Password -->
+            <div id="step3" class="hidden space-y-5">
+                <div class="step-header-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                </div>
+                <p class="text-gray-600 text-sm text-center">Create a strong new password (minimum 12 characters).</p>
+
+                <div>
+                    <label class="input-label">New Password</label>
+                    <input type="password" id="newPassword" minlength="12" class="premium-input"
+                        placeholder="Min 12 characters">
+                </div>
+
+                <div>
+                    <label class="input-label">Confirm Password</label>
+                    <input type="password" id="confirmPassword" minlength="12" class="premium-input"
+                        placeholder="Confirm your password">
+                </div>
+
+                <div id="step3Message" class="message-box hidden"></div>
+
+                <button id="resetBtn" onclick="resetPassword()" class="premium-button">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Reset Password</span>
+                </button>
+            </div>
+
+            <!-- Back to Login -->
+            <a href="admin.html" class="block text-center text-sm text-gray-500 hover:text-gray-700 mt-6 transition">
+                ← Back to Login
+            </a>
         </div>
     </div>
 
     <script>
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000/api/auth'
-            : '/api/auth';
+        const API_URL = '/api/auth';
 
-        let resetToken = null;
+        // State
+        let selectedMethod = null;
+        let resetToken = null; // Keep in memory only, NOT localStorage
+        let codeSent = false;
 
-        // Create Particles
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 15; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.width = Math.random() * 300 + 50 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 10 + 's';
-                container.appendChild(particle);
-            }
-        }
-        createParticles();
+        // DOM Elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const dot1 = document.getElementById('dot1');
+        const dot2 = document.getElementById('dot2');
+        const dot3 = document.getElementById('dot3');
+        const codeInput = document.getElementById('codeInput');
+        const verifyBtn = document.getElementById('verifyBtn');
 
-        // Interactive Jelly Blob Mouse Tracking - Enhanced
-        const jellyBlob = document.getElementById('jellyBlob');
-        const jellyBlobSecondary = document.getElementById('jellyBlobSecondary');
-        const jellyBlobTertiary = document.getElementById('jellyBlobTertiary');
-        const mainContainer = document.getElementById('mainContainer');
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkMethods();
 
-        let mouseX = window.innerWidth / 2;
-        let mouseY = window.innerHeight / 2;
-        let blobX = mouseX;
-        let blobY = mouseY;
-        let secondaryX = mouseX - 100;
-        let secondaryY = mouseY + 100;
-        let tertiaryX = mouseX + 100;
-        let tertiaryY = mouseY - 50;
+            // Enable verify button when 6 digits entered
+            codeInput.addEventListener('input', () => {
+                const code = codeInput.value.replace(/\D/g, '');
+                codeInput.value = code;
 
-        // Track mouse on entire document for better responsiveness
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+                if (selectedMethod === 'telegram') {
+                    verifyBtn.disabled = code.length !== 6 || !codeSent;
+                } else {
+                    verifyBtn.disabled = code.length !== 6;
+                }
+            });
         });
 
-        function animateBlob() {
-            // Primary blob follows fastest (violet/pink)
-            blobX += (mouseX - blobX) * 0.12;
-            blobY += (mouseY - blobY) * 0.12;
-            jellyBlob.style.transform = `translate(${blobX - 250}px, ${blobY - 250}px)`;
-
-            // Secondary blob follows medium speed (green/teal)
-            secondaryX += (mouseX - secondaryX) * 0.06;
-            secondaryY += (mouseY - secondaryY) * 0.06;
-            jellyBlobSecondary.style.transform = `translate(${secondaryX - 200}px, ${secondaryY - 200}px)`;
-
-            // Tertiary blob follows slowest (orange) - creates depth
-            tertiaryX += (mouseX - tertiaryX) * 0.03;
-            tertiaryY += (mouseY - tertiaryY) * 0.03;
-            jellyBlobTertiary.style.transform = `translate(${tertiaryX - 175}px, ${tertiaryY - 175}px)`;
-
-            requestAnimationFrame(animateBlob);
-        }
-        animateBlob();
-
-        function updateStepIndicator(step) {
-            document.querySelectorAll('.step-dot').forEach((dot, i) => {
-                dot.classList.remove('active', 'completed');
-                if (i < step - 1) dot.classList.add('completed');
-                if (i === step - 1) dot.classList.add('active');
-            });
-        }
-
-        function showMessage(elId, msg, type) {
-            const el = document.getElementById(elId);
-            el.innerHTML = `<span>${type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️'}</span> ${msg}`;
-            el.classList.remove('hidden', 'info', 'success', 'error');
-            el.classList.add('message-box', type);
-        }
-
-        function setButtonLoading(btnId, loading, text) {
-            const btn = document.getElementById(btnId);
-            btn.disabled = loading;
-            if (loading) {
-                btn.innerHTML = `<div class="spinner"></div> <span>${text || 'Processing...'}</span>`;
-            }
-        }
-
-        async function sendOtp() {
-            setButtonLoading('sendOtpBtn', true, 'Sending...');
-
+        async function checkMethods() {
             try {
-                const res = await fetch(API_URL, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'requestPasswordResetOtp' })
+                    body: JSON.stringify({ action: 'getResetMethods' })
                 });
-                const data = await res.json();
 
-                showMessage('step1Message', data.message, 'info');
+                const data = await response.json();
 
-                setTimeout(() => {
-                    document.getElementById('step1').classList.add('hidden');
-                    document.getElementById('step2').classList.remove('hidden');
-                    updateStepIndicator(2);
-                }, 1500);
+                const totpCard = document.getElementById('totpCard');
+                const telegramCard = document.getElementById('telegramCard');
+                const totpStatus = document.getElementById('totpStatus');
+                const telegramStatus = document.getElementById('telegramStatus');
 
-            } catch (err) {
-                console.error(err);
-                showMessage('step1Message', 'Network error. Please try again.', 'error');
-                setButtonLoading('sendOtpBtn', false);
-                document.getElementById('sendOtpBtn').innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                    <span>Send Verification Code</span>`;
+                if (!data.methods?.totp) {
+                    totpCard.classList.add('disabled');
+                    totpStatus.textContent = 'Not configured';
+                    totpCard.onclick = null;
+                } else {
+                    totpStatus.textContent = '✓ Available';
+                    totpStatus.style.color = '#10b981';
+                }
+
+                if (!data.methods?.telegram) {
+                    telegramCard.classList.add('disabled');
+                    telegramStatus.textContent = 'Not configured';
+                    telegramCard.onclick = null;
+                } else {
+                    telegramStatus.textContent = '✓ Available';
+                    telegramStatus.style.color = '#10b981';
+                }
+
+                // If neither available, show message
+                if (!data.methods?.totp && !data.methods?.telegram) {
+                    showMessage('step1Message', 'No recovery methods configured. Please contact support.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error checking methods:', error);
             }
         }
 
-        async function verifyOtp() {
-            const otp = document.getElementById('otpInput').value.trim();
+        function selectMethod(method) {
+            const totpCard = document.getElementById('totpCard');
+            const telegramCard = document.getElementById('telegramCard');
 
-            if (!otp || !/^\d{4,10}$/.test(otp)) {
-                showMessage('step2Message', 'Please enter a valid code.', 'error');
+            // Check if disabled
+            if (method === 'totp' && totpCard.classList.contains('disabled')) return;
+            if (method === 'telegram' && telegramCard.classList.contains('disabled')) return;
+
+            selectedMethod = method;
+
+            // Update UI
+            totpCard.classList.remove('selected');
+            telegramCard.classList.remove('selected');
+
+            if (method === 'totp') {
+                totpCard.classList.add('selected');
+            } else {
+                telegramCard.classList.add('selected');
+            }
+
+            // Go to step 2
+            goToStep2();
+        }
+
+        function goToStep1() {
+            step1.classList.remove('hidden');
+            step2.classList.add('hidden');
+            step3.classList.add('hidden');
+
+            dot1.classList.add('active');
+            dot1.classList.remove('completed');
+            dot2.classList.remove('active', 'completed');
+            dot3.classList.remove('active', 'completed');
+
+            // Reset state
+            selectedMethod = null;
+            codeSent = false;
+            codeInput.value = '';
+            hideMessage('step2Message');
+        }
+
+        function goToStep2() {
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+            step3.classList.add('hidden');
+
+            dot1.classList.remove('active');
+            dot1.classList.add('completed');
+            dot2.classList.add('active');
+            dot3.classList.remove('active', 'completed');
+
+            // Show appropriate verification UI
+            const totpVerify = document.getElementById('totpVerify');
+            const telegramVerify = document.getElementById('telegramVerify');
+
+            if (selectedMethod === 'totp') {
+                totpVerify.classList.remove('hidden');
+                telegramVerify.classList.add('hidden');
+                verifyBtn.disabled = true;
+            } else {
+                totpVerify.classList.add('hidden');
+                telegramVerify.classList.remove('hidden');
+                verifyBtn.disabled = true;
+            }
+
+            codeInput.value = '';
+            codeInput.focus();
+        }
+
+        function goToStep3() {
+            step1.classList.add('hidden');
+            step2.classList.add('hidden');
+            step3.classList.remove('hidden');
+
+            dot1.classList.remove('active');
+            dot1.classList.add('completed');
+            dot2.classList.remove('active');
+            dot2.classList.add('completed');
+            dot3.classList.add('active');
+        }
+
+        async function sendTelegramOtp() {
+            const btn = document.getElementById('sendCodeBtn');
+            const instructions = document.getElementById('telegramInstructions');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Sending...</span>';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'requestTelegramResetOtp' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    codeSent = true;
+                    btn.innerHTML = '✓ Code Sent';
+                    btn.classList.remove('secondary');
+                    instructions.textContent = 'Check your Telegram for the 6-digit code.';
+                    instructions.style.color = '#10b981';
+                    showMessage('step2Message', 'Code sent! Check your Telegram.', 'success');
+                } else {
+                    showMessage('step2Message', data.message || 'Failed to send code.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg><span>Try Again</span>';
+                }
+
+            } catch (error) {
+                showMessage('step2Message', 'Network error. Please try again.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg><span>Try Again</span>';
+            }
+        }
+
+        async function verifyCode() {
+            const code = codeInput.value.trim();
+
+            if (code.length !== 6) {
+                showMessage('step2Message', 'Please enter a 6-digit code.', 'error');
                 return;
             }
 
-            setButtonLoading('verifyOtpBtn', true, 'Verifying...');
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<span>Verifying...</span>';
 
             try {
-                const res = await fetch(API_URL, {
+                const action = selectedMethod === 'totp' ? 'verifyTotpForReset' : 'verifyTelegramResetOtp';
+
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'verifyPasswordResetOtp', otp })
+                    body: JSON.stringify({ action, code })
                 });
-                const data = await res.json();
 
-                if (data.result === 'success' && data.resetToken) {
-                    resetToken = data.resetToken;
-                    showMessage('step2Message', 'Code verified!', 'success');
+                const data = await response.json();
 
-                    setTimeout(() => {
-                        document.getElementById('step2').classList.add('hidden');
-                        document.getElementById('step3').classList.remove('hidden');
-                        updateStepIndicator(3);
-                    }, 1000);
+                if (response.ok && data.resetToken) {
+                    resetToken = data.resetToken; // Store in memory ONLY
+                    showMessage('step2Message', 'Verified!', 'success');
+                    setTimeout(goToStep3, 500);
                 } else {
                     showMessage('step2Message', data.message || 'Invalid code.', 'error');
-                    setButtonLoading('verifyOtpBtn', false);
-                    document.getElementById('verifyOtpBtn').innerHTML = `
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Verify Code</span>`;
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg><span>Verify Code</span>';
                 }
 
-            } catch (err) {
-                console.error(err);
+            } catch (error) {
                 showMessage('step2Message', 'Network error. Please try again.', 'error');
-                setButtonLoading('verifyOtpBtn', false);
-                document.getElementById('verifyOtpBtn').innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Verify Code</span>`;
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg><span>Verify Code</span>';
             }
         }
 
         async function resetPassword() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const resetBtn = document.getElementById('resetBtn');
+
+            // Validation
+            if (!newPassword || !confirmPassword) {
+                showMessage('step3Message', 'Please fill in both fields.', 'error');
+                return;
+            }
 
             if (newPassword.length < 12) {
                 showMessage('step3Message', 'Password must be at least 12 characters.', 'error');
                 return;
             }
+
             if (newPassword !== confirmPassword) {
                 showMessage('step3Message', 'Passwords do not match.', 'error');
                 return;
             }
+
             if (!resetToken) {
                 showMessage('step3Message', 'Session expired. Please start over.', 'error');
+                setTimeout(goToStep1, 1500);
                 return;
             }
 
-            setButtonLoading('resetPasswordBtn', true, 'Resetting...');
+            resetBtn.disabled = true;
+            resetBtn.innerHTML = '<span>Resetting...</span>';
 
             try {
-                const res = await fetch(API_URL, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -819,40 +719,38 @@
                         confirmPassword
                     })
                 });
-                const data = await res.json();
 
-                if (data.result === 'success') {
-                    showMessage('step3Message', 'Password reset successful! Redirecting...', 'success');
-                    document.getElementById('resetPasswordBtn').classList.add('success');
-                    document.getElementById('resetPasswordBtn').innerHTML = `
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Success!</span>`;
-                    resetToken = null;
+                const data = await response.json();
+
+                if (response.ok) {
+                    resetToken = null; // Clear token
+                    showMessage('step3Message', 'Password reset successful! Redirecting to login...', 'success');
                     setTimeout(() => {
                         window.location.href = 'admin.html?reset=success';
                     }, 2000);
                 } else {
-                    showMessage('step3Message', data.message || 'Reset failed.', 'error');
-                    setButtonLoading('resetPasswordBtn', false);
-                    document.getElementById('resetPasswordBtn').innerHTML = `
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                        </svg>
-                        <span>Reset Password</span>`;
+                    showMessage('step3Message', data.message || 'Failed to reset password.', 'error');
+                    resetBtn.disabled = false;
+                    resetBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg><span>Reset Password</span>';
                 }
 
-            } catch (err) {
-                console.error(err);
+            } catch (error) {
                 showMessage('step3Message', 'Network error. Please try again.', 'error');
-                setButtonLoading('resetPasswordBtn', false);
-                document.getElementById('resetPasswordBtn').innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                    </svg>
-                    <span>Reset Password</span>`;
+                resetBtn.disabled = false;
+                resetBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg><span>Reset Password</span>';
             }
+        }
+
+        // Utility functions
+        function showMessage(id, text, type) {
+            const el = document.getElementById(id);
+            el.textContent = text;
+            el.className = `message-box ${type}`;
+            el.classList.remove('hidden');
+        }
+
+        function hideMessage(id) {
+            document.getElementById(id).classList.add('hidden');
         }
     </script>
 </body>
