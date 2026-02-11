@@ -96,6 +96,43 @@ module.exports = async (req, res) => {
                 return res.status(403).json({ result: 'error', message: 'Access denied: Admin only' });
             }
 
+            // --- MFA CHECK START ---
+            // Check if TOTP is enabled for this admin
+            const mfaRes = await client.query(`SELECT totp_enabled, totp_secret_enc FROM admin_users WHERE username = 'admin' LIMIT 1`);
+            let totpEnabled = false;
+            let totpSecret = null;
+
+            if (mfaRes.rows.length > 0) {
+                totpEnabled = mfaRes.rows[0].totp_enabled;
+                totpSecret = mfaRes.rows[0].totp_secret_enc;
+            }
+
+            if (totpEnabled) {
+                const { totpCode } = body;
+
+                // If code not provided, challenge user
+                if (!totpCode) {
+                    return res.status(200).json({
+                        result: 'mfa_required',
+                        message: 'MFA Code Required'
+                    });
+                }
+
+                // If code provided, verify it
+                const speakeasy = require('speakeasy');
+                const isValid = speakeasy.totp.verify({
+                    secret: totpSecret,
+                    encoding: 'base32',
+                    token: totpCode,
+                    window: 1
+                });
+
+                if (!isValid) {
+                    return res.status(401).json({ result: 'error', message: 'Invalid MFA Code' });
+                }
+            }
+            // --- MFA CHECK END ---
+
             // Generate session
             const newSessionToken = crypto.randomBytes(32).toString('hex');
             const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -258,6 +295,68 @@ module.exports = async (req, res) => {
             } catch (err) {
                 await client.query('ROLLBACK');
                 throw err;
+            }
+        }
+
+        // ============================================
+        // ACTION: TOTP SETUP START
+        // ============================================
+        if (action === 'totpSetupStart') {
+            if (!sessionToken) return res.status(401).json({ result: 'error', message: 'Session required' });
+            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
+            if (sessionResult.rows.length === 0) return res.status(401).json({ result: 'error', message: 'Invalid session' });
+
+            const speakeasy = require('speakeasy');
+            const secret = speakeasy.generateSecret({
+                length: 20,
+                name: process.env.TOTP_ISSUER || 'Nongor',
+                issuer: process.env.TOTP_LABEL || 'Admin'
+            });
+
+            // Store secret temporarily (or permanently but disabled)
+            await client.query(`
+                UPDATE admin_users 
+                SET totp_secret_enc = $1, totp_enabled = false
+                WHERE username = 'admin'
+            `, [secret.base32]);
+
+            return res.status(200).json({
+                result: 'success',
+                secret: secret.base32,
+                otpauthUrl: secret.otpauth_url
+            });
+        }
+
+        // ============================================
+        // ACTION: TOTP SETUP CONFIRM
+        // ============================================
+        if (action === 'totpSetupConfirm') {
+            const { code } = body;
+            if (!sessionToken) return res.status(401).json({ result: 'error', message: 'Session required' });
+            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
+            if (sessionResult.rows.length === 0) return res.status(401).json({ result: 'error', message: 'Invalid session' });
+
+            const speakeasy = require('speakeasy');
+
+            // Get secret
+            const adminRes = await client.query(`SELECT totp_secret_enc FROM admin_users WHERE username = 'admin'`);
+            if (adminRes.rows.length === 0 || !adminRes.rows[0].totp_secret_enc) {
+                return res.status(400).json({ result: 'error', message: 'TOTP setup not started' });
+            }
+
+            const secret = adminRes.rows[0].totp_secret_enc;
+            const verified = speakeasy.totp.verify({
+                secret: secret,
+                encoding: 'base32',
+                token: code,
+                window: 1
+            });
+
+            if (verified) {
+                await client.query(`UPDATE admin_users SET totp_enabled = true WHERE username = 'admin'`);
+                return res.status(200).json({ result: 'success', message: 'TOTP Enabled successfully' });
+            } else {
+                return res.status(400).json({ result: 'error', message: 'Invalid verification code' });
             }
         }
 

@@ -1490,6 +1490,60 @@
 
 <body class="bg-gray-50 min-h-screen text-gray-800 antialiased selection:bg-brand-accent selection:text-white">
 
+    <!-- MFA Challenge Modal (Premium Design) -->
+    <div id="mfa-modal" class="fixed inset-0 z-[200] hidden">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity opacity-0" id="mfa-backdrop">
+        </div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl max-w-sm w-full p-8 transform scale-95 opacity-0 transition-all duration-300"
+                id="mfa-content">
+
+                <!-- Decorative Elements -->
+                <div
+                    class="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-brand-accent/20 rounded-full blur-xl animate-pulse">
+                </div>
+
+                <div class="text-center relative z-10">
+                    <div
+                        class="w-16 h-16 bg-white rounded-full shadow-lg mx-auto mb-6 flex items-center justify-center ring-4 ring-brand-accent/10">
+                        <svg class="w-8 h-8 text-brand-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Two-Factor Auth</h3>
+                    <p class="text-sm text-gray-500 mb-8">Enter the 6-digit code from your authenticator app to
+                        continue.</p>
+
+                    <form onsubmit="submitMfaLogin(event)" class="space-y-6">
+                        <div class="relative">
+                            <input type="text" id="mfa-code-input"
+                                class="w-full text-center text-3xl font-mono tracking-[0.5em] py-4 border-b-2 border-gray-200 bg-transparent focus:border-brand-accent focus:outline-none transition-colors"
+                                placeholder="000000" maxlength="6" pattern="\d{6}" required
+                                autocomplete="one-time-code">
+                        </div>
+
+                        <button type="submit" id="mfa-submit-btn"
+                            class="w-full bg-brand-accent text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-brand-accent/30 hover:shadow-brand-accent/50 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2">
+                            <span>Verify Identity</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </button>
+                    </form>
+
+                    <button onclick="closeMfaModal()"
+                        class="mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        Cancel Verification
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Enhanced Premium Login Screen -->
     <div id="login-screen"
         class="min-h-screen premium-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-opacity duration-500 relative">
@@ -3033,6 +3087,108 @@
             }
         }
 
+        // MFA Modal Functions
+        function showMfaModal() {
+            const modal = document.getElementById('mfa-modal');
+            const backdrop = document.getElementById('mfa-backdrop');
+            const content = document.getElementById('mfa-content');
+            const input = document.getElementById('mfa-code-input');
+
+            modal.classList.remove('hidden');
+            input.value = '';
+
+            // Animation
+            requestAnimationFrame(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('opacity-0', 'scale-95', 'translate-y-4');
+                content.classList.add('scale-100', 'translate-y-0');
+            });
+
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closeMfaModal() {
+            const modal = document.getElementById('mfa-modal');
+            const backdrop = document.getElementById('mfa-backdrop');
+            const content = document.getElementById('mfa-content');
+
+            backdrop.classList.add('opacity-0');
+            content.classList.add('opacity-0', 'scale-95', 'translate-y-4');
+            content.classList.remove('scale-100', 'translate-y-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                // Clear pending creds? Maybe not if just closing to retry? 
+                // Better to clear to require re-entry for security
+                window.pendingLoginPassword = null;
+            }, 300);
+        }
+
+        async function submitMfaLogin(e) {
+            e.preventDefault();
+            const code = document.getElementById('mfa-code-input').value.trim();
+            const btn = document.getElementById('mfa-submit-btn');
+
+            if (!code || code.length !== 6) {
+                showToast("Please enter a valid 6-digit code", "red");
+                return;
+            }
+
+            if (!window.pendingLoginEmail || !window.pendingLoginPassword) {
+                showToast("Session expired. Please login again.", "red");
+                closeMfaModal();
+                return;
+            }
+
+            const originalBtnContent = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(AUTH_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: window.pendingLoginEmail,
+                        password: window.pendingLoginPassword,
+                        totpCode: code
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.result === 'success') {
+                    // Success!
+                    localStorage.setItem('nongor_session_token', data.sessionToken);
+
+                    // Clear creds
+                    window.pendingLoginEmail = null;
+                    window.pendingLoginPassword = null;
+
+                    closeMfaModal();
+
+                    // Trigger success animation on main screen
+                    showSuccessAnimation();
+
+                    setTimeout(() => {
+                        checkAuth();
+                    }, 1000);
+
+                } else {
+                    throw new Error(data.message || "Verification failed");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "red");
+                document.getElementById('mfa-code-input').value = '';
+                document.getElementById('mfa-code-input').focus();
+            } finally {
+                btn.innerHTML = originalBtnContent;
+                btn.disabled = false;
+            }
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
 
@@ -3114,6 +3270,19 @@
                         }
                     }, 1500);
 
+                } else if (data.result === 'mfa_required') {
+                    // STORE CREDENTIALS TEMPORARILY
+                    window.pendingLoginEmail = email;
+                    window.pendingLoginPassword = password;
+
+                    // Show MFA Modal
+                    showMfaModal();
+
+                    // Reset login button state
+                    if (btn) {
+                        btn.innerHTML = pristineBtnHtml;
+                        btn.disabled = false;
+                    }
                 } else {
                     throw new Error(data.message || 'Login failed');
                 }
