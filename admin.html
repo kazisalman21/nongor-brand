@@ -5187,7 +5187,7 @@
             timelineContainer.innerHTML = '<div class="text-center text-gray-400 text-sm py-2">Loading history...</div>';
 
             try {
-                const res = await authenticatedFetch(`${API_URL}?action=getOrderEvents&orderId=${orderId}`);
+                const res = await authenticatedFetch(`${API_URL}?action=getOrderEvents&orderId=${encodeURIComponent(orderId)}`);
                 const data = await res.json();
 
                 if (data.result === 'success') {
