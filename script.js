@@ -319,6 +319,26 @@ window.applyAllFilters = () => {
     }, 300);
 };
 
+
+// Mobile Filter Toggle
+window.toggleFilters = () => {
+    const controls = document.getElementById('filter-controls');
+    const btnText = document.getElementById('filter-toggle-text');
+    const chevron = document.getElementById('filter-toggle-chevron');
+
+    if (controls.classList.contains('hidden')) {
+        controls.classList.remove('hidden');
+        controls.classList.add('flex');
+        btnText.textContent = 'Hide Filters';
+        chevron.style.transform = 'rotate(180deg)';
+    } else {
+        controls.classList.add('hidden');
+        controls.classList.remove('flex');
+        btnText.textContent = 'Show Filters';
+        chevron.style.transform = 'rotate(0deg)';
+    }
+};
+
 window.clearAllFilters = () => {
     document.getElementById('search-input').value = '';
     document.getElementById('min-price').value = '';
@@ -632,7 +652,7 @@ function createProductCard(product, index) {
     // Create image container with gradient overlay
     const imgContainer = document.createElement('div');
     imgContainer.className = 'relative overflow-hidden';
-    imgContainer.style.cssText = 'height: 280px;';
+    imgContainer.style.cssText = window.innerWidth < 640 ? 'height: 180px;' : 'height: 280px;';
 
     const img = document.createElement('img');
     img.src = product.image || './assets/logo.jpeg';

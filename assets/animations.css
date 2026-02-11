@@ -565,8 +565,6 @@ section {
     }
 }
 
-/* ===== REDUCED MOTION ===== */
-
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -576,4 +574,64 @@ section {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* ===== MOBILE RESPONSIVE FIXES ===== */
+
+/* Safe area for iPhones with gesture bar */
+.safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Product card text on mobile 2-col grid */
+@media (max-width: 639px) {
+    .product-card .p-5 {
+        padding: 0.75rem !important;
+    }
+
+    .product-card .text-lg {
+        font-size: 0.875rem !important;
+        line-height: 1.25rem !important;
+    }
+
+    .product-card .text-xl {
+        font-size: 1rem !important;
+    }
+
+    .product-card .text-sm {
+        font-size: 0.7rem !important;
+    }
+
+    .product-card .text-xs {
+        font-size: 0.625rem !important;
+    }
+
+    /* Modal padding on mobile */
+    #product-modal .p-8 {
+        padding: 1rem !important;
+    }
+
+    #product-modal .p-6 {
+        padding: 0.75rem !important;
+    }
+
+    /* Smaller FAB buttons on mobile */
+    .safe-bottom a {
+        padding: 0.625rem;
+    }
+
+    .safe-bottom .w-7 {
+        width: 1.375rem;
+        height: 1.375rem;
+    }
+}
+
+/* No-scrollbar utility for thumbnails */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
