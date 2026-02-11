@@ -325,10 +325,15 @@ module.exports = async (req, res) => {
                 WHERE username = 'admin'
             `, [secret.base32]);
 
+            // Generate QR Code Data URL
+            const qrcode = require('qrcode');
+            const qrDataUrl = await qrcode.toDataURL(secret.otpauth_url);
+
             return res.status(200).json({
                 result: 'success',
                 secret: secret.base32,
-                otpauthUrl: secret.otpauth_url
+                otpauthUrl: secret.otpauth_url,
+                qrDataUrl: qrDataUrl // Send pre-generated image data
             });
         }
 

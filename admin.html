@@ -2828,9 +2828,14 @@
                 const data = await res.json();
 
                 if (data.result === 'success') {
-                    // Generate QR using Google Charts API
-                    const qrUrl = `https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=${encodeURIComponent(data.otpauthUrl)}`;
-                    document.getElementById('totp-qr-img').src = qrUrl;
+                    // Use backend generated QR code
+                    if (data.qrDataUrl) {
+                        document.getElementById('totp-qr-img').src = data.qrDataUrl;
+                    } else {
+                        // Fallback (shouldn't be needed if backend updated)
+                        const qrUrl = `https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=${encodeURIComponent(data.otpauthUrl)}`;
+                        document.getElementById('totp-qr-img').src = qrUrl;
+                    }
                     area.classList.remove('hidden');
                 } else {
                     showToast(data.message || "Failed to start TOTP setup", "red");
