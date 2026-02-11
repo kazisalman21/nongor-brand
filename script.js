@@ -654,14 +654,17 @@ function createProductCard(product, index) {
 
     // Card hover effects (Desktop only)
     if (!isMobile) {
+        // Optimize: use will-change to hint browser
+        card.style.willChange = 'transform, box-shadow';
+
         card.onmouseenter = function () {
-            this.style.transform = 'translateY(-12px) scale(1.02)';
-            this.style.boxShadow = '0 25px 50px rgba(61, 64, 91, 0.15), 0 10px 20px rgba(224, 122, 95, 0.1)';
+            this.style.transform = 'translateY(-8px)'; // Reduced movement
+            this.style.boxShadow = '0 20px 40px rgba(61, 64, 91, 0.12)'; // Simpler shadow
             this.style.borderColor = 'rgba(224, 122, 95, 0.3)';
         };
         card.onmouseleave = function () {
-            this.style.transform = 'translateY(0) scale(1)';
-            this.style.boxShadow = '0 4px 20px rgba(61, 64, 91, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 20px rgba(61, 64, 91, 0.08)';
             this.style.borderColor = 'rgba(244, 241, 222, 0.8)';
         };
     }
@@ -682,17 +685,17 @@ function createProductCard(product, index) {
     img.alt = product.name || 'Product';
     img.className = 'w-full h-full object-cover';
     img.loading = 'lazy';
-    img.style.cssText = 'transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.5s ease;';
+    // Optimize: Remove filter transition, keep scale
+    img.style.cssText = 'transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; backface-visibility: hidden;';
 
     // Image hover zoom (Desktop only)
     if (!isMobile) {
         card.addEventListener('mouseenter', () => {
-            img.style.transform = 'scale(1.1)';
-            img.style.filter = 'brightness(1.05)';
+            img.style.transform = 'scale(1.08)'; // Reduced scale
+            // Removed brightness filter (expensive)
         });
         card.addEventListener('mouseleave', () => {
             img.style.transform = 'scale(1)';
-            img.style.filter = 'brightness(1)';
         });
     }
 
