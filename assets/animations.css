@@ -635,3 +635,14 @@ section {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* Custom Search Padding Override */
+.pl-custom-mobile {
+    padding-left: 3.5rem !important;
+}
+
+@media (min-width: 768px) {
+    .pl-custom-desktop {
+        padding-left: 5rem !important;
+    }
+}
