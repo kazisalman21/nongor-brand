@@ -152,6 +152,48 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
+            // --- GET SINGLE PRODUCT (Public) ---
+            if (query.action === 'getProduct') {
+                const productId = query.id;
+                const productSlug = query.slug;
+
+                if (!productId && !productSlug) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Product ID or slug is required' });
+                }
+
+                // Try cache first (if full list is cached, find from it)
+                const cached = cache.get(CACHE_KEYS.ALL_PRODUCTS);
+                if (cached) {
+                    let product = null;
+                    if (productId) {
+                        product = cached.find(p => p.id == productId);
+                    } else if (productSlug) {
+                        product = cached.find(p => p.slug === productSlug);
+                    }
+                    if (product) {
+                        client.release();
+                        return res.status(200).json({ result: 'success', data: product, cached: true });
+                    }
+                }
+
+                // Fallback: Query DB directly
+                let result;
+                if (productId) {
+                    result = await client.query('SELECT * FROM products WHERE id = $1 AND is_active = true', [productId]);
+                } else {
+                    result = await client.query('SELECT * FROM products WHERE slug = $1 AND is_active = true', [productSlug]);
+                }
+
+                client.release();
+
+                if (result.rows.length === 0) {
+                    return res.status(404).json({ result: 'error', message: 'Product not found' });
+                }
+
+                return res.status(200).json({ result: 'success', data: result.rows[0] });
+            }
+
             // --- GET ALL PRODUCTS (Admin) ---
             if (query.action === 'getAllProducts') {
                 const auth = await verifySession(req, client);

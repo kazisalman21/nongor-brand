@@ -377,24 +377,20 @@
 
         async function loadProduct(id, slug) {
             try {
-                // Fetch all products is inefficient but current API is limited.
-                // Ideally we should have api?action=getProduct&id=... or &slug=...
-                // But for now, getProducts returns all.
-                const res = await fetch(`${API_URL}?action=getProducts`);
+                // Use dedicated single-product endpoint for efficiency
+                let url = `${API_URL}?action=getProduct`;
+                if (id) url += `&id=${encodeURIComponent(id)}`;
+                else if (slug) url += `&slug=${encodeURIComponent(slug)}`;
+
+                const res = await fetch(url);
                 const data = await res.json();
 
-                if (data.result !== 'success') throw new Error('Failed to load');
-
-                if (id) {
-                    currentProduct = data.data.find(p => p.id == id);
-                } else if (slug) {
-                    currentProduct = data.data.find(p => p.slug === slug);
-                }
-
-                if (!currentProduct) {
+                if (data.result !== 'success' || !data.data) {
                     showError();
                     return;
                 }
+
+                currentProduct = data.data;
 
                 renderProduct(currentProduct);
                 updateMetaTags(currentProduct);
@@ -426,8 +422,8 @@
             // Description
             document.getElementById('product-description').textContent = product.description || 'Premium quality Bangladeshi clothing.';
 
-            // Stock
             const stock = parseInt(product.stock_quantity) || 0;
+            window.maxStock = stock; // Store for quantity limiter
             const stockEl = document.getElementById('stock-status');
             if (stock > 0) {
                 stockEl.innerHTML = `<span class="w-2 h-2 bg-green-500 rounded-full"></span><span class="text-sm text-green-600 font-medium">In Stock (${stock} available)</span>`;
@@ -501,7 +497,8 @@
         }
 
         function updateQty(delta) {
-            window.quantity = Math.min(10, Math.max(1, window.quantity + delta));
+            const maxQty = Math.min(10, window.maxStock || 10);
+            window.quantity = Math.min(maxQty, Math.max(1, window.quantity + delta));
             document.getElementById('qty-display').textContent = window.quantity;
         }
 
