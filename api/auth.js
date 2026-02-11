@@ -30,7 +30,12 @@ module.exports = async (req, res) => {
         try { req.body = JSON.parse(req.body); } catch (e) { }
     }
     const body = sanitizeObject(req.body || {});
-    const { action, email, password, sessionToken, token, newPassword, confirmPassword } = body;
+    let { action, email, password, sessionToken, token, newPassword, confirmPassword } = body;
+
+    // Extract sessionToken from header if not in body
+    if (!sessionToken && req.headers['x-session-token']) {
+        sessionToken = req.headers['x-session-token'];
+    }
 
     let client;
     const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '';
@@ -1083,6 +1088,33 @@ module.exports = async (req, res) => {
             return res.status(200).json({
                 result: 'success',
                 message: 'Telegram enabled successfully! You can now receive password reset codes via Telegram.'
+            });
+        }
+
+        // ============================================
+        // ACTION: GET RESET METHODS (MFA STATUS)
+        // ============================================
+        if (action === 'getResetMethods') {
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0) {
+                return res.status(401).json({ result: 'error', message: 'Invalid session.' });
+            }
+
+            const adminRes = await client.query(`SELECT totp_enabled, telegram_enabled FROM admin_users WHERE username = 'admin'`);
+            let methods = { totp: false, telegram: false };
+
+            if (adminRes.rows.length > 0) {
+                methods.totp = adminRes.rows[0].totp_enabled || false;
+                methods.telegram = adminRes.rows[0].telegram_enabled || false;
+            }
+
+            return res.status(200).json({
+                result: 'success',
+                methods: methods
             });
         }
 
