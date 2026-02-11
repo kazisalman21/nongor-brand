@@ -109,6 +109,18 @@
 
     <!-- Premium Animations CSS (extracted for performance) -->
     <link rel="stylesheet" href="./assets/animations.css">
+    <style>
+        /* Force Search Input Padding to fix overlap */
+        #search-input {
+            padding-left: 3.5rem !important;
+        }
+
+        @media (min-width: 768px) {
+            #search-input {
+                padding-left: 5rem !important;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-brand-light text-brand-deep font-sans antialiased overflow-x-hidden">
