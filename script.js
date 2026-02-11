@@ -651,8 +651,8 @@ function createProductCard(product, index) {
 
     // Create image container with gradient overlay
     const imgContainer = document.createElement('div');
-    imgContainer.className = 'relative overflow-hidden';
-    imgContainer.style.cssText = window.innerWidth < 640 ? 'height: 180px;' : 'height: 280px;';
+    imgContainer.className = 'relative overflow-hidden w-full';
+    imgContainer.style.cssText = 'aspect-ratio: 3/4;';
 
     const img = document.createElement('img');
     img.src = product.image || './assets/logo.jpeg';
@@ -749,10 +749,7 @@ function createProductCard(product, index) {
     price.className = 'font-bold';
     price.style.cssText = `
         font-size: 1.5rem;
-        background: linear-gradient(135deg, #E07A5F 0%, #d4694f 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #E07A5F;
     `;
     const priceValue = parseFloat(product.price) || 0;
     price.textContent = `৳${priceValue.toLocaleString()}`;
@@ -760,12 +757,11 @@ function createProductCard(product, index) {
 
     // Premium button with ripple effect
     const button = document.createElement('button');
-    button.className = 'relative overflow-hidden text-white px-7 py-3 rounded-full font-semibold text-base';
+    button.className = 'relative overflow-hidden text-white px-5 py-2 rounded-lg font-medium text-sm md:px-6 md:py-2.5';
     button.style.cssText = `
-        background: linear-gradient(135deg, #3D405B 0%, #2d3047 100%);
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 15px rgba(61, 64, 91, 0.25);
-        min-width: 110px;
+        background: #3D405B;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(61, 64, 91, 0.2);
     `;
 
     button.textContent = 'বিস্তারিত';
