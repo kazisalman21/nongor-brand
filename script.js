@@ -621,208 +621,83 @@ function renderProducts(products) {
 // CREATE PRODUCT CARD ELEMENT (PREMIUM VERSION)
 // ==============================================
 function createProductCard(product, index) {
-    // Validate product
-    if (!product || !product.id) {
-        console.error('Invalid product object:', product);
-        return document.createElement('div');
-    }
+    if (!product || !product.id) return document.createElement('div');
 
-    // Create card container with premium styling
     const card = document.createElement('div');
-    card.className = 'product-card group relative bg-white rounded-2xl overflow-hidden cursor-pointer animate-fade-in-up';
-    card.style.cssText = `
-        animation-delay: ${index * 0.1}s;
-        box-shadow: 0 4px 20px rgba(61, 64, 91, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        border: 1px solid rgba(244, 241, 222, 0.8);
-    `;
+    card.className = 'product-card group relative bg-white rounded-2xl overflow-hidden cursor-pointer animate-fade-in-up border border-[#F4F1DE]/80 hover:border-[#E07A5F]/30 hover:shadow-[0_25px_50px_rgba(61,64,91,0.15)] transition-all duration-500';
+    card.style.animationDelay = `${index * 0.1}s`;
 
-    // Card hover effects
-    card.onmouseenter = function () {
-        this.style.transform = 'translateY(-12px) scale(1.02)';
-        this.style.boxShadow = '0 25px 50px rgba(61, 64, 91, 0.15), 0 10px 20px rgba(224, 122, 95, 0.1)';
-        this.style.borderColor = 'rgba(224, 122, 95, 0.3)';
-    };
-    card.onmouseleave = function () {
-        this.style.transform = 'translateY(0) scale(1)';
-        this.style.boxShadow = '0 4px 20px rgba(61, 64, 91, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)';
-        this.style.borderColor = 'rgba(244, 241, 222, 0.8)';
-    };
-
-    // Create image container with gradient overlay
+    // Image Container
     const imgContainer = document.createElement('div');
-    imgContainer.className = 'relative overflow-hidden';
-    // Responsive height: 180px on mobile, 280px on desktop
-    imgContainer.style.cssText = window.innerWidth < 640 ? 'height: 180px;' : 'height: 280px;';
+    // Mobile: aspect-[3/4], Desktop: h-[280px]
+    imgContainer.className = 'relative overflow-hidden w-full aspect-[3/4] md:aspect-auto md:h-[280px]';
 
     const img = document.createElement('img');
     img.src = product.image || './assets/logo.jpeg';
-    img.alt = product.name || 'Product';
-    img.className = 'w-full h-full object-cover';
+    img.className = 'w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110';
     img.loading = 'lazy';
-    img.style.cssText = 'transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.5s ease;';
 
-    // Image hover zoom
-    card.addEventListener('mouseenter', () => {
-        img.style.transform = 'scale(1.1)';
-        img.style.filter = 'brightness(1.05)';
-    });
-    card.addEventListener('mouseleave', () => {
-        img.style.transform = 'scale(1)';
-        img.style.filter = 'brightness(1)';
-    });
-
-    // Image fallback
-    let fallbackAttempted = false;
-    img.onerror = function () {
-        if (!fallbackAttempted) {
-            fallbackAttempted = true;
-            this.src = './assets/logo.jpeg';
-            console.warn('⚠️ Image failed, using fallback for:', product.name);
-        } else {
-            this.onerror = null;
-            console.error('❌ Fallback image also failed');
-        }
-    };
-
-    // Gradient overlay for depth
+    // Add overlays
     const overlay = document.createElement('div');
-    overlay.className = 'absolute inset-0 pointer-events-none';
-    overlay.style.cssText = 'background: linear-gradient(180deg, transparent 50%, rgba(61, 64, 91, 0.03) 100%);';
-
-    // Shine effect element
-    const shine = document.createElement('div');
-    shine.className = 'absolute inset-0 pointer-events-none';
-    shine.style.cssText = `
-        background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.4) 55%, transparent 60%);
-        transform: translateX(-100%) skewX(-15deg);
-        transition: transform 0.7s ease;
-    `;
-    card.addEventListener('mouseenter', () => {
-        shine.style.transform = 'translateX(100%) skewX(-15deg)';
-    });
-    card.addEventListener('mouseleave', () => {
-        shine.style.transform = 'translateX(-100%) skewX(-15deg)';
-    });
+    overlay.className = 'absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#3d405b]/5';
 
     imgContainer.appendChild(img);
     imgContainer.appendChild(overlay);
-    imgContainer.appendChild(shine);
 
-    // Create content section with premium padding
+    // Content
     const content = document.createElement('div');
-    content.className = 'p-5 relative';
-    content.style.cssText = 'background: linear-gradient(180deg, #ffffff 0%, #fdfcfa 100%);';
+    content.className = 'p-3 md:p-5 relative bg-gradient-to-b from-white to-[#fdfcfa]';
 
-    // Category badge with gradient
+    // Category
     const category = document.createElement('span');
-    category.className = 'inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full mb-3';
-    category.style.cssText = `
-        background: linear-gradient(135deg, rgba(224, 122, 95, 0.12) 0%, rgba(224, 122, 95, 0.08) 100%);
-        color: #E07A5F;
-        letter-spacing: 0.5px;
-        border: 1px solid rgba(224, 122, 95, 0.15);
-    `;
+    category.className = 'inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full mb-2 bg-[#E07A5F]/10 text-[#E07A5F] border border-[#E07A5F]/20';
     category.textContent = product.category_name || product.category?.name || 'অন্যান্য';
 
-    // Product name with premium typography
+    // Title
     const title = document.createElement('h3');
-    title.className = 'font-bold text-brand-deep mb-2 line-clamp-2 font-bengali leading-tight';
-    title.style.cssText = 'font-size: 1.15rem; transition: color 0.3s ease;';
+    title.className = 'font-bold text-brand-deep mb-1 md:mb-2 line-clamp-2 font-bengali leading-tight text-lg md:text-[1.15rem]';
     title.textContent = product.name || 'Unknown Product';
 
-    // Description with refined styling
+    // Description
     const description = document.createElement('p');
-    description.className = 'text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed';
-    description.style.cssText = 'font-weight: 400;';
+    description.className = 'text-gray-500 text-sm mb-3 md:mb-4 line-clamp-2 leading-relaxed';
     description.textContent = product.description || '';
 
-    // Price and button container
+    // Footer
     const footer = document.createElement('div');
-    footer.className = 'flex items-center justify-between mt-auto pt-4';
-    footer.style.cssText = 'border-top: 1px solid rgba(244, 241, 222, 0.6);';
+    footer.className = 'flex items-center justify-between mt-auto pt-3 md:pt-4 border-t border-[#F4F1DE]/60';
 
-    // Price with gradient text effect
+    // Price
     const priceContainer = document.createElement('div');
     priceContainer.className = 'flex flex-col';
-
     const price = document.createElement('span');
-    price.className = 'font-bold';
-    price.style.cssText = `
-        font-size: 1.5rem;
-        background: linear-gradient(135deg, #E07A5F 0%, #d4694f 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    `;
-    const priceValue = parseFloat(product.price) || 0;
-    price.textContent = `৳${priceValue.toLocaleString()}`;
+    // Mobile: Solid Color, Desktop: Gradient
+    price.className = 'font-bold text-xl md:text-2xl text-[#E07A5F] md:text-transparent md:bg-clip-text md:bg-gradient-to-br md:from-[#E07A5F] md:to-[#d4694f]';
+    price.textContent = `৳${(parseFloat(product.price) || 0).toLocaleString()}`;
     priceContainer.appendChild(price);
 
-    // Premium button with ripple effect
+    // Button
     const button = document.createElement('button');
-    button.className = 'relative overflow-hidden text-white px-7 py-3 rounded-full font-semibold text-base';
-    button.style.cssText = `
-        background: linear-gradient(135deg, #3D405B 0%, #2d3047 100%);
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 15px rgba(61, 64, 91, 0.25);
-        min-width: 110px;
-    `;
-
+    // Mobile: Simple Dark, Desktop: Gradient & Rounded-Full
+    button.className = 'relative overflow-hidden text-white font-medium text-sm md:text-base px-4 py-1.5 md:px-7 md:py-3 rounded-lg md:rounded-full transition-all duration-300 shadow-md md:shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 bg-[#3D405B] md:bg-gradient-to-br md:from-[#3D405B] md:to-[#2d3047]';
     button.textContent = 'বিস্তারিত';
 
-    // Button hover effects
-    button.onmouseenter = function () {
-        this.style.background = 'linear-gradient(135deg, #E07A5F 0%, #d4694f 100%)';
-        this.style.transform = 'scale(1.05)';
-        this.style.boxShadow = '0 6px 20px rgba(224, 122, 95, 0.4)';
-    };
-    button.onmouseleave = function () {
-        this.style.background = 'linear-gradient(135deg, #3D405B 0%, #2d3047 100%)';
-        this.style.transform = 'scale(1)';
-        this.style.boxShadow = '0 4px 15px rgba(61, 64, 91, 0.25)';
-    };
-    button.onmousedown = function () {
-        this.style.transform = 'scale(0.95)';
-    };
-    button.onmouseup = function () {
-        this.style.transform = 'scale(1.05)';
-    };
-
-    button.onclick = function (e) {
+    button.onclick = (e) => {
         e.stopPropagation();
-        // openModal(product.id); 
-        if (product.slug) {
-            window.location.href = `/p/${product.slug}`;
-        } else {
-            window.location.href = `product.html?id=${product.id}`;
-        }
+        const url = product.slug ? `/p/${product.slug}` : `product.html?id=${product.id}`;
+        window.location.href = url;
     };
 
-    // Also make card clickable
-    card.onclick = function () {
-        // openModal(product.id); // Old Modal Logic
-        // Navigate to Single Product Page (Premium)
-        if (product.slug) {
-            window.location.href = `/p/${product.slug}`;
-        } else {
-            window.location.href = `product.html?id=${product.id}`;
-        }
-    };
-
-    // Assemble footer
     footer.appendChild(priceContainer);
     footer.appendChild(button);
 
-    // Assemble content
-    content.appendChild(category);
-    content.appendChild(title);
-    content.appendChild(description);
-    content.appendChild(footer);
+    content.append(category, title, description, footer);
+    card.append(imgContainer, content);
 
-    // Assemble card
-    card.appendChild(imgContainer);
-    card.appendChild(content);
+    card.onclick = () => {
+        const url = product.slug ? `/p/${product.slug}` : `product.html?id=${product.id}`;
+        window.location.href = url;
+    };
 
     return card;
 }
