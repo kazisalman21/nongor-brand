@@ -1249,10 +1249,15 @@ module.exports = async (req, res) => {
 
             const insertQuery = `
                 INSERT INTO orders 
-                (order_id, customer_name, phone, address, product_name, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+                (order_id, customer_name, phone, address, product_name, product_id, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
                 RETURNING *
             `;
+
+            // Extract primary product ID (from first item)
+            // If strictly single product per order in 'orders' table design, this matches.
+            // If multiple, this just serves as a reference (e.g. for main thumbnail).
+            const primaryProductId = (orderItemsToInsert.length > 0) ? orderItemsToInsert[0].product_id : null;
 
             const values = [
                 generatedOrderId, // Use server-generated ID
@@ -1260,6 +1265,7 @@ module.exports = async (req, res) => {
                 data.customerPhone,
                 data.address,
                 data.productName,
+                primaryProductId, // Added product_id
                 finalTotal, // Use Server Calculated Total (with discount)
                 initialDelivery,
                 initialDelivery,

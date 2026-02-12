@@ -1737,6 +1737,7 @@ window.confirmOrderFromPage = async () => {
 
     const orderData = {
         // orderId: generated on server
+        productId: (window.checkoutPayload && window.checkoutPayload.length > 0) ? window.checkoutPayload[0].id : null,
         customerName: name,
         customerEmail: email,
         customerPhone: fullPhone,
@@ -1921,6 +1922,8 @@ window.confirmOrder = async () => {
 
     const orderData = {
         // orderId: Generated on server
+        // Add primary product ID to payload for easier server handling (optional but requested)
+        productId: (window.checkoutPayload && window.checkoutPayload.length > 0) ? window.checkoutPayload[0].id : null,
         customerName: name,
         customerPhone: phone,
         address: address,
