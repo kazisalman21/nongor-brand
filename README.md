@@ -314,6 +314,7 @@ const RATE_LIMITS = {
 | `shipping_fee` | DECIMAL(10,2) | - | Delivery charge |
 | `discount` | DECIMAL(10,2) | DEFAULT 0 | Coupon discount |
 | `total` | DECIMAL(10,2) | NOT NULL | Final total |
+| `product_id` | INTEGER | - | Primary product ID |
 | `tracking_token` | VARCHAR(64) | UNIQUE | Secure tracking ID |
 | `notes` | TEXT | - | Admin notes |
 | `created_at` | TIMESTAMP | DEFAULT NOW() | Order date |
@@ -677,7 +678,7 @@ nongor-brand/
 │   ├── cors.js                     # CORS middleware
 │   ├── db.js                       # Database connection pool
 │   ├── sanitize.js                 # Input sanitization
-│   └── product_page.js             # Product page API
+│   └── product_page.js             # Product page API (SSR)
 │
 ├── 📁 utils/                        # Utility Functions
 │   ├── email.js                    # SendGrid integration
