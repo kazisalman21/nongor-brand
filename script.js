@@ -1107,6 +1107,7 @@ function handleLightboxEscape(e) {
 
 window.selectSize = (size) => {
     selectedSize = size;
+    window.selectedSize = size; // Sync for product.html page which reads window.selectedSize
     document.querySelectorAll('.size-btn').forEach(btn => {
         const btnSize = btn.innerText.trim();
         // Premium selected state
