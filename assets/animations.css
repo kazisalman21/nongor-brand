@@ -725,7 +725,6 @@ section {
 }
 
 /* ===== SEARCH BAR ICON POSITIONING FIX ===== */
-/* Explicitly position the search icon so it doesn't overlap text */
 .search-bar {
     position: relative !important;
 }
@@ -738,10 +737,50 @@ section {
     z-index: 10 !important;
 }
 
+.search-bar>input {
+    padding-left: 3.5rem !important;
+}
+
 @media (min-width: 768px) {
     .search-bar>div {
         left: 1rem !important;
     }
+
+    .search-bar>input {
+        padding-left: 4.5rem !important;
+    }
+}
+
+/* ===== IN STOCK TOGGLE KNOB FIX ===== */
+/* The toggle track and knob need explicit positioning since Tailwind utilities are missing */
+#instock-toggle~div:first-of-type {
+    /* Track */
+    width: 2.5rem !important;
+    height: 1.5rem !important;
+    background-color: #e5e7eb !important;
+    border-radius: 9999px !important;
+    transition: background-color 300ms ease !important;
+}
+
+#instock-toggle:checked~div:first-of-type {
+    background-color: #E07A5F !important;
+}
+
+#instock-toggle~div:last-of-type {
+    /* Knob */
+    position: absolute !important;
+    left: 0.25rem !important;
+    top: 0.25rem !important;
+    width: 1rem !important;
+    height: 1rem !important;
+    background-color: white !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    transition: transform 300ms ease !important;
+}
+
+#instock-toggle:checked~div:last-of-type {
+    transform: translateX(1rem) !important;
 }
 
 /* ===== PREMIUM "GOLDEN STITCH" ANIMATION ===== */
