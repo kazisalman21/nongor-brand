@@ -63,50 +63,9 @@
 
 <body class="bg-white font-sans text-brand-deep antialiased">
 
-    <!-- Cinematic Loading Overlay -->
-    <div id="app-loading-overlay"
-        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
-
-        <!-- Central Content -->
-        <div class="relative flex flex-col items-center">
-
-            <!-- Logo with Slow Zoom -->
-            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
-                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
-                <img src="./assets/logo.jpeg" alt="Nongor" class="w-24 h-24 object-cover"
-                    style="animation: subtle-zoom 20s infinite alternate">
-            </div>
-
-            <!-- Brand Name -->
-            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-wide font-light"
-                style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
-
-            <!-- Minimal Progress Line -->
-            <div class="w-32 h-[2px] bg-brand-deep/50 mt-8 overflow-hidden rounded-full relative">
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-terracotta to-transparent w-full h-full"
-                    style="animation: shimmer-flow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite"></div>
-            </div>
-
-        </div>
-    </div>
-    <!-- Failsafe: Remove overlay after 5s even if modules fail -->
-    <script>setTimeout(function () { var o = document.getElementById('app-loading-overlay'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
-
-    <!-- Simple Header -->
-    <header class="bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm border-b border-gray-100">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <a href="index.html" class="flex items-center gap-3">
-                <img src="./assets/logo.jpeg" alt="নোঙর" class="h-10 rounded-lg">
-                <span class="text-2xl font-serif font-bold text-brand-deep">নোঙর</span>
-            </a>
-            <a href="index.html#collection"
-                class="text-sm font-medium text-gray-600 hover:text-brand-terracotta transition">← Back to Shop</a>
-        </div>
-    </header>
-
-    <!-- Loading State (shown after cinematic overlay fades, while API fetches) -->
+    <!-- Loading State -->
     <div id="product-loading"
-        class="flex flex-col items-center justify-center min-h-[80vh] w-full bg-white fixed inset-0 z-40 pt-20 animate-fabric-bg">
+        class="flex flex-col items-center justify-center min-h-screen w-full bg-white fixed inset-0 z-[9999] animate-fabric-bg">
         <div class="relative flex flex-col items-center">
             <!-- Premium Anchor Stitch Animation -->
             <div class="relative w-24 h-24 mb-6">
@@ -134,6 +93,20 @@
 
         </div>
     </div>
+    <!-- Failsafe: Remove loading after 8s even if JS fails -->
+    <script>setTimeout(function () { var o = document.getElementById('product-loading'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 8000);</script>
+
+    <!-- Simple Header -->
+    <header class="bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="./assets/logo.jpeg" alt="নোঙর" class="h-10 rounded-lg">
+                <span class="text-2xl font-serif font-bold text-brand-deep">নোঙর</span>
+            </a>
+            <a href="index.html#collection"
+                class="text-sm font-medium text-gray-600 hover:text-brand-terracotta transition">← Back to Shop</a>
+        </div>
+    </header>
 
     <!-- Error State -->
     <div id="product-error" class="hidden flex items-center justify-center min-h-[60vh]">
@@ -465,16 +438,17 @@
             window.currentSizeType = 'standard';
             window.currentMeasurementUnit = 'inch';
 
+            const ANIMATION_MIN_TIME = 3000; // Let animation play at least 3s
+            const animStart = Date.now();
+
             // 1. Check for Preloaded Data (SSR)
             if (window.preloadedProduct) {
                 console.log('⚡ Hydrating from SSR data...');
                 currentProduct = window.preloadedProduct;
                 renderProduct(currentProduct);
-                // Tags already set by server, no need to updateMetaTags
-                // Remove both loading states
-                removeLoadingOverlay();
-                document.getElementById('product-loading').classList.add('hidden');
-                document.getElementById('product-content').classList.remove('hidden');
+                const elapsed = Date.now() - animStart;
+                const remaining = Math.max(0, ANIMATION_MIN_TIME - elapsed);
+                setTimeout(() => revealContent(), remaining);
                 return;
             }
 
@@ -519,10 +493,10 @@
 
                 renderProduct(currentProduct);
                 updateMetaTags(currentProduct);
-                // Remove both loading states
-                removeLoadingOverlay();
-                document.getElementById('product-loading').classList.add('hidden');
-                document.getElementById('product-content').classList.remove('hidden');
+                // Wait for animation to finish, then reveal
+                const elapsed = Date.now() - animStart;
+                const remaining = Math.max(0, ANIMATION_MIN_TIME - elapsed);
+                setTimeout(() => revealContent(), remaining);
 
             } catch (e) {
                 console.error(e);
@@ -531,19 +505,19 @@
         }
 
         function showError() {
-            removeLoadingOverlay();
-            document.getElementById('product-loading').classList.add('hidden');
+            revealContent();
             document.getElementById('product-error').classList.remove('hidden');
         }
 
-        function removeLoadingOverlay() {
-            const overlay = document.getElementById('app-loading-overlay');
-            if (overlay) {
-                overlay.style.pointerEvents = 'none';
-                overlay.style.transition = 'opacity 0.8s ease';
-                overlay.style.opacity = '0';
-                setTimeout(() => overlay.remove(), 900);
+        function revealContent() {
+            const loader = document.getElementById('product-loading');
+            if (loader) {
+                loader.style.pointerEvents = 'none';
+                loader.style.transition = 'opacity 0.8s ease';
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 900);
             }
+            document.getElementById('product-content').classList.remove('hidden');
         }
 
         function renderProduct(product) {
