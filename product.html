@@ -431,15 +431,14 @@
         window.quantity = 1;
         window.selectedSize = null;
         let currentProduct = null;
+        const ANIMATION_MIN_TIME = 3000; // Let animation play at least 3s
+        const animStart = Date.now();
 
         // Init on load
         document.addEventListener('DOMContentLoaded', async () => {
             // Reset state
             window.currentSizeType = 'standard';
             window.currentMeasurementUnit = 'inch';
-
-            const ANIMATION_MIN_TIME = 3000; // Let animation play at least 3s
-            const animStart = Date.now();
 
             // 1. Check for Preloaded Data (SSR)
             if (window.preloadedProduct) {
