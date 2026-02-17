@@ -724,6 +724,26 @@ section {
     }
 }
 
+/* ===== SEARCH BAR ICON POSITIONING FIX ===== */
+/* Explicitly position the search icon so it doesn't overlap text */
+.search-bar {
+    position: relative !important;
+}
+
+.search-bar>div {
+    position: absolute !important;
+    left: 0.75rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10 !important;
+}
+
+@media (min-width: 768px) {
+    .search-bar>div {
+        left: 1rem !important;
+    }
+}
+
 /* ===== PREMIUM "GOLDEN STITCH" ANIMATION ===== */
 
 /* Thread Weaving Effect */
