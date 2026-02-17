@@ -555,7 +555,7 @@ window.trackOrder = async function () {
             document.getElementById('track-delivery-date').textContent = order.delivery_date || 'Processing...';
 
         } else {
-            showToast("Order not found! (অর্ডারটি পাওয়া যায়নি)", 'error');
+            showToast("Order not found! (অর্ডারটি পাওয়া যায়নি)", 'error');
             document.getElementById('track-result').classList.add('hidden');
         }
 
@@ -567,3 +567,36 @@ window.trackOrder = async function () {
         trackBtn.disabled = false;
     }
 };
+
+// --- Copy Order ID to Clipboard ---
+window.copyOrderId = function () {
+    const orderIdEl = document.getElementById('success-order-id');
+    if (!orderIdEl) return;
+
+    const orderId = orderIdEl.textContent.trim();
+    navigator.clipboard.writeText(orderId).then(() => {
+        // Show check icon, hide copy icon (supports both index.html and checkout.html)
+        const copyIcon = document.getElementById('copy-icon') || document.getElementById('copy-icon-checkout');
+        const checkIcon = document.getElementById('check-icon') || document.getElementById('check-icon-checkout');
+
+        if (copyIcon) copyIcon.classList.add('hidden');
+        if (checkIcon) checkIcon.classList.remove('hidden');
+
+        showToast('Order ID copied! 📋');
+
+        setTimeout(() => {
+            if (copyIcon) copyIcon.classList.remove('hidden');
+            if (checkIcon) checkIcon.classList.add('hidden');
+        }, 2000);
+    }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = orderId;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Order ID copied! 📋');
+    });
+};
+

@@ -542,12 +542,7 @@
     <!-- Scripts -->
     <script type="module" src="./script.js?v=3"></script>
     <script>
-        // Init Checkout Page
-        document.addEventListener('DOMContentLoaded', () => {
-            initCheckout();
-        });
-
-        // Custom Validation Handler
+        // Custom Validation Handler (page-specific, not in modules)
         function handleCheckoutSubmit(e) {
             e.preventDefault();
 
