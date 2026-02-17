@@ -289,8 +289,7 @@ window.clearAllFilters = () => {
     renderProducts(allProducts);
 };
 
-// Legacy function for backward compatibility
-window.applyPriceFilter = applyAllFilters;
+// Legacy function for backward compatibility (set after applyAllFilters is defined below)
 
 
 // ==============================================
@@ -411,6 +410,9 @@ window.applyAllFilters = () => {
 
     }, 500);
 };
+
+// Legacy backward compatibility alias (must be AFTER applyAllFilters is defined)
+window.applyPriceFilter = window.applyAllFilters;
 
 // (filterProducts is now defined in initCategories above with enhanced animations)
 

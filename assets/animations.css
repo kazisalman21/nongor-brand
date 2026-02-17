@@ -636,9 +636,59 @@ section {
     scrollbar-width: none;
 }
 
+/* ===== SR-ONLY (Screen Reader Only) ===== */
+/* Missing from compiled Tailwind build */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border-width: 0 !important;
+}
+
+/* ===== PEER-CHECKED TOGGLE FIX ===== */
+/* Tailwind peer-checked utilities not in compiled build */
+.peer:checked~.peer-checked\:bg-brand-terracotta {
+    background-color: #E07A5F !important;
+}
+
+.peer:checked~.peer-checked\:translate-x-4 {
+    transform: translateX(1rem) !important;
+}
+
+/* Checkout radio buttons - delivery area & payment */
+.peer:checked~.peer-checked\:border-brand-terracotta {
+    border-color: #E07A5F !important;
+}
+
+.peer:checked~.peer-checked\:bg-brand-terracotta\/5 {
+    background-color: rgba(224, 122, 95, 0.05) !important;
+}
+
+.peer:checked~div .peer-checked\:text-brand-terracotta {
+    color: #E07A5F !important;
+}
+
+/* bKash payment option */
+.peer:checked~.peer-checked\:border-pink-500 {
+    border-color: #ec4899 !important;
+}
+
+.peer:checked~.peer-checked\:bg-pink-50\/30 {
+    background-color: rgba(253, 242, 248, 0.3) !important;
+}
+
+.peer:checked~.peer-checked\:from-pink-500\/5 {
+    --tw-gradient-from: rgba(236, 72, 153, 0.05) !important;
+}
+
 /* Custom Search Padding Override */
 .pl-custom-mobile {
-    padding-left: 3.5rem !important;
+    padding-left: 4rem !important;
 }
 
 @media (min-width: 768px) {
