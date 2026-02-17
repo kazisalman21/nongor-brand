@@ -93,13 +93,17 @@
             </div>
 
             <!-- Text Reveal -->
-            <h3 class="mt-2 text-2xl font-serif text-brand-deep tracking-[0.2em] uppercase relative overflow-hidden">
-                <span class="relative z-10">Nongor</span>
+            <h3 class="mt-4 text-2xl font-serif tracking-[0.3em] uppercase relative">
+                <!-- Base Layer (Ghost Text) -->
+                <span class="text-gray-200">Nongor</span>
+                <!-- Fill Layer (Animated) -->
                 <span
-                    class="absolute inset-0 bg-brand-deep text-white animate-liquid-fill z-20 mix-blend-screen">Nongor</span>
+                    class="absolute inset-0 text-brand-deep animate-liquid-fill overflow-hidden whitespace-nowrap border-r-2 border-brand-terracotta/50 pr-1"
+                    style="animation-timing-function: cubic-bezier(0.8, 0, 0.2, 1);">Nongor</span>
             </h3>
-            <p class="text-xs text-brand-terracotta font-sans tracking-widest mt-2 uppercase opacity-80 animate-pulse">
-                Handcrafting...</p>
+            <p class="text-[10px] text-brand-terracotta font-sans tracking-[0.3em] mt-3 uppercase opacity-0 animate-fade-in-up"
+                style="animation-delay: 1.5s">Handcrafting...</p>
+
         </div>
     </div>
 
