@@ -821,9 +821,18 @@ function createProductCard(product, index) {
 // ==============================================
 function showLoading(container) {
     container.innerHTML = `
-        <div class="col-span-full flex flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-brand-terracotta mb-4"></div>
-            <p class="text-gray-500 text-lg">পণ্য লোড হচ্ছে...</p>
+        <div class="col-span-full flex flex-col items-center justify-center py-20 animate-fade-in">
+            <div class="relative flex flex-col items-center">
+                <!-- Premium Spinner -->
+                <div class="w-16 h-16 border-4 border-brand-terracotta/20 border-t-brand-terracotta rounded-full animate-spin mb-4"></div>
+                
+                <!-- Brand Pulse -->
+                <div class="absolute top-0 left-0 w-16 h-16 bg-brand-terracotta/10 rounded-full animate-ping opacity-75"></div>
+
+                <!-- Text -->
+                <h3 class="mt-4 text-xl font-serif text-brand-deep tracking-widest uppercase animate-pulse">Nongor</h3>
+                <p class="text-xs text-gray-400 font-sans tracking-wide mt-1">লোড হচ্ছে...</p>
+            </div>
         </div>
     `;
 }

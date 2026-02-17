@@ -76,12 +76,22 @@
     </header>
 
     <!-- Loading State -->
-    <div id="product-loading" class="flex items-center justify-center min-h-[60vh]">
-        <div class="text-center">
+    <!-- Loading State -->
+    <div id="product-loading"
+        class="flex flex-col items-center justify-center min-h-[80vh] w-full bg-white fixed inset-0 z-40 pt-20">
+        <div class="relative flex flex-col items-center">
+            <!-- Premium Spinner -->
             <div
-                class="animate-spin w-12 h-12 border-4 border-brand-terracotta border-t-transparent rounded-full mx-auto mb-4">
+                class="w-16 h-16 border-4 border-brand-terracotta/20 border-t-brand-terracotta rounded-full animate-spin mb-4">
             </div>
-            <p class="text-gray-500">Loading product...</p>
+
+            <!-- Brand Pulse -->
+            <div class="absolute top-0 left-0 w-16 h-16 bg-brand-terracotta/10 rounded-full animate-ping opacity-75">
+            </div>
+
+            <!-- Text -->
+            <h3 class="mt-4 text-xl font-serif text-brand-deep tracking-widest uppercase animate-pulse">Nongor</h3>
+            <p class="text-xs text-gray-400 font-sans tracking-wide mt-1">Wait for a moment...</p>
         </div>
     </div>
 
