@@ -81,71 +81,32 @@
     <!-- Failsafe: Remove overlay after 5s even if modules fail -->
     <script>setTimeout(function () { var o = document.getElementById('app-loading-overlay'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
 
-    <!-- Navbar (Standardized) -->
-    <nav id="navbar"
-        class="fixed w-full z-50 transition-all duration-500 bg-brand-deep md:bg-transparent py-4 px-6 md:px-12 flex justify-between items-center text-brand-light border-b border-transparent">
-
-        <!-- Brand Logo & Name -->
-        <a href="index.html" class="flex items-center gap-3 group">
-            <img src="./assets/logo.jpeg" alt="Nongor"
-                class="h-10 md:h-12 rounded-lg md:mix-blend-multiply shadow-sm group-hover:scale-105 transition-transform duration-500">
-            <div class="flex flex-col justify-center">
-                <span
-                    class="text-xl md:text-2xl font-bold tracking-wide font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
-                <span class="text-[0.55rem] md:text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-80 mt-1">The
-                    Clothing Brand</span>
-            </div>
-        </a>
-
-        <!-- Desktop Menu -->
-        <div class="hidden md:flex items-center gap-8 font-serif text-sm tracking-wide font-medium">
-            <a href="index.html"
-                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Home</a>
-            <a href="about.html"
-                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Story</a>
+    <!-- Simple Checkout Header -->
+    <header class="bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="./assets/logo.jpeg" alt="নোঙর" class="h-10 rounded-lg">
+                <span class="text-2xl font-serif font-bold text-brand-deep">নোঙর</span>
+            </a>
             <a href="index.html#collection"
-                class="relative hover:text-brand-sand transition-colors after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full">Collection</a>
-            <button onclick="openTrackingModal()"
-                class="relative hover:text-brand-sand transition-colors outline-none focus:outline-none after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-px after:bg-brand-terracotta after:transition-all hover:after:w-full tracking-wide">Track
-                Order</button>
-
-            <a href="index.html#contact"
-                class="glass px-5 py-2 rounded-full hover:bg-brand-terracotta hover:text-white transition-all duration-300 border border-white/20">Contact
-                Us</a>
+                class="text-sm font-medium text-gray-600 hover:text-brand-terracotta transition">← Back to Shop</a>
         </div>
+    </header>
 
-        <!-- Mobile Menu Button -->
-        <button class="md:hidden text-brand-light focus:outline-none" onclick="toggleMobileMenu()">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
-                </path>
-            </svg>
-        </button>
-    </nav>
-
-    <!-- Mobile Menu Overlay -->
-    <div id="mobile-menu"
-        class="fixed inset-0 bg-brand-deep/95 z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 md:hidden backdrop-blur-xl">
-        <button class="absolute top-6 right-6 text-white" onclick="toggleMobileMenu()">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-        <a href="index.html" class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
-            onclick="toggleMobileMenu()">Home</a>
-        <a href="about.html" class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
-            onclick="toggleMobileMenu()">Story</a>
-        <a href="index.html#collection"
-            class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
-            onclick="toggleMobileMenu()">Collection</a>
-        <a href="#" onclick="toggleMobileMenu(); openTrackingModal();"
-            class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition">Track Order</a>
-        <a href="index.html#contact" class="text-2xl font-serif text-brand-light hover:text-brand-terracotta transition"
-            onclick="toggleMobileMenu()">Contact Us</a>
-    </div>
-
-    <!-- Spacer for fixed navbar -->
-    <div class="h-24"></div>
+    <!-- Inline overlay removal (this page doesn't import script.js) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var overlay = document.getElementById('app-loading-overlay');
+            if (overlay) {
+                overlay.style.pointerEvents = 'none';
+                setTimeout(function () {
+                    overlay.style.transition = 'opacity 0.8s ease';
+                    overlay.style.opacity = '0';
+                    setTimeout(function () { overlay.remove(); }, 900);
+                }, 300);
+            }
+        });
+    </script>
 
     <!-- Main Content -->
     <main class="flex-grow max-w-2xl mx-auto w-full px-4 md:px-6 py-8 md:py-12">
