@@ -63,6 +63,35 @@
 
 <body class="bg-white font-sans text-brand-deep antialiased">
 
+    <!-- Cinematic Loading Overlay -->
+    <div id="app-loading-overlay"
+        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
+
+        <!-- Central Content -->
+        <div class="relative flex flex-col items-center">
+
+            <!-- Logo with Slow Zoom -->
+            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
+                <img src="./assets/logo.jpeg" alt="Nongor" class="w-24 h-24 object-cover"
+                    style="animation: subtle-zoom 20s infinite alternate">
+            </div>
+
+            <!-- Brand Name -->
+            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-wide font-light"
+                style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
+
+            <!-- Minimal Progress Line -->
+            <div class="w-32 h-[2px] bg-brand-deep/50 mt-8 overflow-hidden rounded-full relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-terracotta to-transparent w-full h-full"
+                    style="animation: shimmer-flow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite"></div>
+            </div>
+
+        </div>
+    </div>
+    <!-- Failsafe: Remove overlay after 5s even if modules fail -->
+    <script>setTimeout(function () { var o = document.getElementById('app-loading-overlay'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
+
     <!-- Simple Header -->
     <header class="bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -75,7 +104,7 @@
         </div>
     </header>
 
-    <!-- Loading State -->
+    <!-- Loading State (shown after cinematic overlay fades, while API fetches) -->
     <div id="product-loading"
         class="flex flex-col items-center justify-center min-h-[80vh] w-full bg-white fixed inset-0 z-40 pt-20 animate-fabric-bg">
         <div class="relative flex flex-col items-center">
@@ -442,6 +471,8 @@
                 currentProduct = window.preloadedProduct;
                 renderProduct(currentProduct);
                 // Tags already set by server, no need to updateMetaTags
+                // Remove both loading states
+                removeLoadingOverlay();
                 document.getElementById('product-loading').classList.add('hidden');
                 document.getElementById('product-content').classList.remove('hidden');
                 return;
@@ -488,6 +519,8 @@
 
                 renderProduct(currentProduct);
                 updateMetaTags(currentProduct);
+                // Remove both loading states
+                removeLoadingOverlay();
                 document.getElementById('product-loading').classList.add('hidden');
                 document.getElementById('product-content').classList.remove('hidden');
 
@@ -498,8 +531,19 @@
         }
 
         function showError() {
+            removeLoadingOverlay();
             document.getElementById('product-loading').classList.add('hidden');
             document.getElementById('product-error').classList.remove('hidden');
+        }
+
+        function removeLoadingOverlay() {
+            const overlay = document.getElementById('app-loading-overlay');
+            if (overlay) {
+                overlay.style.pointerEvents = 'none';
+                overlay.style.transition = 'opacity 0.8s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 900);
+            }
         }
 
         function renderProduct(product) {
