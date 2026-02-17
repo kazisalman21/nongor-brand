@@ -52,34 +52,37 @@
 <body
     class="bg-brand-light font-sans text-brand-checkout-deep min-h-screen flex flex-col selection:bg-brand-terracotta selection:text-white">
 
-    <!-- Cinematic Loading Overlay -->
-    <div id="app-loading-overlay"
-        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
-
-        <!-- Central Content -->
+    <!-- Loading State -->
+    <div id="product-loading"
+        class="flex flex-col items-center justify-center min-h-screen w-full bg-white fixed inset-0 z-[9999] animate-fabric-bg">
         <div class="relative flex flex-col items-center">
-
-            <!-- Logo with Slow Zoom -->
-            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
-                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
-                <img src="./assets/logo.jpeg" alt="Nongor" class="w-24 h-24 object-cover"
-                    style="animation: subtle-zoom 20s infinite alternate">
+            <!-- Premium Anchor Stitch Animation -->
+            <div class="relative w-24 h-24 mb-6">
+                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-xl"
+                    style="animation: needlePulse 3s ease-in-out infinite;">
+                    <!-- Anchor Shape Path -->
+                    <path d="M50 20 V70 M30 50 Q50 85 70 50" fill="none" stroke="#E07A5F" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round" class="animate-stitch" />
+                    <!-- Needle Eye (Top) -->
+                    <circle cx="50" cy="15" r="4" stroke="#3D405B" stroke-width="2" fill="white" />
+                </svg>
             </div>
 
-            <!-- Brand Name -->
-            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-wide font-light"
-                style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
-
-            <!-- Minimal Progress Line -->
-            <div class="w-32 h-[2px] bg-brand-deep/50 mt-8 overflow-hidden rounded-full relative">
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-terracotta to-transparent w-full h-full"
-                    style="animation: shimmer-flow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite"></div>
-            </div>
-
+            <!-- Text Reveal -->
+            <h3 class="mt-4 text-2xl font-serif tracking-[0.3em] uppercase relative">
+                <!-- Base Layer (Ghost Text) -->
+                <span class="text-gray-200">Nongor</span>
+                <!-- Fill Layer (Animated) -->
+                <span
+                    class="absolute inset-0 text-brand-deep animate-liquid-fill overflow-hidden whitespace-nowrap border-r-2 border-brand-terracotta/50 pr-1"
+                    style="animation-timing-function: cubic-bezier(0.8, 0, 0.2, 1);">Nongor</span>
+            </h3>
+            <p class="text-[10px] text-brand-terracotta font-sans tracking-[0.3em] mt-3 uppercase opacity-0 animate-fade-in-up"
+                style="animation-delay: 1.5s">Loading checkout...</p>
         </div>
     </div>
-    <!-- Failsafe: Remove overlay after 5s even if modules fail -->
-    <script>setTimeout(function () { var o = document.getElementById('app-loading-overlay'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
+    <!-- Failsafe: Remove loading after 5s even if JS fails -->
+    <script>setTimeout(function () { var o = document.getElementById('product-loading'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
 
     <!-- Simple Checkout Header -->
     <header class="bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm border-b border-gray-100">
@@ -93,16 +96,16 @@
         </div>
     </header>
 
-    <!-- Inline overlay removal (this page doesn't import script.js) -->
+    <!-- Inline loading removal (this page doesn't import script.js) -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var overlay = document.getElementById('app-loading-overlay');
-            if (overlay) {
-                overlay.style.pointerEvents = 'none';
+            var loader = document.getElementById('product-loading');
+            if (loader) {
+                loader.style.pointerEvents = 'none';
                 setTimeout(function () {
-                    overlay.style.transition = 'opacity 0.8s ease';
-                    overlay.style.opacity = '0';
-                    setTimeout(function () { overlay.remove(); }, 900);
+                    loader.style.transition = 'opacity 0.8s ease';
+                    loader.style.opacity = '0';
+                    setTimeout(function () { loader.remove(); }, 900);
                 }, 300);
             }
         });
