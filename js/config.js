@@ -25,7 +25,7 @@ window.fallbackProducts = [
         "id": 2,
         "name": "একটা কমলা রঙের প্রজাপতি",
         "price": "900.00",
-        "image": "https://res.cloudinary.com/daalopsqn/image/upload/f_auto,q_auto/v1769523623/lsxxuqx26gef8ujbktm9.webp",
+        "image": "./assets/IMG20251101152351.webp",
         "description": "কালো পোশাকে রঙিন প্রজাপতির ছোঁয়া।",
         "category_slug": "kurti",
         "category_name": "কুর্তি",

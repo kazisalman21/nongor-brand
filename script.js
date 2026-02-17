@@ -13,6 +13,7 @@ import './js/modal.js';
 import './js/custom-sizing.js';
 import './js/cart.js';
 import './js/checkout.js';
+import './js/product-details.js';
 
 console.log('🚀 Nongor Brand: All modules loaded');
 

@@ -346,6 +346,8 @@
                     <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
                     <a href="shipping-info.html" class="hover:text-brand-terracotta transition">Shipping Info</a>
                     <a href="faq.html" class="hover:text-brand-terracotta transition">FAQ</a>
+                    <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                    <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
                 </div>
             </div>
 
@@ -354,6 +356,7 @@
             <!-- Middle Section: Socials -->
             <div class="flex justify-center gap-6 mb-10">
                 <a href="https://www.facebook.com/profile.php?id=61582283911710" target="_blank"
+                    rel="noopener noreferrer"
                     class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path
@@ -361,13 +364,14 @@
                     </svg>
                 </a>
                 <a href="https://www.instagram.com/nongorr_?igsh=ajhra2hiZDV1OGJp" target="_blank"
+                    rel="noopener noreferrer"
                     class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12s.014 3.668.072 4.948c.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24s3.668-.014 4.948-.072c4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
                     </svg>
                 </a>
-                <a href="https://m.me/857107060814707" target="_blank"
+                <a href="https://m.me/857107060814707" target="_blank" rel="noopener noreferrer"
                     class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path
@@ -410,7 +414,7 @@
     <!-- Floating Action Buttons -->
     <div class="fixed bottom-6 right-6 z-40 flex flex-col gap-4 items-end">
         <!-- WhatsApp Button -->
-        <a href="https://wa.me/message/74UB552NKNJYG1" target="_blank"
+        <a href="https://wa.me/message/74UB552NKNJYG1" target="_blank" rel="noopener noreferrer"
             class="bg-green-500 text-white p-3.5 rounded-full shadow-2xl hover:bg-green-600 transition-all transform hover:scale-110 hover:-translate-y-1 relative group">
             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
                 <path
@@ -425,341 +429,7 @@
     <!-- Scripts -->
     <script type="module" src="./script.js?v=3"></script>
     <script>
-        // API_URL is defined in script.js
-        // Local state for this page
-        // Local state for this page
-        window.quantity = 1;
-        window.selectedSize = null;
-        let currentProduct = null;
-        const ANIMATION_MIN_TIME = 3000; // Let animation play at least 3s
-        const animStart = Date.now();
-
-        // Init on load
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Reset state
-            window.currentSizeType = 'standard';
-            window.currentMeasurementUnit = 'inch';
-
-            // 1. Check for Preloaded Data (SSR)
-            if (window.preloadedProduct) {
-                console.log('⚡ Hydrating from SSR data...');
-                currentProduct = window.preloadedProduct;
-                renderProduct(currentProduct);
-                const elapsed = Date.now() - animStart;
-                const remaining = Math.max(0, ANIMATION_MIN_TIME - elapsed);
-                setTimeout(() => revealContent(), remaining);
-                return;
-            }
-
-            // 2. Fallback: CSR (Client Side Rendering)
-            const params = new URLSearchParams(window.location.search);
-            const productId = params.get('id');
-            const productSlug = params.get('slug'); // Support slug param too
-
-            if (!productId && !productSlug) {
-                // Try to parse slug from URL path if using /p/slug via client nav (unlikely but good fallback)
-                // path: /p/some-slug
-                const pathParts = window.location.pathname.split('/');
-                const pIndex = pathParts.indexOf('p');
-                if (pIndex > -1 && pathParts[pIndex + 1]) {
-                    await loadProduct(null, pathParts[pIndex + 1]);
-                    return;
-                }
-
-                showError();
-                return;
-            }
-
-            await loadProduct(productId, productSlug);
-        });
-
-        async function loadProduct(id, slug) {
-            try {
-                // Use dedicated single-product endpoint for efficiency
-                let url = `${API_URL}?action=getProduct`;
-                if (id) url += `&id=${encodeURIComponent(id)}`;
-                else if (slug) url += `&slug=${encodeURIComponent(slug)}`;
-
-                const res = await fetch(url);
-                const data = await res.json();
-
-                if (data.result !== 'success' || !data.data) {
-                    showError();
-                    return;
-                }
-
-                currentProduct = data.data;
-
-                renderProduct(currentProduct);
-                updateMetaTags(currentProduct);
-                // Wait for animation to finish, then reveal
-                const elapsed = Date.now() - animStart;
-                const remaining = Math.max(0, ANIMATION_MIN_TIME - elapsed);
-                setTimeout(() => revealContent(), remaining);
-
-            } catch (e) {
-                console.error(e);
-                showError();
-            }
-        }
-
-        function showError() {
-            revealContent();
-            document.getElementById('product-error').classList.remove('hidden');
-        }
-
-        function revealContent() {
-            const loader = document.getElementById('product-loading');
-            const content = document.getElementById('product-content');
-
-            // Prepare content for smooth fade-in (invisible but in DOM)
-            if (content) {
-                content.classList.remove('hidden');
-                content.style.opacity = '0';
-                content.style.transform = 'translateY(20px)';
-                content.style.transition = 'none';
-            }
-
-            if (loader) {
-                loader.style.pointerEvents = 'none';
-                loader.style.transition = 'opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1s cubic-bezier(0.4, 0, 0.2, 1)';
-                loader.style.opacity = '0';
-                loader.style.transform = 'scale(0.95)';
-
-                // After loader starts fading, slide content in
-                setTimeout(() => {
-                    if (content) {
-                        content.style.transition = 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-                        content.style.opacity = '1';
-                        content.style.transform = 'translateY(0)';
-                    }
-                }, 300);
-
-                setTimeout(() => loader.remove(), 1100);
-            } else if (content) {
-                // No loader, just show content immediately
-                content.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                content.style.opacity = '1';
-                content.style.transform = 'translateY(0)';
-            }
-        }
-
-        function renderProduct(product) {
-            // Title
-            document.getElementById('product-title').textContent = product.name;
-            document.getElementById('page-title').textContent = `${product.name} | নোঙর`;
-
-            // Category
-            document.getElementById('product-category').textContent = product.category_name || 'Collection';
-
-            // Price
-            document.getElementById('product-price').textContent = `৳${parseFloat(product.price).toLocaleString()}`;
-
-            // Description
-            document.getElementById('product-description').textContent = product.description || 'Premium quality Bangladeshi clothing.';
-
-            const stock = parseInt(product.stock_quantity) || 0;
-            window.maxStock = stock; // Store for quantity limiter
-            const stockEl = document.getElementById('stock-status');
-            if (stock > 0) {
-                stockEl.innerHTML = `<span class="w-2 h-2 bg-green-500 rounded-full"></span><span class="text-sm text-green-600 font-medium">In Stock (${stock} available)</span>`;
-            } else {
-                stockEl.innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full"></span><span class="text-sm text-red-600 font-medium">Out of Stock</span>`;
-                document.getElementById('btn-add-cart').disabled = true;
-                document.getElementById('btn-buy-now').disabled = true;
-            }
-
-            // Main Image
-            const mainImg = document.getElementById('main-image');
-            const imgSrc = product.image?.startsWith('http') ? product.image : `./assets/${product.image || 'logo.jpeg'}`;
-            mainImg.src = imgSrc;
-            mainImg.alt = product.name;
-
-            // Thumbnails
-            const thumbContainer = document.getElementById('thumbnails');
-            let images = [product.image];
-            if (product.images && Array.isArray(product.images)) {
-                images = [...new Set([product.image, ...product.images])].filter(Boolean);
-            }
-            thumbContainer.innerHTML = images.map((img, i) => {
-                const src = img?.startsWith('http') ? img : `./assets/${img || 'logo.jpeg'}`;
-                return `<img src="${src}" alt="Thumbnail ${i + 1}" onclick="changeMainImage('${src}')" class="w-16 h-20 object-cover rounded-lg cursor-pointer border-2 ${i === 0 ? 'border-brand-terracotta' : 'border-gray-200'} hover:border-brand-terracotta transition">`;
-            }).join('');
-
-            // Sizes (Populate Standard Selector)
-            const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-            document.getElementById('size-selector').innerHTML = sizes.map(s => `
-                <button onclick="selectSize('${s}')" class="size-btn px-4 py-2 border-2 rounded-lg font-medium transition ${s === window.selectedSize ? 'border-brand-terracotta bg-brand-terracotta/10 text-brand-terracotta' : 'border-gray-200 text-gray-600 hover:border-brand-terracotta'}">${s}</button>
-            `).join('');
-
-            // Initialize UI state
-            if (window.updateSizeTypeUI) window.updateSizeTypeUI();
-        }
-
-        function updateMetaTags(product) {
-            const url = window.location.href;
-            const imgSrc = product.image?.startsWith('http') ? product.image : `https://nongor-brand.vercel.app/assets/${product.image || 'logo.jpeg'}`;
-            const desc = product.description || 'Premium quality Bangladeshi clothing from Nongor.';
-
-            document.getElementById('meta-description').content = desc;
-            document.getElementById('og-url').content = url;
-            document.getElementById('og-title').content = `${product.name} | নোঙর`;
-            document.getElementById('og-description').content = desc;
-            document.getElementById('og-image').content = imgSrc;
-            document.getElementById('og-price').content = product.price;
-            document.getElementById('twitter-title').content = `${product.name} | নোঙর`;
-            document.getElementById('twitter-description').content = desc;
-            document.getElementById('twitter-image').content = imgSrc;
-        }
-
-        function changeMainImage(src) {
-            document.getElementById('main-image').src = src;
-            document.querySelectorAll('#thumbnails img').forEach(img => {
-                img.classList.toggle('border-brand-terracotta', img.src === src);
-                img.classList.toggle('border-gray-200', img.src !== src);
-            });
-        }
-
-        function selectSize(size) {
-            window.selectedSize = size;
-            document.querySelectorAll('.size-btn').forEach(btn => {
-                const isSelected = btn.textContent.trim() === size;
-                btn.classList.toggle('border-brand-terracotta', isSelected);
-                btn.classList.toggle('bg-brand-terracotta/10', isSelected);
-                btn.classList.toggle('text-brand-terracotta', isSelected);
-                btn.classList.toggle('border-gray-200', !isSelected);
-                btn.classList.toggle('text-gray-600', !isSelected);
-            });
-        }
-
-        function updateQty(delta) {
-            const maxQty = Math.min(10, window.maxStock || 10);
-            window.quantity = Math.min(maxQty, Math.max(1, window.quantity + delta));
-            document.getElementById('qty-display').textContent = window.quantity;
-        }
-
-        function addToCartFromPage() {
-            if (!currentProduct) return;
-
-            // Validation logic reused/adapted from script.js
-            let finalSize = window.selectedSize;
-            let measurements = null;
-            let sizeType = 'standard';
-            let unit = 'inch';
-            let notes = '';
-
-            if (window.currentSizeType === 'custom') {
-                if (window.getAndValidateMeasurements) {
-                    const val = window.getAndValidateMeasurements();
-                    if (!val.valid) return;
-
-                    sizeType = 'custom';
-                    measurements = val.measurements;
-                    unit = val.unit;
-                    notes = val.notes;
-                    finalSize = `Custom (${unit})`;
-                }
-            } else {
-                if (!window.selectedSize) {
-                    showToast('Please select a size', 'error');
-                    return;
-                }
-            }
-
-            const cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
-            cart.push({
-                id: currentProduct.id,
-                name: currentProduct.name,
-                price: currentProduct.price,
-                image: currentProduct.image,
-                size: finalSize,
-                sizeType: sizeType,
-                unit: unit,
-                measurements: measurements,
-                notes: notes,
-                quantity: window.quantity,
-                timestamp: Date.now()
-            });
-            localStorage.setItem('nongor_cart', JSON.stringify(cart));
-
-            // Update Cart UI if function exists
-            if (window.updateCartUI) window.updateCartUI();
-            if (window.openCart) window.openCart();
-
-            showToast('Added to cart! 🛒');
-        }
-
-        function buyNowFromPage() {
-            if (!currentProduct) return;
-
-            // Validation logic
-            let finalSize = window.selectedSize;
-            let measurements = null;
-            let sizeType = 'standard';
-            let unit = 'inch';
-            let notes = '';
-
-            if (window.currentSizeType === 'custom') {
-                if (window.getAndValidateMeasurements) {
-                    const val = window.getAndValidateMeasurements();
-                    if (!val.valid) return;
-
-                    sizeType = 'custom';
-                    measurements = val.measurements;
-                    unit = val.unit;
-                    notes = val.notes;
-                    finalSize = `Custom (${unit})`;
-                }
-            } else {
-                if (!window.selectedSize) {
-                    showToast('Please select a size', 'error');
-                    return;
-                }
-            }
-
-            const buyNowItem = [{
-                id: currentProduct.id,
-                name: currentProduct.name,
-                price: currentProduct.price,
-                image: currentProduct.image,
-                size: finalSize,
-                sizeType: sizeType,
-                unit: unit,
-                measurements: measurements,
-                notes: notes,
-                quantity: window.quantity
-            }];
-            localStorage.setItem('nongor_direct_buy', JSON.stringify(buyNowItem));
-            window.location.href = `checkout.html?mode=direct`;
-        }
-
-        function shareProduct() {
-            if (navigator.share) {
-                navigator.share({
-                    title: currentProduct.name + ' | নোঙর',
-                    text: `Check out ${currentProduct.name} from Nongor!`,
-                    url: window.location.href
-                });
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                showToast('Link copied! 📋');
-            }
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            document.getElementById('toast-message').textContent = message;
-            if (icon) {
-                icon.classList.remove('bg-green-500', 'bg-red-500');
-                icon.classList.add(type === 'error' ? 'bg-red-500' : 'bg-green-500');
-            }
-            toast.classList.remove('hidden', 'opacity-0', 'translate-y-20');
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-20');
-                setTimeout(() => toast.classList.add('hidden'), 300);
-            }, 3000);
-        }
+        // Main logic moved to js/product-details.js and imported in script.js
     </script>
 </body>
 
