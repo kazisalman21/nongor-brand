@@ -1017,7 +1017,6 @@ window.closeModal = () => {
 };
 
 // Change Main Image in Modal with Fade & Active State
-// Change Main Image in Modal with Fade & Active State
 window.changeMainImage = (src, thumbnail, originalSrc) => {
     const mainImg = document.getElementById('modal-image');
 
@@ -1351,34 +1350,7 @@ function isValidBangladeshiPhone(phone) {
     return regex.test(cleaned);
 }
 
-function validatePhoneRealtime(input) {
-    const phone = input.value.trim();
-    // Use closest wrapper or create a feedback element if missing
-    // Assuming UI structure, we'll toggle classes directly on input
-    const submitBtn = document.getElementById('btn-confirm-order');
-
-    // Reset styles
-    input.classList.remove('border-green-500', 'border-red-500', 'ring-2', 'ring-red-500', 'ring-green-500');
-
-    if (phone.length === 0) {
-        if (submitBtn) submitBtn.disabled = true;
-        return;
-    }
-
-    if (isValidBangladeshiPhone(phone)) {
-        input.classList.add('border-green-500', 'ring-2', 'ring-green-500');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-    } else {
-        input.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-    }
-}
+// validatePhoneRealtime is defined at the bottom of the file as window.validatePhoneRealtime
 
 window.initCheckout = async () => {
     const params = new URLSearchParams(window.location.search);
@@ -1745,42 +1717,7 @@ window.hideCheckout = () => {
     document.getElementById('modal-actions').classList.remove('hidden');
 };
 
-// --- Real-time Phone Validation ---
-window.validatePhoneRealtime = (input) => {
-    // 1. Remove non-digits
-    let cleanVal = input.value.replace(/[^0-9]/g, '');
-
-    const validIcon = document.getElementById('phone-valid-icon');
-    const invalidIcon = document.getElementById('phone-invalid-icon');
-    const feedback = document.getElementById('phone-feedback');
-
-    // Safety check if elements missing
-    if (!feedback) return;
-
-    // Strict BD Phone Regex: starts with 01, follows by 3-9, then 8 digits
-    const bdPhoneRegex = /^01[3-9]\d{8}$/;
-
-    if (bdPhoneRegex.test(cleanVal)) {
-        // Valid
-        if (validIcon) validIcon.classList.remove('hidden');
-        if (invalidIcon) invalidIcon.classList.add('hidden');
-        feedback.textContent = "নম্বর সঠিক আছে (Valid Number)";
-        feedback.className = "text-xs font-bengali ml-1 mb-3 h-4 text-green-600 font-bold";
-    } else {
-        // Invalid
-        if (cleanVal.length > 0) {
-            if (validIcon) validIcon.classList.add('hidden');
-            if (invalidIcon) invalidIcon.classList.remove('hidden');
-            feedback.textContent = "সঠিক মোবাইল নম্বর দিন (Example: 01712345678)";
-            feedback.className = "text-xs font-bengali ml-1 mb-3 h-4 text-brand-terracotta";
-        } else {
-            // Empty
-            if (validIcon) validIcon.classList.add('hidden');
-            if (invalidIcon) invalidIcon.classList.add('hidden');
-            feedback.textContent = "";
-        }
-    }
-};
+// validatePhoneRealtime — consolidated at bottom of file as window.validatePhoneRealtime
 
 // --- Order Submission Logic ---
 
@@ -2364,7 +2301,7 @@ window.addToCart = () => {
     }
 
     localStorage.setItem('nongor_cart', JSON.stringify(cart));
-    updateCartCount();
+    if (typeof updateCartUI === 'function') updateCartUI();
     showToast(`${currentProduct.name} added to cart!`);
 
 
