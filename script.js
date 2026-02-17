@@ -46,4 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.includes('checkout.html')) {
         if (window.initCheckout) window.initCheckout();
     }
+
+    // --- Restore App Loader Removal ---
+    const loader = document.getElementById('app-loading-overlay');
+    if (loader) {
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                loader.remove(); // Remove from DOM entirely
+            }, 1000);
+        }, 800);
+    }
 });
