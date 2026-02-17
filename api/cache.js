@@ -28,6 +28,9 @@ function invalidateProductCache() {
 }
 
 // Rate Limiting Maps (In-Memory)
+// ⚠️ WARNING: In-memory rate limiting resets on every Vercel serverless cold start.
+// For production, consider using Redis/Upstash for persistent rate limiting.
+// This provides basic protection but is not reliable under heavy traffic.
 const rateLimits = {
     login: new Map(), // IP -> { count, expires }
     order: new Map(),  // IP -> { count, expires }

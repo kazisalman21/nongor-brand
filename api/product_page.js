@@ -21,9 +21,14 @@ function escapeHtml(unsafe) {
 }
 
 module.exports = async (req, res) => {
-    // Enable CORS/Caching
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Enable CORS (using shared secure handler) & Caching
+    const { setSecureCorsHeaders } = require('./cors');
+    setSecureCorsHeaders(req, res);
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300'); // Cache for 60s, serve stale for 5m
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
 
     const { slug } = req.query;
 

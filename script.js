@@ -36,6 +36,17 @@ let allProducts = [];
 let currentCategory = 'all';
 const API_URL = '/api';
 
+// --- Security: HTML Escape Helper (prevents XSS in innerHTML) ---
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return String(unsafe || '');
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 // Modal state variables
 let currentProductId = null;
 const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -234,90 +245,7 @@ window.filterProducts = function (category, event) {
 // ==============================================
 // SEARCH LOGIC
 // ==============================================
-let searchDebounceTimer;
-window.handleSearch = (query) => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
-        console.log('🔎 Searching for:', query);
-        // Call initProducts with search param
-        // We need to maintain current category? Or reset to all? 
-        // Usually search resets category or searches within.
-        // Let's reset category to 'all' for global search, or keep it if we want to filter within category.
-        // For now, let's keep currentCategory if it's not 'all', otherwise search all.
-        // Actually best to search ALL.
-
-        // Update UI active state if needed
-        if (query.length > 0) {
-            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active', 'bg-brand-terracotta', 'text-white'));
-        }
-
-        initProducts({ search: query, category: currentCategory });
-    }, 500); // 500ms debounce
-};
-
-// ==============================================
-// UNIFIED FILTER/SORT/SEARCH LOGIC
-// ==============================================
 let filterDebounceTimer;
-window.applyAllFilters = () => {
-    clearTimeout(filterDebounceTimer);
-    filterDebounceTimer = setTimeout(() => {
-        const searchQuery = document.getElementById('search-input')?.value?.trim().toLowerCase() || '';
-        const minPrice = parseFloat(document.getElementById('min-price')?.value) || 0;
-        const maxPrice = parseFloat(document.getElementById('max-price')?.value) || Infinity;
-        const sortBy = document.getElementById('sort-select')?.value || 'newest';
-        const inStockOnly = document.getElementById('instock-toggle')?.checked || false;
-
-        console.log('🔍 Applying filters:', { searchQuery, minPrice, maxPrice, sortBy, inStockOnly, category: currentCategory });
-
-        let filtered = [...allProducts];
-
-        // Category filter
-        if (currentCategory && currentCategory !== 'all') {
-            filtered = filtered.filter(p => p.category_slug === currentCategory);
-        }
-
-        // Search filter (name + category)
-        if (searchQuery) {
-            filtered = filtered.filter(p =>
-                p.name?.toLowerCase().includes(searchQuery) ||
-                p.category_name?.toLowerCase().includes(searchQuery) ||
-                p.description?.toLowerCase().includes(searchQuery)
-            );
-        }
-
-        // Price filter
-        filtered = filtered.filter(p => {
-            const price = parseFloat(p.price) || 0;
-            return price >= minPrice && price <= maxPrice;
-        });
-
-        // In-Stock filter
-        if (inStockOnly) {
-            filtered = filtered.filter(p => parseInt(p.stock_quantity) > 0);
-        }
-
-        // Sorting
-        switch (sortBy) {
-            case 'price-low':
-                filtered.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-                break;
-            case 'price-high':
-                filtered.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-                break;
-            case 'name':
-                filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-                break;
-            case 'newest':
-            default:
-                filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-                break;
-        }
-
-        console.log(`✅ Filtered to ${filtered.length} products`);
-        renderProducts(filtered);
-    }, 300);
-};
 
 
 // Mobile Filter Toggle
@@ -368,9 +296,7 @@ window.applyPriceFilter = applyAllFilters;
 // ==============================================
 // FETCH AND INITIALIZE PRODUCTS
 // ==============================================
-// ==============================================
-// FETCH AND INITIALIZE PRODUCTS
-// ==============================================
+
 async function initProducts(params = {}) {
     console.log('🚀 initProducts() called with:', params);
 
@@ -922,11 +848,12 @@ function showEmptyState(container) {
 // ERROR STATE
 // ==============================================
 function showError(container, errorMsg) {
+    const safeMsg = escapeHtml(errorMsg || 'অজানা ত্রুটি');
     container.innerHTML = `
         <div class="col-span-full text-center py-20">
             <div class="text-6xl mb-4">⚠️</div>
             <h3 class="text-2xl font-bold text-red-500 mb-2">পণ্য লোড করতে সমস্যা হয়েছে</h3>
-            <p class="text-gray-600 mb-6">${errorMsg || 'অজানা ত্রুটি'}</p>
+            <p class="text-gray-600 mb-6">${safeMsg}</p>
             <button onclick="initProducts()" class="bg-brand-terracotta text-white px-6 py-3 rounded-full hover:bg-brand-deep transition-colors">
                 আবার চেষ্টা করুন
             </button>
@@ -1150,13 +1077,7 @@ function handleLightboxEscape(e) {
     }
 }
 
-window.updateQuantity = (change) => {
-    const newQuantity = currentQuantity + change;
-    if (newQuantity >= 1 && newQuantity <= 10) {
-        currentQuantity = newQuantity;
-        document.getElementById('quantity-display').textContent = currentQuantity;
-    }
-};
+// updateQuantity defined below in Cart Logic section
 
 window.selectSize = (size) => {
     selectedSize = size;
@@ -1285,15 +1206,15 @@ window.updateCartUI = () => {
         container.innerHTML = cart.map((item, index) => `
             <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
                 <div class="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
-                    <img src="${getOptimizedImage(item.image, 'thumb')}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="handleImageError(this)">
+                    <img src="${escapeHtml(getOptimizedImage(item.image, 'thumb'))}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="handleImageError(this)">
                 </div>
                 
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-bold text-base text-brand-deep font-serif line-clamp-1 pr-6">${item.name}</h4>
+                        <h4 class="font-bold text-base text-brand-deep font-serif line-clamp-1 pr-6">${escapeHtml(item.name)}</h4>
                     </div>
                     
-                    <p class="text-xs text-brand-terracotta uppercase tracking-wider font-bold mb-2">Size: ${item.size}</p>
+                    <p class="text-xs text-brand-terracotta uppercase tracking-wider font-bold mb-2">Size: ${escapeHtml(item.size)}</p>
                     
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-2 py-1">
@@ -1358,7 +1279,7 @@ window.updateQuantity = (change) => {
 
 console.log('✅ Script loaded successfully');
 
-console.log('✅ Script loaded successfully');
+
 
 // --- Checkout Logic ---
 
@@ -1457,7 +1378,10 @@ window.initCheckout = async () => {
                 console.log('📡 Checkout: Fetching products for Legacy Mode...');
                 const response = await fetch(`${API_URL}?action=getProducts`);
                 const data = await response.json();
-                if (data.success && data.products) {
+                if (data.result === 'success' && data.data) {
+                    allProducts = data.data;
+                } else if (data.success && data.products) {
+                    // Legacy format fallback
                     allProducts = data.products;
                 } else {
                     allProducts = fallbackProducts;

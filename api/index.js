@@ -604,7 +604,9 @@ module.exports = async (req, res) => {
                         try {
                             const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.trackingToken}`;
                             const qrDataUrl = await QRCode.toDataURL(trackUrl);
-                            const qrImage = await pdfDoc.embedPng(qrDataUrl.split(',')[1]);
+                            const qrBase64 = qrDataUrl.split(',')[1];
+                            const qrBytes = Uint8Array.from(Buffer.from(qrBase64, 'base64'));
+                            const qrImage = await pdfDoc.embedPng(qrBytes);
                             page.drawImage(qrImage, { x: width - 100, y: height - 180, width: 60, height: 60 });
                         } catch (qrErr) {
                             console.error("QR Error:", qrErr);
@@ -1132,6 +1134,33 @@ module.exports = async (req, res) => {
                 });
             }
 
+            // --- ORDER CREATION ---
+            // Guard: Only proceed if this looks like an order (has items array)
+            if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Unknown action or missing order items' });
+            }
+
+            // Validate required order fields
+            if (!data.customerName || typeof data.customerName !== 'string' || data.customerName.trim().length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Customer name is required' });
+            }
+            if (!data.customerPhone || typeof data.customerPhone !== 'string' || data.customerPhone.trim().length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Customer phone is required' });
+            }
+            if (!data.address || typeof data.address !== 'string' || data.address.trim().length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Delivery address is required' });
+            }
+            // Validate Bangladeshi phone format
+            const cleanedPhone = data.customerPhone.replace(/\D/g, '');
+            if (!/^01[3-9]\d{8}$/.test(cleanedPhone)) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Invalid phone number format' });
+            }
+
             // --- SERVER-SIDE ORDER ID GENERATION ---
             // Start Transaction for Order Creation (Ensures atomic stock updates)
             await client.query('BEGIN');
@@ -1486,10 +1515,10 @@ module.exports = async (req, res) => {
 
             // --- DELETE COUPON ---
             if (query.action === 'deleteCoupon') {
-                const couponId = query.id;
-                if (!couponId) {
+                const couponId = parseInt(query.id);
+                if (!couponId || isNaN(couponId)) {
                     client.release();
-                    return res.status(400).json({ result: 'error', message: 'Coupon ID required' });
+                    return res.status(400).json({ result: 'error', message: 'Valid Coupon ID required' });
                 }
 
                 await client.query('DELETE FROM coupons WHERE id = $1', [couponId]);
@@ -1497,10 +1526,10 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', message: 'Coupon deleted' });
             }
 
-            const productId = query.id;
-            if (!productId) {
+            const productId = parseInt(query.id);
+            if (!productId || isNaN(productId)) {
                 client.release();
-                return res.status(400).json({ result: 'error', message: 'Product ID required' });
+                return res.status(400).json({ result: 'error', message: 'Valid Product ID required' });
             }
 
             // Soft delete by setting is_active to false
@@ -1528,7 +1557,7 @@ module.exports = async (req, res) => {
         }
         return res.status(500).json({
             result: 'error',
-            message: 'Internal Server Error: ' + error.message
+            message: 'Internal Server Error'
         });
     }
 };

@@ -9,6 +9,47 @@ const { sendPasswordResetEmail } = require('../utils/email');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
+// --- TOTP Secret Encryption Helpers (AES-256-GCM) ---
+const TOTP_ENCRYPTION_KEY = process.env.TOTP_ENCRYPTION_KEY;
+
+function encryptSecret(plaintext) {
+    if (!TOTP_ENCRYPTION_KEY) {
+        console.warn('⚠️ TOTP_ENCRYPTION_KEY not set — storing TOTP secret in plaintext!');
+        return plaintext;
+    }
+    const key = Buffer.from(TOTP_ENCRYPTION_KEY, 'hex');
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    const tag = cipher.getAuthTag().toString('hex');
+    return `${iv.toString('hex')}:${tag}:${encrypted}`;
+}
+
+function decryptSecret(ciphertext) {
+    if (!TOTP_ENCRYPTION_KEY || !ciphertext.includes(':')) {
+        // Not encrypted (legacy or no key) — return as-is
+        return ciphertext;
+    }
+    const [ivHex, tagHex, encrypted] = ciphertext.split(':');
+    const key = Buffer.from(TOTP_ENCRYPTION_KEY, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(ivHex, 'hex'));
+    decipher.setAuthTag(Buffer.from(tagHex, 'hex'));
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+}
+
+// --- Pepper Warning Helper ---
+function getPepper(envKey, fallback) {
+    const pepper = process.env[envKey];
+    if (!pepper) {
+        console.warn(`⚠️ ${envKey} not set — using default. Set this env var in production!`);
+        return fallback;
+    }
+    return pepper;
+}
+
 module.exports = async (req, res) => {
     // --- SECURITY: CORS & HEADERS ---
     const { setSecureCorsHeaders } = require('./cors');
@@ -318,12 +359,12 @@ module.exports = async (req, res) => {
                 issuer: process.env.TOTP_LABEL || 'Admin'
             });
 
-            // Store secret temporarily (or permanently but disabled)
+            // Store encrypted secret temporarily (not enabled yet)
             await client.query(`
                 UPDATE admin_users 
                 SET totp_secret_enc = $1, totp_enabled = false
                 WHERE username = 'admin'
-            `, [secret.base32]);
+            `, [encryptSecret(secret.base32)]);
 
             // Generate QR Code Data URL
             const qrcode = require('qrcode');
@@ -354,7 +395,7 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ result: 'error', message: 'TOTP setup not started' });
             }
 
-            const secret = adminRes.rows[0].totp_secret_enc;
+            const secret = decryptSecret(adminRes.rows[0].totp_secret_enc);
             const verified = speakeasy.totp.verify({
                 secret: secret,
                 encoding: 'base32',
@@ -535,7 +576,7 @@ module.exports = async (req, res) => {
 
                 // OTP Approved! Generate reset token
                 const resetToken = crypto.randomBytes(32).toString('hex');
-                const pepper = process.env.RESET_TOKEN_PEPPER || 'default-pepper';
+                const pepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
                 const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex');
                 const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
@@ -579,7 +620,7 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ result: 'error', message: 'Password must be at least 12 characters.' });
             }
 
-            const pepper = process.env.RESET_TOKEN_PEPPER || 'default-pepper';
+            const pepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
             const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex');
 
             // Find valid token
@@ -707,7 +748,7 @@ module.exports = async (req, res) => {
                 const otp = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
 
                 // Hash OTP for storage
-                const pepper = process.env.TELEGRAM_OTP_PEPPER || 'default-pepper';
+                const pepper = getPepper('TELEGRAM_OTP_PEPPER', 'default-pepper');
                 const otpHash = crypto.createHash('sha256').update(otp + pepper).digest('hex');
 
                 // Calculate expiry
@@ -783,7 +824,7 @@ module.exports = async (req, res) => {
             }
 
             // Verify hash
-            const pepper = process.env.TELEGRAM_OTP_PEPPER || 'default-pepper';
+            const pepper = getPepper('TELEGRAM_OTP_PEPPER', 'default-pepper');
             const inputHash = crypto.createHash('sha256').update(code + pepper).digest('hex');
 
             if (inputHash !== otpRow.otp_hash) {
@@ -796,7 +837,7 @@ module.exports = async (req, res) => {
 
             // Generate reset token
             const resetToken = crypto.randomBytes(32).toString('hex');
-            const tokenPepper = process.env.RESET_TOKEN_PEPPER || 'default-reset-pepper';
+            const tokenPepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
             const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
             const tokenTtl = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 10;
             const tokenExpiry = new Date(Date.now() + tokenTtl * 60 * 1000);
@@ -845,7 +886,7 @@ module.exports = async (req, res) => {
                 return res.status(400).json({ result: 'error', message: 'TOTP not configured.' });
             }
 
-            const secret = adminRes.rows[0].totp_secret_enc;
+            const secret = decryptSecret(adminRes.rows[0].totp_secret_enc);
 
             // Verify TOTP
             const isValid = speakeasy.totp.verify({
@@ -861,7 +902,7 @@ module.exports = async (req, res) => {
 
             // Generate reset token (same as Telegram flow)
             const resetToken = crypto.randomBytes(32).toString('hex');
-            const tokenPepper = process.env.RESET_TOKEN_PEPPER || 'default-reset-pepper';
+            const tokenPepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
             const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
             const tokenTtl = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 10;
             const tokenExpiry = new Date(Date.now() + tokenTtl * 60 * 1000);
@@ -906,7 +947,7 @@ module.exports = async (req, res) => {
             }
 
             // Verify token
-            const tokenPepper = process.env.RESET_TOKEN_PEPPER || 'default-reset-pepper';
+            const tokenPepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
             const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
 
             const tokenRes = await client.query(`
@@ -991,12 +1032,12 @@ module.exports = async (req, res) => {
                 issuer: issuer
             });
 
-            // Store secret (not enabled yet)
+            // Store encrypted secret (not enabled yet)
             await client.query(`
                 UPDATE admin_users 
                 SET totp_secret_enc = $1, totp_enabled = false
                 WHERE username = 'admin'
-            `, [secret.base32]);
+            `, [encryptSecret(secret.base32)]);
 
             return res.status(200).json({
                 result: 'success',
