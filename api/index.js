@@ -1547,6 +1547,7 @@ module.exports = async (req, res) => {
         }
 
         client.release();
+        client = null; // Prevent double-release in catch block
         return res.status(405).json({ error: 'Method Not Allowed' });
 
     } catch (error) {

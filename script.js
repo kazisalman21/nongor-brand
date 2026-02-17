@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('app-loading-overlay');
     if (overlay) {
         overlay.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(() => overlay.remove(), 300);
+        setTimeout(() => overlay.remove(), 1000);
     }
 
     // Mobile Menu Logic

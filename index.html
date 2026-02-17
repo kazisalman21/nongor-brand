@@ -52,6 +52,9 @@
     <!-- Custom Animations & Polish -->
     <link href="./assets/animations.css" rel="stylesheet">
 
+    <!-- Preload Critical Images -->
+    <link rel="preload" href="./assets/hero-bg.webp" as="image" type="image/webp" fetchpriority="high">
+
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -100,27 +103,8 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
         rel="stylesheet">
 
-    <!-- Tailwind CSS -->
-    <!-- Tailwind CSS (Local Build) -->
-    <link href="./assets/styles.css" rel="stylesheet">
 
-    <!-- Preload Critical Images -->
-    <link rel="preload" href="./assets/hero-bg.webp" as="image" type="image/webp" fetchpriority="high">
 
-    <!-- Premium Animations CSS (extracted for performance) -->
-    <link rel="stylesheet" href="./assets/animations.css">
-    <style>
-        /* Force Search Input Padding to fix overlap */
-        #search-input {
-            padding-left: 3.5rem !important;
-        }
-
-        @media (min-width: 768px) {
-            #search-input {
-                padding-left: 5rem !important;
-            }
-        }
-    </style>
 </head>
 
 <body class="bg-brand-light text-brand-deep font-sans antialiased overflow-x-hidden">
