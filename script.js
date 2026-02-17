@@ -821,17 +821,30 @@ function createProductCard(product, index) {
 // ==============================================
 function showLoading(container) {
     container.innerHTML = `
-        <div class="col-span-full flex flex-col items-center justify-center py-20 animate-fade-in">
+        <div class="col-span-full flex flex-col items-center justify-center py-20 animate-fade-in animate-fabric-bg rounded-xl">
             <div class="relative flex flex-col items-center">
-                <!-- Premium Spinner -->
-                <div class="w-16 h-16 border-4 border-brand-terracotta/20 border-t-brand-terracotta rounded-full animate-spin mb-4"></div>
-                
-                <!-- Brand Pulse -->
-                <div class="absolute top-0 left-0 w-16 h-16 bg-brand-terracotta/10 rounded-full animate-ping opacity-75"></div>
+                <!-- Premium Anchor Stitch Animation -->
+                <div class="relative w-24 h-24 mb-6">
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-xl" style="animation: needlePulse 3s ease-in-out infinite;">
+                        <!-- Anchor Shape Path -->
+                        <path d="M50 20 V70 M30 50 Q50 85 70 50" 
+                              fill="none" 
+                              stroke="#E07A5F" 
+                              stroke-width="3" 
+                              stroke-linecap="round" 
+                              stroke-linejoin="round"
+                              class="animate-stitch" />
+                        <!-- Needle Eye (Top) -->
+                        <circle cx="50" cy="15" r="4" stroke="#3D405B" stroke-width="2" fill="white" />
+                    </svg>
+                </div>
 
-                <!-- Text -->
-                <h3 class="mt-4 text-xl font-serif text-brand-deep tracking-widest uppercase animate-pulse">Nongor</h3>
-                <p class="text-xs text-gray-400 font-sans tracking-wide mt-1">লোড হচ্ছে...</p>
+                <!-- Text Reveal -->
+                <h3 class="mt-2 text-2xl font-serif text-brand-deep tracking-[0.2em] uppercase relative overflow-hidden">
+                    <span class="relative z-10">Nongor</span>
+                    <span class="absolute inset-0 bg-brand-deep text-white animate-liquid-fill z-20 mix-blend-screen">Nongor</span>
+                </h3>
+                <p class="text-xs text-brand-terracotta font-sans tracking-widest mt-2 uppercase opacity-80 animate-pulse">Handcrafting...</p>
             </div>
         </div>
     `;
