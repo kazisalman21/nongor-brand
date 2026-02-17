@@ -47,15 +47,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.initCheckout) window.initCheckout();
     }
 
-    // --- Restore App Loader Removal ---
+    // --- Remove App Loading Overlay (Robust) ---
+    try {
+        const loader = document.getElementById('app-loading-overlay');
+        if (loader) {
+            // Immediately prevent blocking user interaction
+            loader.style.pointerEvents = 'none';
+            // Fade out after a short delay
+            setTimeout(() => {
+                loader.style.transition = 'opacity 0.8s ease';
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    loader.remove();
+                }, 900);
+            }, 300);
+        }
+    } catch (e) {
+        console.error('Failed to remove loader:', e);
+        const loader = document.getElementById('app-loading-overlay');
+        if (loader) loader.remove();
+    }
+});
+
+// Failsafe: If DOMContentLoaded already fired or modules load late, use window.onload
+window.addEventListener('load', () => {
     const loader = document.getElementById('app-loading-overlay');
     if (loader) {
-        setTimeout(() => {
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                loader.remove(); // Remove from DOM entirely
-            }, 1000);
-        }, 800);
+        loader.style.pointerEvents = 'none';
+        loader.style.transition = 'opacity 0.6s ease';
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 700);
     }
 });

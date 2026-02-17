@@ -60,6 +60,8 @@
 
         </div>
     </div>
+    <!-- Failsafe: Remove overlay after 5s even if modules fail -->
+    <script>setTimeout(function () { var o = document.getElementById('app-loading-overlay'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
 
     <!-- Navbar -->
     <nav id="navbar"
