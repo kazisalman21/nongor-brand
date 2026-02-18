@@ -5541,7 +5541,8 @@
 
     <!-- Admin Footer -->
     <footer class="text-center py-6 text-sm text-gray-400 mt-12 bg-white border-t border-gray-100">
-        <p>© 2026 নোঙর Brand. All Rights Reserved.</p>
+        <p>© <span class="cr-year">2026</span> নোঙর Brand. All Rights Reserved.</p>
+        <script>document.querySelector('.cr-year').textContent = new Date().getFullYear();</script>
     </footer>
 </body>
 
