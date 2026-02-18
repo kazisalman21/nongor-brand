@@ -868,13 +868,15 @@ module.exports = async (req, res) => {
                     )
                 `);
 
-                // Schema Migration: Ensure is_approved column exists for existing tables
+                // Schema Migration: Ensure is_approved column exists (Handle legacy 'approved' column)
                 try {
-                    await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
-                } catch (e) {
-                    // Ignore error if column exists or other issue, proceeding to query
-                    console.warn('Migration warning:', e.message);
-                }
+                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
+                    if (checkCol.rows.length > 0) {
+                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
+                    } else {
+                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                    }
+                } catch (e) { console.warn('Migration warning in getReviews:', e.message); }
 
                 const result = await client.query(
                     `SELECT id, reviewer_name, rating, comment, created_at 
