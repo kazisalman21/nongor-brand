@@ -756,13 +756,25 @@ module.exports = async (req, res) => {
                 const avgRating = parseFloat(statResult.rows[0].avg_rating).toFixed(1);
                 const totalReviews = parseInt(statResult.rows[0].total_count);
 
+                // 3. Get Distribution
+                const distResult = await client.query(
+                    'SELECT rating, COUNT(*) as count FROM reviews WHERE product_id = $1 AND is_approved = true GROUP BY rating',
+                    [productId]
+                );
+
+                const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+                distResult.rows.forEach(row => {
+                    distribution[row.rating] = parseInt(row.count);
+                });
+
                 // Return structure matching the original expectation
                 client.release();
                 return res.status(200).json({
                     result: 'success',
                     reviews: result.rows,
                     avgRating: avgRating,
-                    totalReviews: totalReviews
+                    totalReviews: totalReviews,
+                    distribution: distribution
                 });
             }
 

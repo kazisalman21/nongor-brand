@@ -35,7 +35,8 @@ window.loadReviews = async function (productId) {
     }
 };
 
-function renderReviewsSummary(avgRating, totalReviews) {
+function renderReviewsSummary(avgRating, totalReviews, distribution = {}) {
+    // 1. Update Big Score
     const avgEl = document.getElementById('avg-rating-display');
     const starsEl = document.getElementById('avg-stars');
     const totalEl = document.getElementById('total-reviews-text');
@@ -43,24 +44,59 @@ function renderReviewsSummary(avgRating, totalReviews) {
     if (avgEl) avgEl.textContent = avgRating;
     if (totalEl) {
         totalEl.textContent = totalReviews > 0
-            ? `${totalReviews} review${totalReviews > 1 ? 's' : ''}`
-            : 'No reviews yet — be the first!';
+            ? `${totalReviews} Review${totalReviews !== 1 ? 's' : ''}`
+            : 'No reviews yet';
     }
     if (starsEl) {
         starsEl.innerHTML = renderStars(parseFloat(avgRating));
     }
+
+    // 2. Render Distribution Bars (New Desktop/Mobile Widget)
+    // We need to inject this HTML likely below the main score if it doesn't exist
+    // For now, let's assume we replace the content of a container or append it.
+    // Actually, let's find the container `reviews-summary-container` or create it.
+
+    // Existing structure in product.html might be simple.
+    // Let's look for a place to put the bars. 
+    // If not present, we can append them to the summary box.
+    const summaryBox = document.querySelector('.bg-white.rounded-2xl.shadow-sm.p-6.mb-8');
+    if (summaryBox) {
+        // Check if bars already exist
+        let barsContainer = document.getElementById('review-bars-container');
+        if (!barsContainer) {
+            barsContainer = document.createElement('div');
+            barsContainer.id = 'review-bars-container';
+            barsContainer.className = 'mt-6 pt-6 border-t border-gray-100 flex flex-col gap-2';
+            summaryBox.appendChild(barsContainer);
+        }
+
+        // Calculate percentages
+        const total = totalReviews || 1; // avoid divide by zero
+        const getPct = (count) => ((count / total) * 100).toFixed(1) + '%';
+
+        barsContainer.innerHTML = [5, 4, 3, 2, 1].map(star => {
+            const count = distribution[star] || 0;
+            const pct = getPct(count);
+            return `
+                <div class="flex items-center gap-3 text-sm">
+                    <div class="flex items-center gap-1 w-12 flex-shrink-0 font-medium text-gray-600">
+                        <span>${star}</span><span class="text-yellow-400">★</span>
+                    </div>
+                    <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-brand-accent rounded-full" style="width: ${pct}"></div>
+                    </div>
+                    <div class="w-8 text-right text-gray-400 text-xs">${count}</div>
+                </div>
+            `;
+        }).join('');
+    }
 }
 
-function renderStars(rating) {
+function renderStars(rating, size = 'text-xl') {
     let html = '';
     for (let i = 1; i <= 5; i++) {
-        if (i <= Math.floor(rating)) {
-            html += '<span class="text-yellow-400 text-xl">★</span>';
-        } else if (i - 0.5 <= rating) {
-            html += '<span class="text-yellow-400 text-xl">★</span>';
-        } else {
-            html += '<span class="text-gray-300 text-xl">★</span>';
-        }
+        const fill = i <= Math.floor(rating) ? 'text-yellow-400' : 'text-gray-200';
+        html += `<span class="${fill} ${size}">★</span>`;
     }
     return html;
 }
@@ -71,33 +107,79 @@ function renderReviewsList(reviews) {
 
     if (!reviews || reviews.length === 0) {
         container.innerHTML = `
-            <div class="text-center py-12">
-                <div class="text-5xl mb-4">📝</div>
-                <h4 class="text-lg font-bold text-gray-400 mb-2">No reviews yet</h4>
-                <p class="text-gray-500 text-sm">Be the first to share your experience!</p>
+            <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                <div class="text-6xl mb-4 opacity-50">📝</div>
+                <h4 class="text-xl font-bold text-gray-800 mb-2">No reviews yet</h4>
+                <p class="text-gray-500">Be the first to share your experience with this product!</p>
             </div>`;
         return;
     }
 
     container.innerHTML = reviews.map(review => {
-        const date = new Date(review.created_at).toLocaleDateString('bn-BD', {
-            year: 'numeric', month: 'long', day: 'numeric'
+        const date = new Date(review.created_at).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric'
         });
         const initials = review.reviewer_name.charAt(0).toUpperCase();
 
+        // Random gradient for avatar based on name length
+        const gradients = [
+            'from-pink-500 to-rose-500',
+            'from-purple-500 to-indigo-500',
+            'from-blue-400 to-cyan-500',
+            'from-emerald-400 to-teal-500',
+            'from-orange-400 to-amber-500'
+        ];
+        const gradient = gradients[review.reviewer_name.length % gradients.length];
+
         return `
-        <div class="bg-white rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
-            <div class="flex items-start gap-4">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-deep to-brand-terracotta text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
-                    ${initials}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-1">
-                        <h5 class="font-semibold text-brand-deep text-sm">${escapeHtml(review.reviewer_name)}</h5>
-                        <span class="text-xs text-gray-400">${date}</span>
+        <div class="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br ${gradient} text-white flex items-center justify-center font-bold text-lg shadow-inner">
+                            ${initials}
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            <div class="w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                        </div>
                     </div>
-                    <div class="flex gap-0.5 mb-2">${renderStars(review.rating)}</div>
-                    ${review.comment ? `<p class="text-gray-600 text-sm leading-relaxed">${escapeHtml(review.comment)}</p>` : ''}
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h5 class="font-bold text-gray-900">${escapeHtml(review.reviewer_name)}</h5>
+                            <span class="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wide rounded-full border border-green-100">
+                                Verified Purchase
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                            <span>${date}</span>
+                            <span>•</span>
+                            <span>${review.rating}.0 Rating</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Menu / Report (Visual) -->
+                <button class="text-gray-300 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="pl-16">
+                <div class="flex gap-1 mb-3 text-yellow-400 text-sm">
+                    ${renderStars(review.rating, 'text-sm')} 
+                </div>
+                ${review.comment ? `<p class="text-gray-600 leading-relaxed mb-4">${escapeHtml(review.comment)}</p>` : ''}
+                
+                <!-- Footer / Helpful -->
+                <div class="flex items-center gap-6 pt-4 border-t border-gray-50">
+                    <button class="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-accent transition-colors group/btn">
+                        <svg class="w-4 h-4 group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>
+                        Helpful
+                    </button>
+                    <button class="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                        Share
+                    </button>
                 </div>
             </div>
         </div>`;
