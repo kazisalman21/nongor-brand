@@ -388,11 +388,56 @@ window.shareReview = async function (reviewerName) {
 };
 
 window.reportReview = function (btn) {
-    // Simulate reporting
-    if (confirm('Report this review as inappropriate?')) {
-        window.showToast('Review reported to admins. 🛡️', 'success');
-        // Visual indicator that it's reported
-        btn.classList.add('text-red-500');
-        btn.disabled = true;
+    // Open Custom Modal
+    window.reportBtnTarget = btn;
+    const modal = document.getElementById('report-modal');
+    const card = document.getElementById('report-modal-card');
+    if (modal && card) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            card.classList.remove('opacity-0', 'scale-95');
+            card.classList.add('opacity-100', 'scale-100');
+        }, 10);
     }
 };
+
+window.closeReportModal = function () {
+    const modal = document.getElementById('report-modal');
+    const card = document.getElementById('report-modal-card');
+    if (modal && card) {
+        card.classList.remove('opacity-100', 'scale-100');
+        card.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            window.reportBtnTarget = null;
+        }, 300);
+    }
+};
+
+// Bind Confirm Report Logic (Robust)
+(function () {
+    const bind = () => {
+        const confirmBtn = document.getElementById('confirm-report-btn');
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                window.showToast('Review reported to admins. 🛡️', 'success');
+
+                // Visual indicator on the specific review card
+                if (window.reportBtnTarget) {
+                    window.reportBtnTarget.classList.add('text-red-500', 'bg-red-50');
+                    window.reportBtnTarget.disabled = true;
+                }
+
+                window.closeReportModal();
+            };
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bind);
+    } else {
+        bind();
+    }
+})();

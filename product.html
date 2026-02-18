@@ -530,6 +530,57 @@
     <script>
         // Main logic moved to js/product-details.js and imported in script.js
     </script>
+    <!-- Premium Report Review Modal -->
+    <div id="report-modal" class="fixed inset-0 z-[9999] flex items-center justify-center hidden">
+        <!-- Glassmorphism Backdrop -->
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-900/60 to-black/60 backdrop-blur-sm transition-opacity duration-300"
+            onclick="closeReportModal()"></div>
+
+        <!-- Modal Card -->
+        <div id="report-modal-card"
+            class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out">
+
+            <!-- Gradient Top Bar -->
+            <div class="h-2 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500"></div>
+
+            <!-- Content -->
+            <div class="p-8 text-center">
+                <!-- Animated Flag Icon -->
+                <div class="relative w-20 h-20 mx-auto mb-6">
+                    <div class="absolute inset-0 rounded-full bg-orange-100 animate-pulse opacity-50"></div>
+                    <div
+                        class="absolute inset-2 rounded-full bg-orange-50 flex items-center justify-center border border-orange-100">
+                        <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 21v-8a2 2 0 01-2-2V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Report Review?</h3>
+
+                <!-- Message -->
+                <p class="text-gray-500 text-sm mb-6 leading-relaxed">
+                    Do you want to flag this review as inappropriate? <br>Our team will review it shortly.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3">
+                    <button onclick="closeReportModal()"
+                        class="flex-1 py-3 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold rounded-xl border border-gray-200 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirm-report-btn"
+                        class="flex-1 py-3 px-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-xl shadow-lg shadow-orange-200 hover:shadow-xl hover:shadow-orange-300 transform hover:-translate-y-0.5 transition-all duration-300">
+                        Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
