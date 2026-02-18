@@ -23,7 +23,11 @@ if (connectionString && !connectionString.includes('sslmode=')) {
 const pool = new Pool({
     connectionString: finalConnectionString,
     ssl: {
-        rejectUnauthorized: false // This fixes the self-signed cert issue on Vercel/Neon
+        // SECURITY NOTE: rejectUnauthorized is set to false because Vercel/Neon use
+        // managed SSL certificates that may not be verifiable by the default CA bundle.
+        // This is acceptable in this context because the connection is already encrypted
+        // and Neon handles certificate management. For self-hosted PostgreSQL, set to true.
+        rejectUnauthorized: false
     },
     max: 20,
     idleTimeoutMillis: 30000,

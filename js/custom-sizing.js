@@ -80,5 +80,4 @@ window.getAndValidateMeasurements = function () {
     };
 };
 
-// Make accessible
-window.getAndValidateMeasurements = getAndValidateMeasurements;
+// Make accessible (already attached via window.getAndValidateMeasurements above)

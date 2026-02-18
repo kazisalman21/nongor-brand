@@ -1,12 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { Pool } = require('pg');
-
-// Reuse existing pool if possible? 
-// Vercel might reuse containers. 
-// Ideally we should export pool from db.js but here we need to be careful about connections.
-// Let's create a new pool for this function to be safe or require the existing one.
-// Assuming db.js is in the same directory.
 const pool = require('./db');
 
 // Helper: Escape HTML characters

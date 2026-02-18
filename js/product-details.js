@@ -212,25 +212,30 @@ function updateMetaTags(product) {
 }
 
 // Expose functions to global scope for HTML onclick
-window.changeMainImage = function (src) {
-    document.getElementById('main-image').src = src;
-    document.querySelectorAll('#thumbnails img').forEach(img => {
-        img.classList.toggle('border-brand-terracotta', img.src === src);
-        img.classList.toggle('border-gray-200', img.src !== src);
-    });
-};
+// Only define if not already defined by modal.js (prevents collision on index.html)
+if (!window.changeMainImage) {
+    window.changeMainImage = function (src) {
+        document.getElementById('main-image').src = src;
+        document.querySelectorAll('#thumbnails img').forEach(img => {
+            img.classList.toggle('border-brand-terracotta', img.src === src);
+            img.classList.toggle('border-gray-200', img.src !== src);
+        });
+    };
+}
 
-window.selectSize = function (size) {
-    window.selectedSize = size;
-    document.querySelectorAll('.size-btn').forEach(btn => {
-        const isSelected = btn.textContent.trim() === size;
-        btn.classList.toggle('border-brand-terracotta', isSelected);
-        btn.classList.toggle('bg-brand-terracotta/10', isSelected);
-        btn.classList.toggle('text-brand-terracotta', isSelected);
-        btn.classList.toggle('border-gray-200', !isSelected);
-        btn.classList.toggle('text-gray-600', !isSelected);
-    });
-};
+if (!window.selectSize) {
+    window.selectSize = function (size) {
+        window.selectedSize = size;
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            const isSelected = btn.textContent.trim() === size;
+            btn.classList.toggle('border-brand-terracotta', isSelected);
+            btn.classList.toggle('bg-brand-terracotta/10', isSelected);
+            btn.classList.toggle('text-brand-terracotta', isSelected);
+            btn.classList.toggle('border-gray-200', !isSelected);
+            btn.classList.toggle('text-gray-600', !isSelected);
+        });
+    };
+}
 
 window.updateQty = function (delta) {
     const maxQty = Math.min(10, window.maxStock || 10);

@@ -516,14 +516,8 @@ window.trackOrder = async function () {
             document.getElementById('track-result').classList.remove('hidden');
             document.getElementById('track-id-display').textContent = order.order_id;
 
-            document.getElementById('track-amount').textContent = `৳${parseFloat(order.total_price || 0).toLocaleString('bn-BD')} `;
-            const paymentStatusEl = document.getElementById('track-payment-status');
-
-            if (order.status === 'Paid') {
-                paymentStatusEl.innerHTML = `<span class="text-green-600 bg-green-100 px-2 py-1 rounded text-xs">Paid ✅</span>`;
-            } else {
-                paymentStatusEl.innerHTML = `<span class="text-red-600 bg-red-100 px-2 py-1 rounded text-xs">${order.payment_status || 'Due'} ⚠️</span>`;
-            }
+            const amountEl = document.getElementById('track-amount');
+            if (amountEl) amountEl.textContent = `৳${parseFloat(order.total_price || 0).toLocaleString('bn-BD')} `;
 
             const statusContainer = document.getElementById('track-status-container');
             const deliveryStatus = order.delivery_status || order.status || 'Pending';
@@ -549,8 +543,10 @@ window.trackOrder = async function () {
             statusContainer.appendChild(statusDiv);
 
             const paymentBox = document.getElementById('track-payment-status');
-            const paymentColor = getPaymentColor(paymentStatus);
-            paymentBox.innerHTML = `<span class="${paymentColor}">${paymentStatus}</span>`;
+            if (paymentBox) {
+                const paymentColor = getPaymentColor(paymentStatus);
+                paymentBox.innerHTML = `<span class="${paymentColor}">${paymentStatus}</span>`;
+            }
 
             document.getElementById('track-delivery-date').textContent = order.delivery_date || 'Processing...';
 
