@@ -8,21 +8,35 @@ window.quantity = 1;
 window.selectedSize = null;
 let currentProduct = null;
 const ANIMATION_MIN_TIME = 3000;
-const animStart = Date.now();
+
+// Dual-ready pattern: both animation timer AND data must be ready before reveal
+let animDone = false;
+let dataReady = false;
+let revealed = false;
+let errorPending = false;
 
 export function initProductPage() {
     // Reset state
     window.currentSizeType = 'standard';
     window.currentMeasurementUnit = 'inch';
+    animDone = false;
+    dataReady = false;
+    revealed = false;
+    errorPending = false;
+
+    // Start the animation minimum timer from NOW (not module load time)
+    setTimeout(() => {
+        animDone = true;
+        tryReveal();
+    }, ANIMATION_MIN_TIME);
 
     // 1. Check for Preloaded Data (SSR)
     if (window.preloadedProduct) {
         console.log('⚡ Hydrating from SSR data...');
         currentProduct = window.preloadedProduct;
         renderProduct(currentProduct);
-        const elapsed = Date.now() - animStart;
-        const remaining = Math.max(0, ANIMATION_MIN_TIME - elapsed);
-        setTimeout(() => revealContent(), remaining);
+        dataReady = true;
+        tryReveal();
         return;
     }
 
@@ -41,10 +55,10 @@ export function initProductPage() {
         }
 
         // Only show error if we are actually ON the product page and missing ID/Slug
-        // But since this script is loaded, we assume we are on product.html
-        // However, if imported in script.js which runs everywhere, we need a guard.
         if (document.getElementById('product-title')) {
-            showError();
+            errorPending = true;
+            dataReady = true;
+            tryReveal();
         }
         return;
     }
@@ -62,29 +76,38 @@ async function loadProduct(id, slug) {
         const data = await res.json();
 
         if (data.result !== 'success' || !data.data) {
-            showError();
+            errorPending = true;
+            dataReady = true;
+            tryReveal();
             return;
         }
 
         currentProduct = data.data;
-
         renderProduct(currentProduct);
         updateMetaTags(currentProduct);
 
-        const elapsed = Date.now() - animStart;
-        const remaining = Math.max(0, ANIMATION_MIN_TIME - elapsed);
-        setTimeout(() => revealContent(), remaining);
+        dataReady = true;
+        tryReveal();
 
     } catch (e) {
         console.error(e);
-        showError();
+        errorPending = true;
+        dataReady = true;
+        tryReveal();
     }
 }
 
-function showError() {
+// Only reveal when BOTH animation has played AND data is ready
+function tryReveal() {
+    if (revealed || !animDone || !dataReady) return;
+    revealed = true;
+
+    if (errorPending) {
+        const errorEl = document.getElementById('product-error');
+        if (errorEl) errorEl.classList.remove('hidden');
+    }
+
     revealContent();
-    const errorEl = document.getElementById('product-error');
-    if (errorEl) errorEl.classList.remove('hidden');
 }
 
 function revealContent() {
@@ -237,7 +260,7 @@ window.addToCartFromPage = function () {
         }
     } else {
         if (!window.selectedSize) {
-            showToast('Please select a size', 'error');
+            window.showToast('Please select a size', 'error');
             return;
         }
     }
@@ -261,7 +284,7 @@ window.addToCartFromPage = function () {
     if (window.updateCartUI) window.updateCartUI();
     if (window.openCart) window.openCart();
 
-    showToast('Added to cart! 🛒');
+    window.showToast('Added to cart! 🛒');
 };
 
 window.buyNowFromPage = function () {
@@ -286,7 +309,7 @@ window.buyNowFromPage = function () {
         }
     } else {
         if (!window.selectedSize) {
-            showToast('Please select a size', 'error');
+            window.showToast('Please select a size', 'error');
             return;
         }
     }
@@ -319,29 +342,13 @@ window.shareProduct = function () {
         // Using the local showToast if available, otherwise window.showToast if defined elsewhere
         // The inline script defined its own showToast. We should probably use the one from utils/cart.
         // For now, we'll assume showToast function is available or we define it:
-        if (typeof showToast === 'function') showToast('Link copied! 📋');
+        if (typeof window.showToast === 'function') window.showToast('Link copied! 📋');
         else window.alert('Link copied!');
     }
 };
 
-// Also logic for showToast if it was local to the page
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-    const icon = document.getElementById('toast-icon');
-    const msgEl = document.getElementById('toast-message');
-    if (msgEl) msgEl.textContent = message;
 
-    if (icon) {
-        icon.classList.remove('bg-green-500', 'bg-red-500');
-        icon.classList.add(type === 'error' ? 'bg-red-500' : 'bg-green-500');
-    }
-    toast.classList.remove('hidden', 'opacity-0', 'translate-y-20');
-    setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-20');
-        setTimeout(() => toast.classList.add('hidden'), 300);
-    }, 3000);
-}
+// Use showToast from utils.js (window.showToast)
 
 // Attach init to DOMContentLoaded if we are the script entry point, 
 // OR export it.

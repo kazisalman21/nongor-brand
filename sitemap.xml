@@ -38,4 +38,9 @@
       <loc>https://nongor-brand.vercel.app/terms.html</loc>
       <priority>0.5</priority>
    </url>
+   <url>
+      <loc>https://nongor-brand.vercel.app/track.html</loc>
+      <lastmod>2026-02-19</lastmod>
+      <priority>0.7</priority>
+   </url>
 </urlset>

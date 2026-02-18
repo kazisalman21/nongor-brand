@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="bn" class="scroll-smooth">
+
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L96D9CXWFY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-L96D9CXWFY');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="আপনার নোঙর অর্ডার ট্র্যাক করুন। Track your Nongor order in real-time with our premium tracking system.">
+    <meta name="theme-color" content="#3D405B">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nongor-brand.vercel.app/track.html">
+    <meta property="og:title" content="নোঙর | অর্ডার ট্র্যাকিং">
+    <meta property="og:description" content="আপনার নোঙর অর্ডার রিয়েল-টাইমে ট্র্যাক করুন।">
+    <meta property="og:image" content="https://nongor-brand.vercel.app/assets/logo.jpeg">
+    <meta property="og:locale" content="bn_BD">
+    <meta property="og:site_name" content="নোঙর - Nongor">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="নোঙর | অর্ডার ট্র্যাকিং">
+    <meta name="twitter:description" content="আপনার নোঙর অর্ডার রিয়েল-টাইমে ট্র্যাক করুন।">
+    <meta name="twitter:image" content="https://nongor-brand.vercel.app/assets/logo.jpeg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" sizes="32x32" href="./assets/logo.jpeg">
+    <link rel="apple-touch-icon" href="./assets/logo.jpeg">
+    <link rel="manifest" href="/manifest.json">
+
+    <title>নোঙর | অর্ডার ট্র্যাক করুন</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <link href="./assets/styles.css?v=2" rel="stylesheet">
+    <!-- Custom Animations & Polish -->
+    <link href="./assets/animations.css?v=2" rel="stylesheet">
+
+    <style>
+        /* ===== 3D PARCEL BOX ===== */
+        .parcel-scene {
+            perspective: 800px;
+            width: 160px;
+            height: 160px;
+        }
+
+        .parcel-box {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: parcelSpin 8s ease-in-out infinite;
+        }
+
+        .parcel-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(224, 122, 95, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border-radius: 12px;
+            backface-visibility: visible;
+        }
+
+        .face-front {
+            background: linear-gradient(135deg, rgba(61, 64, 91, 0.9), rgba(61, 64, 91, 0.7));
+            transform: translateZ(80px);
+            box-shadow: inset 0 0 40px rgba(224, 122, 95, 0.1);
+        }
+
+        .face-back {
+            background: linear-gradient(135deg, rgba(61, 64, 91, 0.8), rgba(61, 64, 91, 0.6));
+            transform: rotateY(180deg) translateZ(80px);
+        }
+
+        .face-left {
+            background: linear-gradient(135deg, rgba(224, 122, 95, 0.3), rgba(224, 122, 95, 0.15));
+            transform: rotateY(-90deg) translateZ(80px);
+        }
+
+        .face-right {
+            background: linear-gradient(135deg, rgba(224, 122, 95, 0.3), rgba(224, 122, 95, 0.15));
+            transform: rotateY(90deg) translateZ(80px);
+        }
+
+        .face-top {
+            background: linear-gradient(135deg, rgba(242, 204, 143, 0.4), rgba(224, 122, 95, 0.3));
+            transform: rotateX(90deg) translateZ(80px);
+        }
+
+        .face-top::after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 4px;
+            background: rgba(224, 122, 95, 0.6);
+            border-radius: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 8px 0 rgba(224, 122, 95, 0.4), 0 -8px 0 rgba(224, 122, 95, 0.4);
+        }
+
+        .face-bottom {
+            background: linear-gradient(135deg, rgba(61, 64, 91, 0.6), rgba(61, 64, 91, 0.4));
+            transform: rotateX(-90deg) translateZ(80px);
+        }
+
+        @keyframes parcelSpin {
+            0% {
+                transform: rotateY(0deg) rotateX(-10deg);
+            }
+
+            25% {
+                transform: rotateY(90deg) rotateX(5deg);
+            }
+
+            50% {
+                transform: rotateY(180deg) rotateX(-5deg);
+            }
+
+            75% {
+                transform: rotateY(270deg) rotateX(10deg);
+            }
+
+            100% {
+                transform: rotateY(360deg) rotateX(-10deg);
+            }
+        }
+
+        /* Parcel float */
+        .parcel-float {
+            animation: parcelFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes parcelFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* ===== PARTICLES ===== */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleDrift linear infinite;
+        }
+
+        @keyframes particleDrift {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline-step {
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .timeline-step .step-dot {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline-step.active .step-dot {
+            transform: scale(1.15);
+            box-shadow: 0 0 0 6px rgba(224, 122, 95, 0.2), 0 8px 30px rgba(224, 122, 95, 0.3);
+        }
+
+        .timeline-step.completed .step-dot {
+            transform: scale(1.05);
+        }
+
+        .timeline-connector {
+            height: 4px;
+            flex: 1;
+            border-radius: 2px;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-connector.filled {
+            background: linear-gradient(90deg, #81B29A, #E07A5F) !important;
+        }
+
+        /* Pulse ring for active step */
+        .timeline-step.active .step-dot::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid rgba(224, 122, 95, 0.4);
+            animation: pulseRing 2s ease-out infinite;
+        }
+
+        @keyframes pulseRing {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* ===== GLASS CARD ===== */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        /* ===== SEARCH INPUT ===== */
+        .track-input {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(61, 64, 91, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .track-input:focus {
+            border-color: #E07A5F;
+            box-shadow: 0 0 0 4px rgba(224, 122, 95, 0.15), 0 10px 40px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* ===== TRACK BUTTON ===== */
+        .track-btn {
+            background: linear-gradient(135deg, #3D405B, #E07A5F);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .track-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .track-btn:hover::before {
+            left: 100%;
+        }
+
+        .track-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(224, 122, 95, 0.3);
+        }
+
+        .track-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* ===== RESULT SLIDE IN ===== */
+        .result-reveal {
+            animation: resultSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes resultSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ===== BACKGROUND MESH ===== */
+        .bg-mesh {
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(224, 122, 95, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(61, 64, 91, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(242, 204, 143, 0.05) 0%, transparent 50%),
+                #fafaf8;
+        }
+
+        /* ===== INFO SHIMMER ===== */
+        .info-value {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-value::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            animation: infoShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes infoShimmer {
+
+            0%,
+            100% {
+                left: -100%;
+            }
+
+            50% {
+                left: 100%;
+            }
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .tracking-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(224, 122, 95, 0.1);
+            border-top-color: #E07A5F;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .status-badge {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: badgeShine 2.5s ease-in-out infinite;
+        }
+
+        @keyframes badgeShine {
+
+            0%,
+            100% {
+                transform: translateX(-100%);
+            }
+
+            50% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Mobile timeline vertical */
+        @media (max-width: 639px) {
+            .timeline-horizontal {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .timeline-connector {
+                width: 4px !important;
+                height: 32px !important;
+                flex: none;
+                margin-left: 22px;
+            }
+
+            .timeline-step {
+                flex-direction: row !important;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-mesh text-brand-deep font-sans antialiased overflow-x-hidden min-h-screen">
+
+    <!-- Cinematic Loading Overlay -->
+    <div id="app-loading-overlay"
+        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
+        <div class="relative flex flex-col items-center">
+            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
+                <img src="./assets/logo.jpeg" alt="Nongor" class="w-24 h-24 object-cover"
+                    style="animation: subtle-zoom 20s infinite alternate">
+            </div>
+            <h4 class="text-white/90 font-serif text-xl tracking-[0.2em] uppercase mb-2"
+                style="animation: fadeInUp 1s ease-out 0.3s both">নোঙর</h4>
+            <div class="relative w-48 h-0.5 bg-white/10 rounded-full overflow-hidden mt-4">
+                <div class="absolute inset-0 bg-gradient-to-r from-brand-terracotta/60 via-brand-gold to-brand-terracotta/60 animate-shimmer"
+                    style="background-size: 200% 100%"></div>
+            </div>
+        </div>
+    </div>
+    <script>setTimeout(function () { var o = document.getElementById('app-loading-overlay'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
+
+    <!-- Floating Particles Container -->
+    <div id="particles" class="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true"></div>
+
+    <!-- Header -->
+    <header class="bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="./assets/logo.jpeg" alt="নোঙর" class="h-10 rounded-lg">
+                <span class="text-2xl font-serif font-bold text-brand-deep">নোঙর</span>
+            </a>
+            <a href="index.html#collection"
+                class="text-sm font-medium text-gray-600 hover:text-brand-terracotta transition">← Back to Shop</a>
+        </div>
+    </header>
+
+    <!-- ===== HERO / SEARCH SECTION ===== -->
+    <section class="relative pt-12 pb-8 md:pt-20 md:pb-12 px-4">
+        <div class="max-w-3xl mx-auto text-center relative z-10">
+
+            <!-- 3D Parcel Animation -->
+            <div class="flex justify-center mb-8 parcel-float">
+                <div class="parcel-scene">
+                    <div class="parcel-box">
+                        <div class="parcel-face face-front">
+                            <svg class="w-12 h-12 text-brand-terracotta/70" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                        </div>
+                        <div class="parcel-face face-back">
+                            <span class="text-white/30 font-serif tracking-widest text-sm">নোঙর</span>
+                        </div>
+                        <div class="parcel-face face-left"></div>
+                        <div class="parcel-face face-right"></div>
+                        <div class="parcel-face face-top"></div>
+                        <div class="parcel-face face-bottom"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-3xl md:text-5xl font-serif font-bold mb-3 gradient-text">
+                অর্ডার ট্র্যাক করুন
+            </h1>
+            <p class="text-gray-500 text-sm md:text-base mb-8 font-medium">
+                Track your parcel in real-time — আপনার অর্ডার আইডি দিন
+            </p>
+
+            <!-- Search Box -->
+            <div class="max-w-xl mx-auto relative">
+                <div class="relative">
+                    <div class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input id="track-input" type="text" placeholder="Order ID (e.g. NG-12345) বা Tracking Token"
+                        class="track-input w-full pl-14 pr-6 py-5 rounded-2xl text-lg font-medium outline-none placeholder-gray-300"
+                        autocomplete="off" spellcheck="false">
+                </div>
+
+                <button id="track-btn" onclick="trackParcel()"
+                    class="track-btn w-full mt-4 py-4 rounded-2xl text-white font-bold text-lg tracking-wide flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <span>TRACK ORDER</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== LOADING STATE ===== -->
+    <div id="tracking-loading" class="hidden py-16 text-center">
+        <div class="flex flex-col items-center gap-4">
+            <div class="tracking-spinner"></div>
+            <p class="text-gray-400 font-medium text-sm tracking-wide">Searching your order...</p>
+        </div>
+    </div>
+
+    <!-- ===== RESULT SECTION ===== -->
+    <section id="tracking-result" class="hidden px-4 pb-16">
+        <div class="max-w-4xl mx-auto result-reveal">
+
+            <!-- Status Hero Card -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 mb-8 text-center">
+                <div class="flex items-center justify-center gap-3 mb-2">
+                    <span class="text-xs uppercase tracking-[0.2em] text-gray-400 font-bold">Order</span>
+                    <span id="result-order-id"
+                        class="text-sm font-mono font-bold text-brand-deep bg-gray-100 px-3 py-1 rounded-lg"></span>
+                </div>
+
+                <div id="result-status-badge"
+                    class="status-badge inline-block mt-4 mb-2 px-6 py-2 rounded-full text-white font-bold text-lg tracking-wide">
+                </div>
+
+                <p id="result-status-label" class="text-gray-500 text-sm font-medium mt-2"></p>
+            </div>
+
+            <!-- ===== ANIMATED TIMELINE ===== -->
+            <div class="glass-card rounded-3xl p-6 md:p-10 mb-8">
+                <h3 class="text-center text-xs uppercase tracking-[0.25em] text-gray-400 font-bold mb-8">Delivery
+                    Progress</h3>
+
+                <div class="timeline-horizontal flex items-center justify-between gap-0">
+                    <!-- Step 1: Ordered -->
+                    <div class="timeline-step flex flex-col items-center text-center" data-step="1">
+                        <div class="step-dot bg-gray-200 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <span
+                            class="text-[10px] md:text-xs font-bold mt-2 text-gray-400 uppercase tracking-wider">Ordered</span>
+                    </div>
+
+                    <div class="timeline-connector bg-gray-200" data-connector="1"></div>
+
+                    <!-- Step 2: Confirmed -->
+                    <div class="timeline-step flex flex-col items-center text-center" data-step="2">
+                        <div class="step-dot bg-gray-200 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <span
+                            class="text-[10px] md:text-xs font-bold mt-2 text-gray-400 uppercase tracking-wider">Confirmed</span>
+                    </div>
+
+                    <div class="timeline-connector bg-gray-200" data-connector="2"></div>
+
+                    <!-- Step 3: Processing -->
+                    <div class="timeline-step flex flex-col items-center text-center" data-step="3">
+                        <div class="step-dot bg-gray-200 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <span
+                            class="text-[10px] md:text-xs font-bold mt-2 text-gray-400 uppercase tracking-wider">Processing</span>
+                    </div>
+
+                    <div class="timeline-connector bg-gray-200" data-connector="3"></div>
+
+                    <!-- Step 4: Shipped -->
+                    <div class="timeline-step flex flex-col items-center text-center" data-step="4">
+                        <div class="step-dot bg-gray-200 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            </svg>
+                        </div>
+                        <span
+                            class="text-[10px] md:text-xs font-bold mt-2 text-gray-400 uppercase tracking-wider">Shipped</span>
+                    </div>
+
+                    <div class="timeline-connector bg-gray-200" data-connector="4"></div>
+
+                    <!-- Step 5: Delivered -->
+                    <div class="timeline-step flex flex-col items-center text-center" data-step="5">
+                        <div class="step-dot bg-gray-200 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <span
+                            class="text-[10px] md:text-xs font-bold mt-2 text-gray-400 uppercase tracking-wider">Delivered</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ORDER DETAILS GRID ===== -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <!-- Order Info -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h4 class="text-xs uppercase tracking-[0.2em] text-gray-400 font-bold mb-5 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand-terracotta" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        Order Details
+                    </h4>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Items</span>
+                            <span id="result-items"
+                                class="text-sm font-bold text-brand-deep text-right max-w-[60%] truncate info-value"></span>
+                        </div>
+                        <div class="h-px bg-gray-100"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Size</span>
+                            <span id="result-size" class="text-sm font-bold text-brand-deep info-value"></span>
+                        </div>
+                        <div class="h-px bg-gray-100"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Quantity</span>
+                            <span id="result-qty" class="text-sm font-bold text-brand-deep info-value"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Info -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h4 class="text-xs uppercase tracking-[0.2em] text-gray-400 font-bold mb-5 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand-terracotta" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                        Payment & Delivery
+                    </h4>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Total Amount</span>
+                            <span id="result-total" class="text-lg font-bold text-brand-terracotta info-value"></span>
+                        </div>
+                        <div class="h-px bg-gray-100"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Payment</span>
+                            <span id="result-payment" class="text-sm font-bold info-value"></span>
+                        </div>
+                        <div class="h-px bg-gray-100"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Est. Delivery</span>
+                            <span id="result-delivery" class="text-sm font-bold text-brand-deep info-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track Again -->
+            <div class="text-center mt-8">
+                <button onclick="resetTracker()"
+                    class="text-sm text-gray-400 hover:text-brand-terracotta transition font-medium flex items-center gap-2 mx-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                    </svg>
+                    Track another order
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ERROR STATE ===== -->
+    <div id="tracking-error" class="hidden py-16 px-4">
+        <div class="max-w-md mx-auto text-center glass-card rounded-3xl p-8 result-reveal">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+                <svg class="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">Order Not Found</h3>
+            <p class="text-gray-400 text-sm mb-6">অর্ডারটি পাওয়া যায়নি। Please check your Order ID and try again.</p>
+            <button onclick="resetTracker()" class="track-btn px-8 py-3 rounded-xl text-white font-bold text-sm">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-xl border border-gray-100 hidden opacity-0 translate-y-20 transition-all duration-300 z-50 flex items-center gap-3">
+        <div id="toast-icon" class="w-2 h-2 rounded-full bg-green-500"></div>
+        <span id="toast-message" class="text-sm font-medium text-gray-700"></span>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <img src="./assets/logo.jpeg" alt="Nongor" class="h-14 rounded-lg mix-blend-multiply opacity-90">
+                    <div>
+                        <h4 class="text-3xl font-serif font-bold tracking-wider text-brand-deep leading-none">নোঙর</h4>
+                        <p class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-60 mt-1">The Clothing
+                            Brand</p>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-wrap justify-center gap-6 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    <a href="about.html" class="hover:text-brand-terracotta transition">About Us</a>
+                    <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
+                    <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
+                    <a href="shipping-info.html" class="hover:text-brand-terracotta transition">Shipping Info</a>
+                    <a href="faq.html" class="hover:text-brand-terracotta transition">FAQ</a>
+                    <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                    <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 mb-10">
+
+            <div class="flex justify-center gap-6 mb-10">
+                <a href="https://www.facebook.com/profile.php?id=61582283911710" target="_blank"
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                </a>
+                <a href="https://www.instagram.com/nongorr_?igsh=ajhra2hiZDV1OGJp" target="_blank"
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12s.014 3.668.072 4.948c.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24s3.668-.014 4.948-.072c4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                    </svg>
+                </a>
+                <a href="https://m.me/857107060814707" target="_blank" rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.03 2 11C2 13.66 3.34 16.05 5.5 17.65V22L9.64 19.74C10.4 19.91 11.19 20 12 20C17.52 20 22 15.97 22 11C22 6.03 17.52 2 12 2ZM13.19 14.88L10.79 12.33L6.11 14.88L11.21 9.46L13.61 12.01L18.29 9.46L13.19 14.88Z" />
+                    </svg>
+                </a>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <div class="flex flex-col md:flex-row items-center gap-4">
+                    <p>&copy; 2026 নোঙর Brand. All Rights Reserved.</p>
+                    <div class="flex gap-4">
+                        <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
+                        <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold italic text-blue-800 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">VISA</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-red-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">MasterCard</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-pink-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">bKash</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-orange-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">Nagad</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== INLINE JS ===== -->
+    <script>
+        const API_URL = '/api';
+
+        // ===== PARTICLES =====
+        (function initParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['rgba(224,122,95,0.15)', 'rgba(61,64,91,0.1)', 'rgba(242,204,143,0.12)', 'rgba(129,178,154,0.1)'];
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 6 + 3;
+                p.style.cssText = `
+                    width: ${size}px; height: ${size}px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${Math.random() * 100}%;
+                    bottom: -10px;
+                    animation-duration: ${Math.random() * 15 + 10}s;
+                    animation-delay: ${Math.random() * 10}s;
+                `;
+                container.appendChild(p);
+            }
+        })();
+
+        // ===== LOADING OVERLAY REMOVAL =====
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('app-loading-overlay');
+            if (loader) {
+                loader.style.pointerEvents = 'none';
+                setTimeout(() => {
+                    loader.style.transition = 'opacity 0.8s ease';
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 900);
+                }, 300);
+            }
+
+            // Allow Enter key to submit
+            document.getElementById('track-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') trackParcel();
+            });
+
+            // Auto-fill from URL params
+            const params = new URLSearchParams(window.location.search);
+            const urlId = params.get('id') || params.get('orderId') || params.get('track');
+            if (urlId) {
+                document.getElementById('track-input').value = urlId;
+                trackParcel();
+            }
+        });
+
+        // ===== TOAST =====
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            const icon = document.getElementById('toast-icon');
+            if (!toast || !msgEl) return;
+            msgEl.textContent = message;
+            if (icon) {
+                icon.classList.remove('bg-green-500', 'bg-red-500');
+                icon.classList.add(type === 'error' ? 'bg-red-500' : 'bg-green-500');
+            }
+            toast.classList.remove('hidden', 'opacity-0', 'translate-y-20');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-20');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+
+        // ===== STATUS → STEP MAPPING =====
+        function getStepFromStatus(status) {
+            if (!status) return 1;
+            const s = status.toLowerCase();
+            if (s.includes('delivered')) return 5;
+            if (s.includes('shipped') || s.includes('transit') || s.includes('out for delivery')) return 4;
+            if (s.includes('processing') || s.includes('preparing')) return 3;
+            if (s.includes('confirmed') || s.includes('paid') || s.includes('accepted')) return 2;
+            if (s.includes('cancel') || s.includes('refund')) return 0; // cancelled
+            return 1; // pending / ordered
+        }
+
+        function getStatusBadgeColor(status) {
+            if (!status) return 'bg-gray-500';
+            const s = status.toLowerCase();
+            if (s.includes('delivered')) return 'bg-gradient-to-r from-green-500 to-emerald-600';
+            if (s.includes('shipped') || s.includes('transit')) return 'bg-gradient-to-r from-purple-500 to-indigo-600';
+            if (s.includes('processing')) return 'bg-gradient-to-r from-blue-500 to-cyan-600';
+            if (s.includes('confirmed') || s.includes('paid')) return 'bg-gradient-to-r from-brand-terracotta to-orange-500';
+            if (s.includes('cancel')) return 'bg-gradient-to-r from-red-500 to-rose-600';
+            return 'bg-gradient-to-r from-orange-400 to-amber-500';
+        }
+
+        function getStatusLabel(status) {
+            if (!status) return 'Your order is being reviewed';
+            const s = status.toLowerCase();
+            if (s.includes('delivered')) return '🎉 Your order has been delivered!';
+            if (s.includes('shipped') || s.includes('transit')) return '🚚 Your order is on the way!';
+            if (s.includes('processing')) return '⚙️ We\'re preparing your order';
+            if (s.includes('confirmed') || s.includes('paid')) return '✅ Order confirmed & payment received';
+            if (s.includes('cancel')) return '❌ This order has been cancelled';
+            return '⏳ Order placed — awaiting confirmation';
+        }
+
+        function getPaymentBadge(status) {
+            if (!status) return { text: 'Unknown', cls: 'text-gray-500' };
+            const s = status.toLowerCase();
+            if (s === 'paid') return { text: 'Paid ✅', cls: 'text-green-600 bg-green-50 px-2 py-0.5 rounded-lg' };
+            if (s === 'due') return { text: 'Due ⚠️', cls: 'text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg' };
+            if (s === 'unpaid') return { text: 'Unpaid', cls: 'text-red-500 bg-red-50 px-2 py-0.5 rounded-lg' };
+            if (s === 'refunded') return { text: 'Refunded', cls: 'text-purple-600 bg-purple-50 px-2 py-0.5 rounded-lg' };
+            return { text: status, cls: 'text-gray-600' };
+        }
+
+        // ===== ANIMATE TIMELINE =====
+        function animateTimeline(activeStep) {
+            const steps = document.querySelectorAll('.timeline-step');
+            const connectors = document.querySelectorAll('.timeline-connector');
+
+            steps.forEach((step, i) => {
+                const stepNum = i + 1;
+                const dot = step.querySelector('.step-dot');
+                const label = step.querySelector('span');
+
+                step.classList.remove('active', 'completed');
+                dot.className = 'step-dot bg-gray-200 text-gray-400';
+                if (label) label.className = label.className.replace(/text-\S+/g, '') + ' text-gray-400';
+
+                // Staggered animation
+                setTimeout(() => {
+                    if (activeStep === 0) {
+                        // Cancelled — all red
+                        dot.className = 'step-dot bg-red-100 text-red-400';
+                        if (label) label.classList.replace('text-gray-400', 'text-red-400');
+                    } else if (stepNum < activeStep) {
+                        step.classList.add('completed');
+                        dot.className = 'step-dot bg-brand-sage text-white';
+                        if (label) { label.classList.remove('text-gray-400'); label.classList.add('text-brand-sage'); }
+                    } else if (stepNum === activeStep) {
+                        step.classList.add('active');
+                        dot.className = 'step-dot bg-brand-terracotta text-white';
+                        if (label) { label.classList.remove('text-gray-400'); label.classList.add('text-brand-terracotta'); }
+                    }
+                }, i * 200);
+            });
+
+            connectors.forEach((conn, i) => {
+                conn.classList.remove('filled');
+                setTimeout(() => {
+                    if (activeStep === 0) {
+                        conn.style.background = 'rgba(239,68,68,0.2)';
+                    } else if (i + 1 < activeStep) {
+                        conn.classList.add('filled');
+                    }
+                }, (i + 1) * 250);
+            });
+        }
+
+        // ===== TRACK PARCEL =====
+        async function trackParcel() {
+            const input = document.getElementById('track-input').value.trim();
+            if (!input) {
+                showToast('অর্ডারের আইডি দিন (Enter Order ID)', 'error');
+                document.getElementById('track-input').focus();
+                return;
+            }
+
+            const btn = document.getElementById('track-btn');
+            const loadingEl = document.getElementById('tracking-loading');
+            const resultEl = document.getElementById('tracking-result');
+            const errorEl = document.getElementById('tracking-error');
+
+            // Show loading, hide others
+            resultEl.classList.add('hidden');
+            errorEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="tracking-spinner" style="width:24px;height:24px;border-width:2px;"></div><span>Searching...</span>`;
+
+            try {
+                let queryParam = 'orderId=' + encodeURIComponent(input);
+                if (input.length > 20) {
+                    queryParam = 'tracking_token=' + encodeURIComponent(input);
+                }
+
+                const response = await fetch(`${API_URL}?${queryParam}&_t=${Date.now()}`);
+                const result = await response.json();
+
+                if (result.result === 'success' && result.data) {
+                    const order = result.data;
+
+                    // Populate result UI
+                    document.getElementById('result-order-id').textContent = order.order_id;
+
+                    const deliveryStatus = order.delivery_status || order.status || 'Pending';
+                    const statusBadge = document.getElementById('result-status-badge');
+                    statusBadge.textContent = deliveryStatus;
+                    statusBadge.className = `status-badge inline-block mt-4 mb-2 px-6 py-2 rounded-full text-white font-bold text-lg tracking-wide ${getStatusBadgeColor(deliveryStatus)}`;
+
+                    document.getElementById('result-status-label').textContent = getStatusLabel(deliveryStatus);
+
+                    // Order details
+                    document.getElementById('result-items').textContent = order.product_name || 'N/A';
+                    document.getElementById('result-size').textContent = order.size || 'N/A';
+                    document.getElementById('result-qty').textContent = order.quantity || '1';
+                    document.getElementById('result-total').textContent = `৳${parseFloat(order.total_price || 0).toLocaleString()}`;
+
+                    const payBadge = getPaymentBadge(order.payment_status);
+                    const payEl = document.getElementById('result-payment');
+                    payEl.textContent = payBadge.text;
+                    payEl.className = `text-sm font-bold info-value ${payBadge.cls}`;
+
+                    document.getElementById('result-delivery').textContent = order.delivery_date || 'Processing...';
+
+                    // Animate timeline
+                    const step = getStepFromStatus(deliveryStatus);
+                    animateTimeline(step);
+
+                    // Show result
+                    loadingEl.classList.add('hidden');
+                    resultEl.classList.remove('hidden');
+
+                    // Smooth scroll to result
+                    setTimeout(() => {
+                        resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+
+                } else {
+                    loadingEl.classList.add('hidden');
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error('Tracking error:', e);
+                loadingEl.classList.add('hidden');
+                errorEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <span>TRACK ORDER</span>
+                `;
+            }
+        }
+
+        // ===== RESET =====
+        function resetTracker() {
+            document.getElementById('tracking-result').classList.add('hidden');
+            document.getElementById('tracking-error').classList.add('hidden');
+            document.getElementById('track-input').value = '';
+            document.getElementById('track-input').focus();
+
+            // Reset timeline
+            document.querySelectorAll('.timeline-step').forEach(step => {
+                step.classList.remove('active', 'completed');
+                const dot = step.querySelector('.step-dot');
+                dot.className = 'step-dot bg-gray-200 text-gray-400';
+                const label = step.querySelector('span');
+                if (label) { label.className = label.className.replace(/text-\S+/g, '') + ' text-gray-400'; }
+            });
+            document.querySelectorAll('.timeline-connector').forEach(conn => {
+                conn.classList.remove('filled');
+                conn.style.background = '';
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+
+</body>
+
+</html>
