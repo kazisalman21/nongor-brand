@@ -14,7 +14,6 @@
     "pg": "^8.11.3",
     "qrcode": "^1.5.3",
     "regenerator-runtime": "^0.14.1",
-    "sharp": "^0.34.5",
     "speakeasy": "^2.0.0",
     "tailwindcss": "^3.4.1",
     "twilio": "^5.4.0"
@@ -32,5 +31,8 @@
     "db:migrate:images": "node scripts/migrate_images_to_jsonb.js",
     "db:migrate:coupons": "node scripts/create_coupons_table.js",
     "db:setup:all": "npm run db:migrate:tracking && npm run db:migrate:order-items && npm run db:migrate:images && npm run db:migrate:coupons"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }

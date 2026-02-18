@@ -55,6 +55,10 @@
             "destination": "/api/product_page.js?slug=:slug"
         },
         {
+            "source": "/feed.xml",
+            "destination": "/api/feed.js"
+        },
+        {
             "source": "/api/auth",
             "destination": "/api/auth.js"
         },
