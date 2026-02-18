@@ -24,6 +24,7 @@ window.loadReviews = async function (productId) {
     try {
         const res = await fetch(`${API_URL}?action=getReviews&productId=${productId}`);
         const data = await res.json();
+        console.log('📝 Reviews Data:', data);
 
         if (data.result === 'success') {
             renderReviewsSummary(data.avgRating, data.totalReviews);
@@ -146,14 +147,24 @@ window.submitReview = async function () {
         const data = await res.json();
 
         if (data.result === 'success') {
-            window.showToast('Review submitted! ⭐', 'success');
+            window.showToast(data.message || 'Review submitted for moderation! 🕒', 'success');
             // Reset form
             document.getElementById('review-name').value = '';
             document.getElementById('review-comment').value = '';
             selectedRating = 0;
             document.querySelectorAll('.star-select').forEach(btn => btn.style.color = '#D1D5DB');
-            // Reload reviews
-            await loadReviews(currentProductId);
+
+            // Do NOT reload reviews immediately because the new one is pending
+            // await loadReviews(currentProductId); 
+
+            // Optional: Show a more persistent message in the UI?
+            const container = document.getElementById('reviews-list');
+            if (container) {
+                const pendingMsg = document.createElement('div');
+                pendingMsg.className = 'bg-yellow-50 border border-yellow-100 rounded-xl p-4 text-center text-yellow-700 text-sm mb-4 animate-fade-in';
+                pendingMsg.innerHTML = '✨ Thanks! Your review has been submitted and is pending approval.';
+                container.prepend(pendingMsg);
+            }
         } else {
             window.showToast(data.message || 'Failed to submit review', 'error');
         }
