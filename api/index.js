@@ -863,10 +863,18 @@ module.exports = async (req, res) => {
                         reviewer_name VARCHAR(100) NOT NULL,
                         rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
                         comment TEXT,
-                        is_approved BOOLEAN DEFAULT true,
+                        is_approved BOOLEAN DEFAULT false,
                         created_at TIMESTAMP DEFAULT NOW()
                     )
                 `);
+
+                // Schema Migration: Ensure is_approved column exists for existing tables
+                try {
+                    await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                } catch (e) {
+                    // Ignore error if column exists or other issue, proceeding to query
+                    console.warn('Migration warning:', e.message);
+                }
 
                 const result = await client.query(
                     `SELECT id, reviewer_name, rating, comment, created_at 
@@ -932,13 +940,61 @@ module.exports = async (req, res) => {
                 }
 
                 await client.query(
-                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment) 
-                     VALUES ($1, $2, $3, $4)`,
+                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
+                     VALUES ($1, $2, $3, $4, false)`,
                     [productId, safeName, ratingNum, safeComment]
                 );
 
                 client.release();
-                return res.status(201).json({ result: 'success', message: 'Review submitted' });
+                // Return 201 but with strict message
+                return res.status(201).json({ result: 'success', message: 'Review submitted for approval' });
+            }
+
+            // --- UPDATE REVIEW STATUS (Admin) ---
+            if (query.action === 'updateReviewStatus') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const { reviewId, approved } = data;
+                if (!reviewId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Review ID required' });
+                }
+
+                // If approved is explicitly false, we might want to delete? 
+                // Or just set is_approved=false to hide it?
+                // The prompt says "approve or not approve". 
+                // Let's implement DELETE as a separate action or handle 'rejected' status.
+                // For now, boolean is_approved toggles visibility.
+
+                // Actually, let's support DELETE too if action is deleteReview?
+                // Or just update status.
+
+                await client.query(
+                    'UPDATE reviews SET is_approved = $1 WHERE id = $2',
+                    [!!approved, reviewId]
+                );
+
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Review status updated' });
+            }
+
+            // --- DELETE REVIEW (Admin) ---
+            if (query.action === 'deleteReview') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const { reviewId } = data;
+                await client.query('DELETE FROM reviews WHERE id = $1', [reviewId]);
+
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Review deleted' });
             }
 
             // --- ADD PRODUCT (Protected) ---
@@ -1099,16 +1155,32 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', message: 'Review created', data: result.rows[0] });
             }
 
-            // --- TOGGLE REVIEW APPROVAL (Admin) ---
-            if (data.action === 'toggleReviewApproval') {
+            // --- GET ALL REVIEWS (Admin) ---
+            if (query.action === 'getAllReviews') {
                 const auth = await verifySession(req, client);
-                if (!auth.valid) {
+                if (!auth.valid || auth.user.role !== 'admin') {
                     client.release();
-                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
                 }
-                if (auth.user.role !== 'admin') {
+
+                // Join with products to get product name
+                const result = await client.query(`
+                    SELECT r.*, p.name as product_name 
+                    FROM reviews r
+                    LEFT JOIN products p ON r.product_id = p.id
+                    ORDER BY r.created_at DESC
+                `);
+
+                client.release();
+                return res.status(200).json({ result: 'success', data: result.rows });
+            }
+
+            // --- UPDATE REVIEW STATUS (Admin) ---
+            if (data.action === 'updateReviewStatus') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
                     client.release();
-                    return res.status(403).json({ result: 'error', message: 'Admin access required' });
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
                 }
 
                 const { reviewId, approved } = data;
@@ -1118,7 +1190,7 @@ module.exports = async (req, res) => {
                 }
 
                 const result = await client.query(
-                    'UPDATE reviews SET approved = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+                    'UPDATE reviews SET is_approved = $1 WHERE id = $2 RETURNING *',
                     [approved === true, reviewId]
                 );
 
@@ -1127,6 +1199,29 @@ module.exports = async (req, res) => {
                     return res.status(404).json({ result: 'error', message: 'Review not found' });
                 }
                 return res.status(200).json({ result: 'success', message: 'Review updated', data: result.rows[0] });
+            }
+
+            // --- DELETE REVIEW (Admin) ---
+            if (data.action === 'deleteReview') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const { reviewId } = data;
+                if (!reviewId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'reviewId is required' });
+                }
+
+                const result = await client.query('DELETE FROM reviews WHERE id = $1 RETURNING *', [reviewId]);
+
+                client.release();
+                if (result.rows.length === 0) {
+                    return res.status(404).json({ result: 'error', message: 'Review not found' });
+                }
+                return res.status(200).json({ result: 'success', message: 'Review deleted', data: result.rows[0] });
             }
 
             // --- CHANGE ADMIN PASSWORD (Protected) ---
