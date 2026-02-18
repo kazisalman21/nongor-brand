@@ -119,14 +119,15 @@ function renderReviewsList(reviews) {
         const initials = review.reviewer_name.charAt(0).toUpperCase();
 
         // Random gradient for avatar based on name length
+        // Use inline styles to guarantee gradients work (avoid Tailwind purge issues)
         const gradients = [
-            'from-pink-500 to-rose-500',
-            'from-purple-500 to-indigo-500',
-            'from-blue-400 to-cyan-500',
-            'from-emerald-400 to-teal-500',
-            'from-orange-400 to-amber-500'
+            'linear-gradient(135deg, #ec4899, #f43f5e)', // pink-rose
+            'linear-gradient(135deg, #a855f7, #6366f1)', // purple-indigo
+            'linear-gradient(135deg, #60a5fa, #06b6d4)', // blue-cyan
+            'linear-gradient(135deg, #34d399, #14b8a6)', // emerald-teal
+            'linear-gradient(135deg, #fb923c, #f59e0b)'  // orange-amber
         ];
-        const gradient = gradients[review.reviewer_name.length % gradients.length];
+        const gradientStyle = gradients[review.reviewer_name.length % gradients.length];
 
         return `
         <div class="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
@@ -134,7 +135,7 @@ function renderReviewsList(reviews) {
             <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-4">
                     <div class="relative">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br ${gradient} text-white flex items-center justify-center font-bold text-lg shadow-inner">
+                        <div class="w-12 h-12 rounded-full text-white flex items-center justify-center font-bold text-lg shadow-inner" style="background: ${gradientStyle}">
                             ${initials}
                         </div>
                         <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
