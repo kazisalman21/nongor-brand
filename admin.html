@@ -5589,6 +5589,37 @@
         <p>© <span class="cr-year">2026</span> নোঙর Brand. All Rights Reserved.</p>
         <script>document.querySelector('.cr-year').textContent = new Date().getFullYear();</script>
     </footer>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full transform scale-95 opacity-0 transition-all duration-300"
+            id="delete-modal-card">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Review?</h3>
+                <p class="text-gray-500 text-sm mb-6">This action cannot be undone. Are you sure you want to permanently
+                    remove this review?</p>
+
+                <div class="flex gap-3">
+                    <button onclick="closeDeleteModal()"
+                        class="flex-1 py-2.5 px-4 border border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirm-delete-btn"
+                        class="flex-1 py-2.5 px-4 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 shadow-lg shadow-red-200 transition-colors">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         // --- REVIEW MANAGEMENT LOGIC ---
         (function () {
@@ -5800,36 +5831,7 @@
             }
         });
     </script>
-    <!-- Delete Confirmation Modal -->
-    <div id="delete-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full transform scale-95 opacity-0 transition-all duration-300"
-            id="delete-modal-card">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                        </path>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Review?</h3>
-                <p class="text-gray-500 text-sm mb-6">This action cannot be undone. Are you sure you want to permanently
-                    remove this review?</p>
 
-                <div class="flex gap-3">
-                    <button onclick="closeDeleteModal()"
-                        class="flex-1 py-2.5 px-4 border border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
-                        Cancel
-                    </button>
-                    <button id="confirm-delete-btn"
-                        class="flex-1 py-2.5 px-4 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 shadow-lg shadow-red-200 transition-colors">
-                        Delete
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 </body>
 
