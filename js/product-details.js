@@ -178,7 +178,7 @@ function renderProduct(product) {
     }
     thumbContainer.innerHTML = images.map((img, i) => {
         const src = img?.startsWith('http') ? img : `./assets/${img || 'logo.jpeg'}`;
-        return `<img src="${src}" alt="Thumbnail ${i + 1}" onclick="changeMainImage('${src}')" class="w-16 h-20 object-cover rounded-lg cursor-pointer border-2 ${i === 0 ? 'border-brand-terracotta' : 'border-gray-200'} hover:border-brand-terracotta transition">`;
+        return `<img src="${src}" alt="Thumbnail ${i + 1}" onclick="changeProductImage('${src}')" class="w-16 h-20 object-cover rounded-lg cursor-pointer border-2 ${i === 0 ? 'border-brand-terracotta' : 'border-gray-200'} hover:border-brand-terracotta transition">`;
     }).join('');
 
     const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -216,15 +216,13 @@ function updateMetaTags(product) {
 
 // Expose functions to global scope for HTML onclick
 // Only define if not already defined by modal.js (prevents collision on index.html)
-if (!window.changeMainImage) {
-    window.changeMainImage = function (src) {
-        document.getElementById('main-image').src = src;
-        document.querySelectorAll('#thumbnails img').forEach(img => {
-            img.classList.toggle('border-brand-terracotta', img.src === src);
-            img.classList.toggle('border-gray-200', img.src !== src);
-        });
-    };
-}
+window.changeProductImage = function (src) {
+    document.getElementById('main-image').src = src;
+    document.querySelectorAll('#thumbnails img').forEach(img => {
+        img.classList.toggle('border-brand-terracotta', img.getAttribute('src') === src || img.src === src);
+        img.classList.toggle('border-gray-200', img.getAttribute('src') !== src && img.src !== src);
+    });
+};
 
 if (!window.selectSize) {
     window.selectSize = function (size) {

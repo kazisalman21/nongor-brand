@@ -35,33 +35,31 @@ window.loadReviews = async function (productId) {
     }
 };
 
+// Helper to convert English numerals to Bengali
+function toBengali(str) {
+    if (str === null || str === undefined) return '০';
+    return str.toString().replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+}
+
 function renderReviewsSummary(avgRating, totalReviews, distribution = {}) {
     // 1. Update Big Score
     const avgEl = document.getElementById('avg-rating-display');
     const starsEl = document.getElementById('avg-stars');
     const totalEl = document.getElementById('total-reviews-text');
 
-    if (avgEl) avgEl.textContent = avgRating;
+    if (avgEl) avgEl.textContent = toBengali(avgRating);
     if (totalEl) {
         totalEl.textContent = totalReviews > 0
-            ? `${totalReviews}টি রিভিউ`
+            ? `${toBengali(totalReviews)}টি রিভিউ`
             : 'এখনও কোন রিভিউ নেই';
     }
     if (starsEl) {
         starsEl.innerHTML = renderStars(parseFloat(avgRating));
     }
 
-    // 2. Render Distribution Bars (New Desktop/Mobile Widget)
-    // We need to inject this HTML likely below the main score if it doesn't exist
-    // For now, let's assume we replace the content of a container or append it.
-    // Actually, let's find the container `reviews-summary-container` or create it.
-
-    // Existing structure in product.html might be simple.
-    // Let's look for a place to put the bars. 
-    // If not present, we can append them to the summary box.
+    // 2. Render Distribution Bars
     const summaryBox = document.querySelector('.bg-white.rounded-2xl.shadow-sm.p-6.mb-8');
     if (summaryBox) {
-        // Check if bars already exist
         let barsContainer = document.getElementById('review-bars-container');
         if (!barsContainer) {
             barsContainer = document.createElement('div');
@@ -70,8 +68,7 @@ function renderReviewsSummary(avgRating, totalReviews, distribution = {}) {
             summaryBox.appendChild(barsContainer);
         }
 
-        // Calculate percentages
-        const total = totalReviews || 1; // avoid divide by zero
+        const total = totalReviews || 1;
         const getPct = (count) => ((count / total) * 100).toFixed(1) + '%';
 
         barsContainer.innerHTML = [5, 4, 3, 2, 1].map(star => {
@@ -80,12 +77,12 @@ function renderReviewsSummary(avgRating, totalReviews, distribution = {}) {
             return `
                 <div class="flex items-center gap-3 text-sm">
                     <div class="flex items-center gap-1 w-12 flex-shrink-0 font-medium text-gray-600">
-                        <span>${star}</span><span class="text-yellow-400">★</span>
+                        <span>${toBengali(star)}</span><span class="text-yellow-400">★</span>
                     </div>
                     <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div class="h-full bg-brand-accent rounded-full" style="width: ${pct}"></div>
                     </div>
-                    <div class="w-8 text-right text-gray-400 text-xs">${count}</div>
+                    <div class="w-8 text-right text-gray-400 text-xs">${toBengali(count)}</div>
                 </div>
             `;
         }).join('');
@@ -116,7 +113,7 @@ function renderReviewsList(reviews) {
     }
 
     container.innerHTML = reviews.map(review => {
-        const date = new Date(review.created_at).toLocaleDateString('en-US', {
+        const date = new Date(review.created_at).toLocaleDateString('bn-BD', {
             year: 'numeric', month: 'short', day: 'numeric'
         });
         const initials = review.reviewer_name.charAt(0).toUpperCase();
@@ -154,7 +151,7 @@ function renderReviewsList(reviews) {
                         <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
                             <span>${date}</span>
                             <span>•</span>
-                            <span>${review.rating}.0 Rating</span>
+                            <span>${toBengali(review.rating)}.০ রেটিং</span>
                         </div>
                     </div>
                 </div>
