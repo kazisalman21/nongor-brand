@@ -190,6 +190,10 @@ function renderProduct(product) {
     }
 
     if (window.updateSizeTypeUI) window.updateSizeTypeUI();
+
+    // Init reviews & wishlist for this product
+    if (window.loadReviews) window.loadReviews(product.id);
+    if (window.initWishlist) window.initWishlist(product.id);
 }
 
 function updateMetaTags(product) {

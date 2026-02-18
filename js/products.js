@@ -314,6 +314,15 @@ function createProductCard(product, index) {
     imgContainer.appendChild(img);
     imgContainer.appendChild(overlay);
 
+    // Wishlist heart button
+    const heartBtn = document.createElement('button');
+    heartBtn.className = 'absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition';
+    heartBtn.setAttribute('aria-label', 'Toggle wishlist');
+    heartBtn.onclick = (e) => window.toggleWishlistCard && window.toggleWishlistCard(e, product.id);
+    const isWished = window.isInWishlist && window.isInWishlist(product.id);
+    heartBtn.innerHTML = `<svg class="w-4 h-4 transition-transform" fill="${isWished ? '#EF4444' : 'none'}" stroke="${isWished ? '#EF4444' : 'currentColor'}" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+    imgContainer.appendChild(heartBtn);
+
     if (!isMobile) {
         const shine = document.createElement('div');
         shine.className = 'absolute inset-0 pointer-events-none';
