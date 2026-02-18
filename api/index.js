@@ -1645,7 +1645,8 @@ module.exports = async (req, res) => {
         }
         return res.status(500).json({
             result: 'error',
-            message: 'Internal Server Error'
+            message: 'Internal Server Error: ' + error.message,
+            stack: error.stack
         });
     }
 };
