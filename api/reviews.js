@@ -121,6 +121,10 @@ module.exports = async (req, res) => {
     } catch (err) {
         if (client) client.release();
         console.error('Reviews API error:', err);
-        return res.status(500).json({ result: 'error', message: 'Server error' });
+        return res.status(500).json({
+            result: 'error',
+            message: 'Server error: ' + err.message,
+            stack: err.stack
+        });
     }
 };
