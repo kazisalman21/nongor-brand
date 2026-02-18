@@ -44,8 +44,8 @@ function renderReviewsSummary(avgRating, totalReviews, distribution = {}) {
     if (avgEl) avgEl.textContent = avgRating;
     if (totalEl) {
         totalEl.textContent = totalReviews > 0
-            ? `${totalReviews} Review${totalReviews !== 1 ? 's' : ''}`
-            : 'No reviews yet';
+            ? `${totalReviews}টি রিভিউ`
+            : 'এখনও কোন রিভিউ নেই';
     }
     if (starsEl) {
         starsEl.innerHTML = renderStars(parseFloat(avgRating));
@@ -109,8 +109,8 @@ function renderReviewsList(reviews) {
         container.innerHTML = `
             <div class="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                 <div class="text-6xl mb-4 opacity-50">📝</div>
-                <h4 class="text-xl font-bold text-gray-800 mb-2">No reviews yet</h4>
-                <p class="text-gray-500">Be the first to share your experience with this product!</p>
+                <h4 class="text-xl font-bold text-gray-800 mb-2">এখনও কোন রিভিউ নেই</h4>
+                <p class="text-gray-500">প্রথম রিভিউটি আপনিই দিন!</p>
             </div>`;
         return;
     }
@@ -148,7 +148,7 @@ function renderReviewsList(reviews) {
                         <div class="flex items-center gap-2">
                             <h5 class="font-bold text-gray-900">${escapeHtml(review.reviewer_name)}</h5>
                             <span class="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wide rounded-full border border-green-100">
-                                Verified Purchase
+                                যাচাইকৃত ক্রেতা
                             </span>
                         </div>
                         <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
@@ -159,7 +159,7 @@ function renderReviewsList(reviews) {
                     </div>
                 </div>
                 <!-- Menu / Report (Interactive) -->
-                <button onclick="reportReview(this)" class="text-gray-300 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-red-50" title="Report Review">
+                <button onclick="reportReview(this)" class="text-gray-300 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-red-50" title="রিপোর্ট করুন">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                 </button>
             </div>
@@ -175,11 +175,11 @@ function renderReviewsList(reviews) {
                 <div class="flex items-center gap-6 pt-4 border-t border-gray-50">
                     <button onclick="toggleHelpful(this)" class="flex items-center gap-2 text-sm text-gray-400 hover:text-brand-accent transition-all group/btn">
                         <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>
-                        <span>Helpful</span>
+                        <span>উপকারী</span>
                     </button>
                     <button onclick="shareReview('${escapeHtml(review.reviewer_name)}')" class="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-                        Share
+                        শেয়ার
                     </button>
                 </div>
             </div>
@@ -197,7 +197,7 @@ function escapeHtml(str) {
 window.submitReview = async function () {
     if (!currentProductId) return;
     if (selectedRating === 0) {
-        window.showToast('Please select a rating', 'error');
+        window.showToast('দয়া করে রেটিং দিন', 'error');
         return;
     }
 
@@ -205,13 +205,13 @@ window.submitReview = async function () {
     const comment = document.getElementById('review-comment')?.value?.trim();
 
     if (!name) {
-        window.showToast('Please enter your name', 'error');
+        window.showToast('দয়া করে আপনার নাম লিখুন', 'error');
         return;
     }
 
     const btn = document.getElementById('btn-submit-review');
     const originalText = btn.textContent;
-    btn.textContent = 'Submitting...';
+    btn.textContent = 'জমা দেওয়া হচ্ছে...';
     btn.disabled = true;
 
     try {
@@ -230,7 +230,7 @@ window.submitReview = async function () {
         const data = await res.json();
 
         if (data.result === 'success') {
-            window.showToast(data.message || 'Review submitted for moderation! 🕒', 'success');
+            window.showToast(data.message || 'রিভিউ জমা দেওয়া হয়েছে! 🕒', 'success');
             // Reset form
             document.getElementById('review-name').value = '';
             document.getElementById('review-comment').value = '';
@@ -245,14 +245,14 @@ window.submitReview = async function () {
             if (container) {
                 const pendingMsg = document.createElement('div');
                 pendingMsg.className = 'bg-yellow-50 border border-yellow-100 rounded-xl p-4 text-center text-yellow-700 text-sm mb-4 animate-fade-in';
-                pendingMsg.innerHTML = '✨ Thanks! Your review has been submitted and is pending approval.';
+                pendingMsg.innerHTML = '✨ ধন্যবাদ! আপনার রিভিউ জমা হয়েছে এবং অনুমোদনের অপেক্ষায় আছে।';
                 container.prepend(pendingMsg);
             }
         } else {
-            window.showToast(data.message || 'Failed to submit review', 'error');
+            window.showToast(data.message || 'রিভিউ জমা দিতে সমস্যা হয়েছে', 'error');
         }
     } catch (err) {
-        window.showToast('Network error. Please try again.', 'error');
+        window.showToast('নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।', 'error');
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
@@ -284,11 +284,11 @@ window.toggleWishlist = function () {
     if (list.includes(id)) {
         list = list.filter(x => x !== id);
         updateWishlistUI(false);
-        window.showToast('Removed from wishlist', 'info');
+        window.showToast('উইসলিস্ট থেকে সরানো হয়েছে', 'info');
     } else {
         list.push(id);
         updateWishlistUI(true);
-        window.showToast('Added to wishlist! ❤️', 'success');
+        window.showToast('উইসলিস্টে যোগ করা হয়েছে! ❤️', 'success');
     }
     saveWishlist(list);
 };
@@ -357,12 +357,12 @@ window.toggleHelpful = function (btn) {
         btn.style.transform = 'scale(1.2)';
         setTimeout(() => btn.style.transform = 'scale(1)', 200);
 
-        window.showToast('Thanks for your feedback! 👍', 'success');
+        window.showToast('মতামতের জন্য ধন্যবাদ! 👍', 'success');
     }
 };
 
 window.shareReview = async function (reviewerName) {
-    const text = `Check out this review by ${reviewerName} on Nongor!`;
+    const text = `নোঙর-এ ${reviewerName}-এর রিভিউ দেখুন!`;
     const url = window.location.href; // Current product page
 
     if (navigator.share) {
@@ -380,9 +380,9 @@ window.shareReview = async function (reviewerName) {
         // Fallback for desktop/unsupported browsers
         try {
             await navigator.clipboard.writeText(`${text}\n${url}`);
-            window.showToast('Link copied to clipboard! 📋', 'success');
+            window.showToast('লিঙ্ক কপি করা হয়েছে! 📋', 'success');
         } catch (err) {
-            window.showToast('Failed to copy link', 'error');
+            window.showToast('লিঙ্ক কপি করা যায়নি', 'error');
         }
     }
 };
@@ -422,7 +422,7 @@ window.closeReportModal = function () {
         const confirmBtn = document.getElementById('confirm-report-btn');
         if (confirmBtn) {
             confirmBtn.onclick = () => {
-                window.showToast('Review reported to admins. 🛡️', 'success');
+                window.showToast('রিভিউটি অ্যাডমিনদের জানানো হয়েছে। 🛡️', 'success');
 
                 // Visual indicator on the specific review card
                 if (window.reportBtnTarget) {
