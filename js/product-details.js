@@ -32,7 +32,6 @@ export function initProductPage() {
 
     // 1. Check for Preloaded Data (SSR)
     if (window.preloadedProduct) {
-        console.log('⚡ Hydrating from SSR data...');
         currentProduct = window.preloadedProduct;
         renderProduct(currentProduct);
         dataReady = true;

@@ -23,8 +23,6 @@ function initCategories() {
 }
 
 window.filterProducts = function (category, event) {
-    console.log('🔍 Filtering by category:', category);
-
     currentCategory = category;
 
     if (event) {
@@ -40,7 +38,6 @@ window.filterProducts = function (category, event) {
         renderProducts(allProducts);
     } else {
         const filtered = allProducts.filter(p => p.category_slug === category);
-        console.log(`  Found ${filtered.length} products in category`);
         renderProducts(filtered);
     }
 };
@@ -94,7 +91,6 @@ window.toggleFilterDrawer = function () {
 
 // --- Fetch & Initialize Products ---
 async function initProducts(params = {}) {
-    console.log('🚀 initProducts() called with:', params);
 
     const container = document.getElementById('products-grid');
     if (!container) return;
@@ -111,17 +107,17 @@ async function initProducts(params = {}) {
         if (params.max) urlP.append('max', params.max);
         if (params.sort) urlP.append('sort', params.sort);
 
-        console.log('📡 Fetching from:', `${API_URL}?${urlP.toString()}`);
+
 
         const response = await fetch(`${API_URL}?${urlP.toString()}`);
-        console.log('📥 Response status:', response.status);
+
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
 
         const result = await response.json();
-        console.log('📦 API Result:', result);
+
 
         if (result.result === 'success' && result.data && Array.isArray(result.data)) {
             let fetchedProducts = result.data.map(p => ({
@@ -141,24 +137,17 @@ async function initProducts(params = {}) {
             allProducts = fetchedProducts;
 
             if (fetchedProducts.length === 0) {
-                console.warn('⚠️ API returned empty array');
                 showEmptyState(container);
             } else {
-                console.log(`✅ Got ${fetchedProducts.length} products, rendering...`);
                 renderProducts(fetchedProducts);
-                console.log('✅ Render complete');
             }
         } else {
             throw new Error('Invalid API response format');
         }
 
     } catch (error) {
-        console.error('❌ Error in initProducts:', error);
-        console.error('Stack:', error.stack);
-
+        console.error('Error loading products:', error);
         showError(container, error.message);
-
-        console.warn('⚠️ Using fallback products');
         allProducts = fallbackProducts;
         renderProducts(fallbackProducts);
     }
@@ -174,7 +163,7 @@ window.applyAllFilters = function () {
         const sortBy = document.getElementById('sort-select')?.value || 'newest';
         const inStockOnly = document.getElementById('instock-toggle')?.checked || false;
 
-        console.log('🔍 Applying filters:', { searchQuery, minPrice, maxPrice, sortBy, inStockOnly, category: currentCategory });
+
 
         initProducts({
             search: searchQuery,
@@ -193,7 +182,6 @@ window.applyPriceFilter = window.applyAllFilters;
 
 // --- Search ---
 window.handleSearch = function (query) {
-    console.log('🔍 Searching for:', query);
 
     const q = query.toLowerCase().trim();
 
@@ -208,7 +196,6 @@ window.handleSearch = function (query) {
             (p.category_name && p.category_name.toLowerCase().includes(q));
     });
 
-    console.log(`  Found ${filtered.length} matching products`);
     renderProducts(filtered);
 };
 
@@ -216,18 +203,12 @@ window.handleSearch = function (query) {
 // RENDER PRODUCTS TO GRID
 // ==============================================
 function renderProducts(products) {
-    console.log('🎨 renderProducts() called with', products?.length, 'products');
-
     const container = document.getElementById('products-grid');
-    if (!container) {
-        console.error('❌ Container not found in renderProducts');
-        return;
-    }
+    if (!container) return;
 
     container.innerHTML = '';
 
     if (!products || !Array.isArray(products)) {
-        console.error('❌ Invalid products array:', products);
         showError(container, 'Invalid product data');
         return;
     }
@@ -239,15 +220,12 @@ function renderProducts(products) {
 
     products.forEach((product, index) => {
         try {
-            console.log(`  Rendering product ${index + 1}:`, product.name);
             const card = createProductCard(product, index);
             container.appendChild(card);
         } catch (error) {
-            console.error(`❌ Error rendering product ${index}:`, error);
+            console.error('Error rendering product:', error);
         }
     });
-
-    console.log('✅ All products rendered successfully');
 }
 
 // ==============================================
@@ -255,7 +233,6 @@ function renderProducts(products) {
 // ==============================================
 function createProductCard(product, index) {
     if (!product || !product.id) {
-        console.error('Invalid product object:', product);
         return document.createElement('div');
     }
 
@@ -325,10 +302,8 @@ function createProductCard(product, index) {
         if (!fallbackAttempted) {
             fallbackAttempted = true;
             this.src = './assets/logo.jpeg';
-            console.warn('⚠️ Image failed, using fallback for:', product.name);
         } else {
             this.onerror = null;
-            console.error('❌ Fallback image also failed');
         }
     };
 

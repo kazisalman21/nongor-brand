@@ -29,7 +29,6 @@ window.initCheckout = async function () {
                     allProducts = fallbackProducts;
                 }
             } catch (err) {
-                console.warn('⚠️ API failed, using fallback products');
                 allProducts = fallbackProducts;
             }
         }
@@ -322,7 +321,6 @@ window.hideCheckout = function () {
 
 // --- Order Submission (Modal/Quick) ---
 window.confirmOrder = async function () {
-    console.log("🔵 Confirm Order Clicked");
 
     const name = document.getElementById('cust-name').value.trim();
     let phoneInput = document.getElementById('cust-phone').value.trim();
@@ -429,7 +427,6 @@ window.confirmOrder = async function () {
     confirmBtn.disabled = true;
 
     try {
-        console.log("📤 Sending order data...");
 
         const response = await fetch(API_URL, {
             method: 'POST',
