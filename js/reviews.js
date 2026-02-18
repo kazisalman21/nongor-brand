@@ -22,7 +22,7 @@ window.loadReviews = async function (productId) {
     currentProductId = productId;
 
     try {
-        const res = await fetch(`/api/reviews?productId=${productId}`);
+        const res = await fetch(`${API_URL}?action=getReviews&productId=${productId}`);
         const data = await res.json();
 
         if (data.result === 'success') {
@@ -131,10 +131,11 @@ window.submitReview = async function () {
     btn.disabled = true;
 
     try {
-        const res = await fetch('/api/reviews', {
+        const res = await fetch(`${API_URL}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                action: 'submitReview',
                 productId: currentProductId,
                 name: name,
                 rating: selectedRating,

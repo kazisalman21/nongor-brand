@@ -847,12 +847,99 @@ module.exports = async (req, res) => {
             }
 
             client.release();
+            // --- GET REVIEWS (Public) ---
+            if (query.action === 'getReviews') {
+                const productId = parseInt(query.productId);
+                if (!productId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'productId required' });
+                }
+
+                // Auto-create table (safe check)
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS reviews (
+                        id SERIAL PRIMARY KEY,
+                        product_id INTEGER NOT NULL,
+                        reviewer_name VARCHAR(100) NOT NULL,
+                        rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
+                        comment TEXT,
+                        is_approved BOOLEAN DEFAULT true,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                `);
+
+                const result = await client.query(
+                    `SELECT id, reviewer_name, rating, comment, created_at 
+                     FROM reviews 
+                     WHERE product_id = $1 AND is_approved = true 
+                     ORDER BY created_at DESC 
+                     LIMIT 50`,
+                    [productId]
+                );
+
+                const avgResult = await client.query(
+                    `SELECT COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as total_reviews 
+                     FROM reviews 
+                     WHERE product_id = $1 AND is_approved = true`,
+                    [productId]
+                );
+
+                client.release();
+                return res.status(200).json({
+                    result: 'success',
+                    reviews: result.rows,
+                    avgRating: parseFloat(avgResult.rows[0].avg_rating).toFixed(1),
+                    totalReviews: parseInt(avgResult.rows[0].total_reviews)
+                });
+            }
+
             return res.status(200).json({ message: 'API Ready' });
         }
 
         // --- 2. POST REQUESTS ---
         if (method === 'POST') {
             const data = body; // Already sanitized above
+
+            // --- SUBMIT REVIEW (Public) ---
+            if (query.action === 'submitReview' || body.action === 'submitReview') {
+                const { productId, name, rating, comment } = data;
+
+                if (!productId || !name || !rating) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Missing required fields' });
+                }
+
+                const ratingNum = parseInt(rating);
+                if (ratingNum < 1 || ratingNum > 5) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Rating must be 1-5' });
+                }
+
+                const safeName = String(name).trim().substring(0, 100);
+                const safeComment = comment ? String(comment).trim().substring(0, 1000) : '';
+
+                // Rate Limit
+                const recentCheck = await client.query(
+                    `SELECT COUNT(*) FROM reviews 
+                     WHERE product_id = $1 AND reviewer_name = $2 
+                     AND created_at > NOW() - INTERVAL '24 hours'`,
+                    [productId, safeName]
+                );
+
+                if (parseInt(recentCheck.rows[0].count) >= 3) {
+                    client.release();
+                    return res.status(429).json({ result: 'error', message: 'Daily review limit reached' });
+                }
+
+                await client.query(
+                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment) 
+                     VALUES ($1, $2, $3, $4)`,
+                    [productId, safeName, ratingNum, safeComment]
+                );
+
+                client.release();
+                return res.status(201).json({ result: 'success', message: 'Review submitted' });
+            }
 
             // --- ADD PRODUCT (Protected) ---
             if (query.action === 'addProduct') {
