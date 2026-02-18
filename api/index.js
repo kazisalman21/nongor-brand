@@ -1145,8 +1145,24 @@ module.exports = async (req, res) => {
                     return res.status(400).json({ result: 'error', message: 'productId and valid rating (1-5) are required' });
                 }
 
+                // Schema Migration: Handle transition from 'approved' to 'is_approved'
+                try {
+                    // Check if 'approved' column exists
+                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
+                    if (checkCol.rows.length > 0) {
+                        // Rename it to 'is_approved' (preserves data)
+                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
+                        console.log('Migrated "approved" column to "is_approved"');
+                    } else {
+                        // Ensure is_approved exists
+                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                    }
+                } catch (e) {
+                    console.warn('Migration warning:', e.message);
+                }
+
                 const result = await client.query(
-                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment, approved) 
+                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
                      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
                     [productId, reviewerName || 'Anonymous', rating, comment || '', approved !== false]
                 );
@@ -1188,6 +1204,16 @@ module.exports = async (req, res) => {
                     client.release();
                     return res.status(400).json({ result: 'error', message: 'reviewId is required' });
                 }
+
+                // Ensure column exists/renamed BEFORE update
+                try {
+                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
+                    if (checkCol.rows.length > 0) {
+                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
+                    } else {
+                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                    }
+                } catch (e) { }
 
                 const result = await client.query(
                     'UPDATE reviews SET is_approved = $1 WHERE id = $2 RETURNING *',
