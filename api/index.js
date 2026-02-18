@@ -733,7 +733,7 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
-            // --- GET REVIEWS (Public - by product_id, approved only) ---
+            // --- GET REVIEWS (Public - by product_id, is_approved only) ---
             if (query.action === 'getReviews') {
                 const productId = parseInt(query.productId);
                 if (!productId) {
@@ -742,7 +742,7 @@ module.exports = async (req, res) => {
                 }
 
                 const result = await client.query(
-                    'SELECT id, reviewer_name, rating, comment, created_at FROM reviews WHERE product_id = $1 AND approved = true ORDER BY created_at DESC',
+                    'SELECT id, reviewer_name, rating, comment, created_at FROM reviews WHERE product_id = $1 AND is_approved = true ORDER BY created_at DESC',
                     [productId]
                 );
 
