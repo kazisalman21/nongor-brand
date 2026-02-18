@@ -1140,7 +1140,7 @@ module.exports = async (req, res) => {
                     return res.status(403).json({ result: 'error', message: 'Admin access required' });
                 }
 
-                const { productId, reviewerName, rating, comment, approved } = data;
+                const { productId, reviewerName, rating, comment, is_approved } = data;
 
                 if (!productId || !rating || rating < 1 || rating > 5) {
                     client.release();
@@ -1166,7 +1166,7 @@ module.exports = async (req, res) => {
                 const result = await client.query(
                     `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
                      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-                    [productId, reviewerName || 'Anonymous', rating, comment || '', approved !== false]
+                    [productId, reviewerName || 'Anonymous', rating, comment || '', is_approved !== false]
                 );
 
                 client.release();
@@ -1201,7 +1201,7 @@ module.exports = async (req, res) => {
                     return res.status(403).json({ result: 'error', message: 'Forbidden' });
                 }
 
-                const { reviewId, approved } = data;
+                const { reviewId, is_approved } = data;
                 if (!reviewId) {
                     client.release();
                     return res.status(400).json({ result: 'error', message: 'reviewId is required' });
@@ -1219,7 +1219,7 @@ module.exports = async (req, res) => {
 
                 const result = await client.query(
                     'UPDATE reviews SET is_approved = $1 WHERE id = $2 RETURNING *',
-                    [approved === true, reviewId]
+                    [is_approved === true, reviewId]
                 );
 
                 client.release();
