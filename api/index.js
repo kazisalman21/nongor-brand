@@ -766,103 +766,103 @@ module.exports = async (req, res) => {
                 });
             }
 
-        }
 
-        // --- GET ALL REVIEWS (Admin - all reviews, all products) ---
-        if (query.action === 'getAllReviews') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid) {
-                client.release();
-                return res.status(401).json({ result: 'error', message: 'Unauthorized' });
-            }
-            if (auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Admin access required' });
-            }
 
-            const result = await client.query(`
+            // --- GET ALL REVIEWS (Admin - all reviews, all products) ---
+            if (query.action === 'getAllReviews') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Admin access required' });
+                }
+
+                const result = await client.query(`
                     SELECT r.*, p.name as product_name 
                     FROM reviews r 
                     LEFT JOIN products p ON r.product_id = p.id 
                     ORDER BY r.created_at DESC
                 `);
-            client.release();
-            return res.status(200).json({ result: 'success', data: result.rows });
-        }
-        if (query.action === 'validateCoupon') {
-            const code = query.code;
-            const amount = parseFloat(query.amount) || 0;
-
-            if (!code) {
                 client.release();
-                return res.status(400).json({ result: 'error', message: 'Coupon code required' });
+                return res.status(200).json({ result: 'success', data: result.rows });
             }
+            if (query.action === 'validateCoupon') {
+                const code = query.code;
+                const amount = parseFloat(query.amount) || 0;
 
-            const resCoupon = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [code]);
+                if (!code) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Coupon code required' });
+                }
 
-            if (resCoupon.rows.length === 0) {
+                const resCoupon = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [code]);
+
+                if (resCoupon.rows.length === 0) {
+                    client.release();
+                    return res.status(404).json({ result: 'error', message: 'Invalid coupon code' });
+                }
+
+                const coupon = resCoupon.rows[0];
+
+                // Check Expiry
+                if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Coupon expired' });
+                }
+
+                // Check Usage Limit
+                if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Coupon usage limit reached' });
+                }
+
+                // Check Min Order
+                if (coupon.min_order_value && amount < parseFloat(coupon.min_order_value)) {
+                    client.release();
+                    return res.status(400).json({
+                        result: 'error',
+                        message: `Minimum order value for this coupon is ${coupon.min_order_value}`
+                    });
+                }
+
+                // Calculate Discount Preview
+                let discount = 0;
+                if (coupon.discount_type === 'percent') {
+                    discount = amount * (parseFloat(coupon.discount_value) / 100);
+                    if (coupon.max_discount_amount) {
+                        discount = Math.min(discount, parseFloat(coupon.max_discount_amount));
+                    }
+                } else {
+                    discount = parseFloat(coupon.discount_value);
+                }
+
                 client.release();
-                return res.status(404).json({ result: 'error', message: 'Invalid coupon code' });
-            }
-
-            const coupon = resCoupon.rows[0];
-
-            // Check Expiry
-            if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Coupon expired' });
-            }
-
-            // Check Usage Limit
-            if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Coupon usage limit reached' });
-            }
-
-            // Check Min Order
-            if (coupon.min_order_value && amount < parseFloat(coupon.min_order_value)) {
-                client.release();
-                return res.status(400).json({
-                    result: 'error',
-                    message: `Minimum order value for this coupon is ${coupon.min_order_value}`
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Coupon applied',
+                    discount: discount,
+                    coupon: {
+                        code: coupon.code,
+                        type: coupon.discount_type,
+                        value: coupon.discount_value
+                    }
                 });
             }
 
-            // Calculate Discount Preview
-            let discount = 0;
-            if (coupon.discount_type === 'percent') {
-                discount = amount * (parseFloat(coupon.discount_value) / 100);
-                if (coupon.max_discount_amount) {
-                    discount = Math.min(discount, parseFloat(coupon.max_discount_amount));
-                }
-            } else {
-                discount = parseFloat(coupon.discount_value);
-            }
-
             client.release();
-            return res.status(200).json({
-                result: 'success',
-                message: 'Coupon applied',
-                discount: discount,
-                coupon: {
-                    code: coupon.code,
-                    type: coupon.discount_type,
-                    value: coupon.discount_value
+            // --- GET REVIEWS (Public) ---
+            if (query.action === 'getReviews') {
+                const productId = parseInt(query.productId);
+                if (!productId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'productId required' });
                 }
-            });
-        }
 
-        client.release();
-        // --- GET REVIEWS (Public) ---
-        if (query.action === 'getReviews') {
-            const productId = parseInt(query.productId);
-            if (!productId) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'productId required' });
-            }
-
-            // Auto-create table (safe check)
-            await client.query(`
+                // Auto-create table (safe check)
+                await client.query(`
                     CREATE TABLE IF NOT EXISTS reviews (
                         id SERIAL PRIMARY KEY,
                         product_id INTEGER NOT NULL,
@@ -874,447 +874,447 @@ module.exports = async (req, res) => {
                     )
                 `);
 
-            // Schema Migration: Ensure is_approved column exists (Handle legacy 'approved' column)
-            try {
-                const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
-                if (checkCol.rows.length > 0) {
-                    await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
-                } else {
-                    await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
-                }
-            } catch (e) { console.warn('Migration warning in getReviews:', e.message); }
+                // Schema Migration: Ensure is_approved column exists (Handle legacy 'approved' column)
+                try {
+                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
+                    if (checkCol.rows.length > 0) {
+                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
+                    } else {
+                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                    }
+                } catch (e) { console.warn('Migration warning in getReviews:', e.message); }
 
-            const result = await client.query(
-                `SELECT id, reviewer_name, rating, comment, created_at 
+                const result = await client.query(
+                    `SELECT id, reviewer_name, rating, comment, created_at 
                      FROM reviews 
                      WHERE product_id = $1 AND is_approved = true 
                      ORDER BY created_at DESC 
                      LIMIT 50`,
-                [productId]
-            );
+                    [productId]
+                );
 
-            const avgResult = await client.query(
-                `SELECT COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as total_reviews 
+                const avgResult = await client.query(
+                    `SELECT COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as total_reviews 
                      FROM reviews 
                      WHERE product_id = $1 AND is_approved = true`,
-                [productId]
-            );
+                    [productId]
+                );
 
-            client.release();
-            return res.status(200).json({
-                result: 'success',
-                reviews: result.rows,
-                avgRating: parseFloat(avgResult.rows[0].avg_rating).toFixed(1),
-                totalReviews: parseInt(avgResult.rows[0].total_reviews)
-            });
-        }
-
-        return res.status(200).json({ message: 'API Ready' });
-    }
-
-        // --- 2. POST REQUESTS ---
-        if (method === 'POST') {
-        const data = body; // Already sanitized above
-
-        // --- SUBMIT REVIEW (Public) ---
-        if (query.action === 'submitReview' || body.action === 'submitReview') {
-            const { productId, name, rating, comment } = data;
-
-            if (!productId || !name || !rating) {
                 client.release();
-                return res.status(400).json({ result: 'error', message: 'Missing required fields' });
-            }
-
-            const ratingNum = parseInt(rating);
-            if (ratingNum < 1 || ratingNum > 5) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Rating must be 1-5' });
-            }
-
-            const safeName = String(name).trim().substring(0, 100);
-            const safeComment = comment ? String(comment).trim().substring(0, 1000) : '';
-
-            // Rate Limit
-            const recentCheck = await client.query(
-                `SELECT COUNT(*) FROM reviews 
-                     WHERE product_id = $1 AND reviewer_name = $2 
-                     AND created_at > NOW() - INTERVAL '24 hours'`,
-                [productId, safeName]
-            );
-
-            if (parseInt(recentCheck.rows[0].count) >= 3) {
-                client.release();
-                return res.status(429).json({ result: 'error', message: 'Daily review limit reached' });
-            }
-
-            await client.query(
-                `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
-                     VALUES ($1, $2, $3, $4, false)`,
-                [productId, safeName, ratingNum, safeComment]
-            );
-
-            client.release();
-            // Return 201 but with strict message
-            return res.status(201).json({ result: 'success', message: 'Review submitted for approval' });
-        }
-
-        // --- UPDATE REVIEW STATUS (Admin) ---
-        if (query.action === 'updateReviewStatus') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid || auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
-            }
-
-            const { reviewId, approved } = data;
-            if (!reviewId) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Review ID required' });
-            }
-
-            // If approved is explicitly false, we might want to delete? 
-            // Or just set is_approved=false to hide it?
-            // The prompt says "approve or not approve". 
-            // Let's implement DELETE as a separate action or handle 'rejected' status.
-            // For now, boolean is_approved toggles visibility.
-
-            // Actually, let's support DELETE too if action is deleteReview?
-            // Or just update status.
-
-            await client.query(
-                'UPDATE reviews SET is_approved = $1 WHERE id = $2',
-                [!!approved, reviewId]
-            );
-
-            client.release();
-            return res.status(200).json({ result: 'success', message: 'Review status updated' });
-        }
-
-        // --- DELETE REVIEW (Admin) ---
-        if (query.action === 'deleteReview') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid || auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
-            }
-
-            const { reviewId } = data;
-            await client.query('DELETE FROM reviews WHERE id = $1', [reviewId]);
-
-            client.release();
-            return res.status(200).json({ result: 'success', message: 'Review deleted' });
-        }
-
-        // --- ADD PRODUCT (Protected) ---
-        if (query.action === 'addProduct') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid) {
-                client.release();
-                return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
-            }
-            if (auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
-            }
-
-            // Rate limiting for product additions
-            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            const rateLimit = checkRateLimit('order', ip); // Reuse order limit (10/hour)
-            if (!rateLimit.allowed) {
-                console.warn(`⚠️ Product Add Rate Limit Exceeded for IP: ${ip}`);
-                client.release();
-                return res.status(429).json({
-                    result: 'error',
-                    message: `Too many requests. Please try again in ${rateLimit.retryAfter} seconds.`
+                return res.status(200).json({
+                    result: 'success',
+                    reviews: result.rows,
+                    avgRating: parseFloat(avgResult.rows[0].avg_rating).toFixed(1),
+                    totalReviews: parseInt(avgResult.rows[0].total_reviews)
                 });
             }
 
-            // Validate product data
-            if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+            return res.status(200).json({ message: 'API Ready' });
+        }
+
+        // --- 2. POST REQUESTS ---
+        if (method === 'POST') {
+            const data = body; // Already sanitized above
+
+            // --- SUBMIT REVIEW (Public) ---
+            if (query.action === 'submitReview' || body.action === 'submitReview') {
+                const { productId, name, rating, comment } = data;
+
+                if (!productId || !name || !rating) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Missing required fields' });
+                }
+
+                const ratingNum = parseInt(rating);
+                if (ratingNum < 1 || ratingNum > 5) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Rating must be 1-5' });
+                }
+
+                const safeName = String(name).trim().substring(0, 100);
+                const safeComment = comment ? String(comment).trim().substring(0, 1000) : '';
+
+                // Rate Limit
+                const recentCheck = await client.query(
+                    `SELECT COUNT(*) FROM reviews 
+                     WHERE product_id = $1 AND reviewer_name = $2 
+                     AND created_at > NOW() - INTERVAL '24 hours'`,
+                    [productId, safeName]
+                );
+
+                if (parseInt(recentCheck.rows[0].count) >= 3) {
+                    client.release();
+                    return res.status(429).json({ result: 'error', message: 'Daily review limit reached' });
+                }
+
+                await client.query(
+                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
+                     VALUES ($1, $2, $3, $4, false)`,
+                    [productId, safeName, ratingNum, safeComment]
+                );
+
                 client.release();
-                return res.status(400).json({ result: 'error', message: 'Product name is required' });
-            }
-            if (data.name.length > 255) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Product name too long (maximum 255 characters)' });
-            }
-            if (!data.price || isNaN(data.price) || parseFloat(data.price) <= 0) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Valid price greater than 0 is required' });
-            }
-            if (!data.category_slug || !data.category_name) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Product category is required' });
+                // Return 201 but with strict message
+                return res.status(201).json({ result: 'success', message: 'Review submitted for approval' });
             }
 
-            // Sanitize (Double check, although body is sanitized)
-            data.name = data.name.trim();
-            data.description = (data.description || '').trim();
+            // --- UPDATE REVIEW STATUS (Admin) ---
+            if (query.action === 'updateReviewStatus') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
 
-            const insertQuery = `
+                const { reviewId, approved } = data;
+                if (!reviewId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Review ID required' });
+                }
+
+                // If approved is explicitly false, we might want to delete? 
+                // Or just set is_approved=false to hide it?
+                // The prompt says "approve or not approve". 
+                // Let's implement DELETE as a separate action or handle 'rejected' status.
+                // For now, boolean is_approved toggles visibility.
+
+                // Actually, let's support DELETE too if action is deleteReview?
+                // Or just update status.
+
+                await client.query(
+                    'UPDATE reviews SET is_approved = $1 WHERE id = $2',
+                    [!!approved, reviewId]
+                );
+
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Review status updated' });
+            }
+
+            // --- DELETE REVIEW (Admin) ---
+            if (query.action === 'deleteReview') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const { reviewId } = data;
+                await client.query('DELETE FROM reviews WHERE id = $1', [reviewId]);
+
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Review deleted' });
+            }
+
+            // --- ADD PRODUCT (Protected) ---
+            if (query.action === 'addProduct') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
+
+                // Rate limiting for product additions
+                const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+                const rateLimit = checkRateLimit('order', ip); // Reuse order limit (10/hour)
+                if (!rateLimit.allowed) {
+                    console.warn(`⚠️ Product Add Rate Limit Exceeded for IP: ${ip}`);
+                    client.release();
+                    return res.status(429).json({
+                        result: 'error',
+                        message: `Too many requests. Please try again in ${rateLimit.retryAfter} seconds.`
+                    });
+                }
+
+                // Validate product data
+                if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Product name is required' });
+                }
+                if (data.name.length > 255) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Product name too long (maximum 255 characters)' });
+                }
+                if (!data.price || isNaN(data.price) || parseFloat(data.price) <= 0) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Valid price greater than 0 is required' });
+                }
+                if (!data.category_slug || !data.category_name) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Product category is required' });
+                }
+
+                // Sanitize (Double check, although body is sanitized)
+                data.name = data.name.trim();
+                data.description = (data.description || '').trim();
+
+                const insertQuery = `
                     INSERT INTO products (name, price, image, images, description, category_slug, category_name, is_featured, stock_quantity)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     RETURNING *
                 `;
-            const values = [
-                data.name,
-                data.price,
-                data.image || '',
-                data.images || [], // Pass raw array for TEXT[] column
-                data.description || '',
-                data.category_slug || '',
-                data.category_name || '',
+                const values = [
+                    data.name,
+                    data.price,
+                    data.image || '',
+                    data.images || [], // Pass raw array for TEXT[] column
+                    data.description || '',
+                    data.category_slug || '',
+                    data.category_name || '',
 
-                data.is_featured || false,
-                parseInt(data.stock_quantity) || 0
-            ];
+                    data.is_featured || false,
+                    parseInt(data.stock_quantity) || 0
+                ];
 
-            const result = await client.query(insertQuery, values);
-            client.release();
-
-            // Invalidate cache
-            invalidateProductCache();
-
-            return res.status(200).json({ result: 'success', message: 'Product added', data: result.rows[0] });
-        }
-
-        // --- CREATE COUPON (Protected) ---
-        // Fix: Check data.action (body) as well as query.action
-        if (query.action === 'createCoupon' || data.action === 'createCoupon') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid) {
+                const result = await client.query(insertQuery, values);
                 client.release();
-                return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
-            }
-            if (auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+
+                // Invalidate cache
+                invalidateProductCache();
+
+                return res.status(200).json({ result: 'success', message: 'Product added', data: result.rows[0] });
             }
 
-            console.log('Creating Coupon Payload:', JSON.stringify(data)); // Debug Log
+            // --- CREATE COUPON (Protected) ---
+            // Fix: Check data.action (body) as well as query.action
+            if (query.action === 'createCoupon' || data.action === 'createCoupon') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
 
-            if (!data.code || !data.discountType || !data.discountValue) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Code, Type, and Value are required' });
-            }
+                console.log('Creating Coupon Payload:', JSON.stringify(data)); // Debug Log
 
-            // Fix: Ensure expiresAt is NULL if empty string or undefined
-            const expiresAt = data.expiresAt ? data.expiresAt : null;
+                if (!data.code || !data.discountType || !data.discountValue) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Code, Type, and Value are required' });
+                }
 
-            const insertQuery = `
+                // Fix: Ensure expiresAt is NULL if empty string or undefined
+                const expiresAt = data.expiresAt ? data.expiresAt : null;
+
+                const insertQuery = `
                     INSERT INTO coupons (code, discount_type, discount_value, min_order_value, max_discount_amount, expires_at, usage_limit, is_active)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                     RETURNING *
                 `;
-            const values = [
-                data.code.toUpperCase().trim(),
-                data.discountType,
-                parseFloat(data.discountValue),
-                parseFloat(data.minOrderValue) || 0,
-                data.maxDiscountAmount ? parseFloat(data.maxDiscountAmount) : null,
-                expiresAt,
-                data.usageLimit ? parseInt(data.usageLimit) : null,
-                data.isActive !== false
-            ];
+                const values = [
+                    data.code.toUpperCase().trim(),
+                    data.discountType,
+                    parseFloat(data.discountValue),
+                    parseFloat(data.minOrderValue) || 0,
+                    data.maxDiscountAmount ? parseFloat(data.maxDiscountAmount) : null,
+                    expiresAt,
+                    data.usageLimit ? parseInt(data.usageLimit) : null,
+                    data.isActive !== false
+                ];
 
-            try {
-                const result = await client.query(insertQuery, values);
-                client.release();
-                return res.status(200).json({ result: 'success', message: 'Coupon created', data: result.rows[0] });
-            } catch (e) {
-                client.release();
-                console.error('Create Coupon Error:', e); // Debug Log
-                if (e.code === '23505') { // Unique violation
-                    return res.status(400).json({ result: 'error', message: 'Coupon code already exists' });
+                try {
+                    const result = await client.query(insertQuery, values);
+                    client.release();
+                    return res.status(200).json({ result: 'success', message: 'Coupon created', data: result.rows[0] });
+                } catch (e) {
+                    client.release();
+                    console.error('Create Coupon Error:', e); // Debug Log
+                    if (e.code === '23505') { // Unique violation
+                        return res.status(400).json({ result: 'error', message: 'Coupon code already exists' });
+                    }
+                    if (e.code === '22007') { // Invalid datetime format
+                        return res.status(400).json({ result: 'error', message: 'Invalid Date Format', details: e.message });
+                    }
+                    throw e;
                 }
-                if (e.code === '22007') { // Invalid datetime format
-                    return res.status(400).json({ result: 'error', message: 'Invalid Date Format', details: e.message });
+            }
+
+            // --- CREATE REVIEW (Admin) ---
+            if (data.action === 'createReview') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
                 }
-                throw e;
-            }
-        }
-
-        // --- CREATE REVIEW (Admin) ---
-        if (data.action === 'createReview') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid) {
-                client.release();
-                return res.status(401).json({ result: 'error', message: 'Unauthorized' });
-            }
-            if (auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Admin access required' });
-            }
-
-            const { productId, reviewerName, rating, comment, is_approved } = data;
-
-            if (!productId || !rating || rating < 1 || rating > 5) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'productId and valid rating (1-5) are required' });
-            }
-
-            // Schema Migration: Handle transition from 'approved' to 'is_approved'
-            try {
-                // Check if 'approved' column exists
-                const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
-                if (checkCol.rows.length > 0) {
-                    // Rename it to 'is_approved' (preserves data)
-                    await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
-                    console.log('Migrated "approved" column to "is_approved"');
-                } else {
-                    // Ensure is_approved exists
-                    await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Admin access required' });
                 }
-            } catch (e) {
-                console.warn('Migration warning:', e.message);
-            }
 
-            const result = await client.query(
-                `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
+                const { productId, reviewerName, rating, comment, is_approved } = data;
+
+                if (!productId || !rating || rating < 1 || rating > 5) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'productId and valid rating (1-5) are required' });
+                }
+
+                // Schema Migration: Handle transition from 'approved' to 'is_approved'
+                try {
+                    // Check if 'approved' column exists
+                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
+                    if (checkCol.rows.length > 0) {
+                        // Rename it to 'is_approved' (preserves data)
+                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
+                        console.log('Migrated "approved" column to "is_approved"');
+                    } else {
+                        // Ensure is_approved exists
+                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                    }
+                } catch (e) {
+                    console.warn('Migration warning:', e.message);
+                }
+
+                const result = await client.query(
+                    `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
                      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-                [productId, reviewerName || 'Anonymous', rating, comment || '', is_approved !== false]
-            );
+                    [productId, reviewerName || 'Anonymous', rating, comment || '', is_approved !== false]
+                );
 
-            client.release();
-            return res.status(200).json({ result: 'success', message: 'Review created', data: result.rows[0] });
-        }
-
-        // --- GET ALL REVIEWS (Admin) ---
-        if (query.action === 'getAllReviews') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid || auth.user.role !== 'admin') {
                 client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                return res.status(200).json({ result: 'success', message: 'Review created', data: result.rows[0] });
             }
 
-            // Join with products to get product name
-            const result = await client.query(`
+            // --- GET ALL REVIEWS (Admin) ---
+            if (query.action === 'getAllReviews') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                // Join with products to get product name
+                const result = await client.query(`
                     SELECT r.*, p.name as product_name 
                     FROM reviews r
                     LEFT JOIN products p ON r.product_id = p.id
                     ORDER BY r.created_at DESC
                 `);
 
-            client.release();
-            return res.status(200).json({ result: 'success', data: result.rows });
-        }
-
-        // --- UPDATE REVIEW STATUS (Admin) ---
-        if (data.action === 'updateReviewStatus') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid || auth.user.role !== 'admin') {
                 client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                return res.status(200).json({ result: 'success', data: result.rows });
             }
 
-            const { reviewId, is_approved } = data;
-            if (!reviewId) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'reviewId is required' });
-            }
-
-            // Ensure column exists/renamed BEFORE update
-            try {
-                const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
-                if (checkCol.rows.length > 0) {
-                    await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
-                } else {
-                    await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+            // --- UPDATE REVIEW STATUS (Admin) ---
+            if (data.action === 'updateReviewStatus') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
                 }
-            } catch (e) { }
 
-            const result = await client.query(
-                'UPDATE reviews SET is_approved = $1 WHERE id = $2 RETURNING *',
-                [is_approved === true, reviewId]
-            );
+                const { reviewId, is_approved } = data;
+                if (!reviewId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'reviewId is required' });
+                }
 
-            client.release();
-            if (result.rows.length === 0) {
-                return res.status(404).json({ result: 'error', message: 'Review not found' });
-            }
-            return res.status(200).json({ result: 'success', message: 'Review updated', data: result.rows[0] });
-        }
+                // Ensure column exists/renamed BEFORE update
+                try {
+                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
+                    if (checkCol.rows.length > 0) {
+                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
+                    } else {
+                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
+                    }
+                } catch (e) { }
 
-        // --- DELETE REVIEW (Admin) ---
-        if (data.action === 'deleteReview') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid || auth.user.role !== 'admin') {
+                const result = await client.query(
+                    'UPDATE reviews SET is_approved = $1 WHERE id = $2 RETURNING *',
+                    [is_approved === true, reviewId]
+                );
+
                 client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                if (result.rows.length === 0) {
+                    return res.status(404).json({ result: 'error', message: 'Review not found' });
+                }
+                return res.status(200).json({ result: 'success', message: 'Review updated', data: result.rows[0] });
             }
 
-            const { reviewId } = data;
-            if (!reviewId) {
+            // --- DELETE REVIEW (Admin) ---
+            if (data.action === 'deleteReview') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const { reviewId } = data;
+                if (!reviewId) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'reviewId is required' });
+                }
+
+                const result = await client.query('DELETE FROM reviews WHERE id = $1 RETURNING *', [reviewId]);
+
                 client.release();
-                return res.status(400).json({ result: 'error', message: 'reviewId is required' });
+                if (result.rows.length === 0) {
+                    return res.status(404).json({ result: 'error', message: 'Review not found' });
+                }
+                return res.status(200).json({ result: 'success', message: 'Review deleted', data: result.rows[0] });
             }
 
-            const result = await client.query('DELETE FROM reviews WHERE id = $1 RETURNING *', [reviewId]);
+            // --- CHANGE ADMIN PASSWORD (Protected) ---
+            if (query.action === 'changeAdminPassword') {
+                // 1. Verify Session
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
 
-            client.release();
-            if (result.rows.length === 0) {
-                return res.status(404).json({ result: 'error', message: 'Review not found' });
-            }
-            return res.status(200).json({ result: 'success', message: 'Review deleted', data: result.rows[0] });
-        }
+                // 2. Validate Input
+                const { currentPassword, newPassword, confirmPassword } = data;
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'All fields are required' });
+                }
+                if (newPassword !== confirmPassword) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'New passwords do not match' });
+                }
+                if (newPassword.length < 12) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Password must be at least 12 characters long' });
+                }
+                if (currentPassword === newPassword) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'New password cannot be the same as the current password' });
+                }
 
-        // --- CHANGE ADMIN PASSWORD (Protected) ---
-        if (query.action === 'changeAdminPassword') {
-            // 1. Verify Session
-            const auth = await verifySession(req, client);
-            if (!auth.valid) {
-                client.release();
-                return res.status(401).json({ result: 'error', message: 'Unauthorized: ' + auth.error });
-            }
-            if (auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
-            }
+                // 3. Verify Current Password (against admin_users)
+                // We assume the user is 'admin' (or we could fetch by ID if we linked them, but for now we look up 'admin')
+                const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin']);
 
-            // 2. Validate Input
-            const { currentPassword, newPassword, confirmPassword } = data;
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'All fields are required' });
-            }
-            if (newPassword !== confirmPassword) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'New passwords do not match' });
-            }
-            if (newPassword.length < 12) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Password must be at least 12 characters long' });
-            }
-            if (currentPassword === newPassword) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'New password cannot be the same as the current password' });
-            }
+                if (adminRes.rows.length === 0) {
+                    // Should not happen if migration ran and login succeeded via DB
+                    client.release();
+                    return res.status(500).json({ result: 'error', message: 'Admin user not found in database' });
+                }
 
-            // 3. Verify Current Password (against admin_users)
-            // We assume the user is 'admin' (or we could fetch by ID if we linked them, but for now we look up 'admin')
-            const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin']);
+                const adminUser = adminRes.rows[0];
+                const cleanCurrent = currentPassword.trim(); // trimming just in case, though standard says no
 
-            if (adminRes.rows.length === 0) {
-                // Should not happen if migration ran and login succeeded via DB
-                client.release();
-                return res.status(500).json({ result: 'error', message: 'Admin user not found in database' });
-            }
+                const isMatch = await bcrypt.compare(cleanCurrent, adminUser.password_hash);
+                if (!isMatch) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Invalid current password' });
+                }
 
-            const adminUser = adminRes.rows[0];
-            const cleanCurrent = currentPassword.trim(); // trimming just in case, though standard says no
+                // 4. Update Password (SYNC BOTH TABLES)
+                const salt = await bcrypt.genSalt(10);
+                const newHash = await bcrypt.hash(newPassword, salt);
 
-            const isMatch = await bcrypt.compare(cleanCurrent, adminUser.password_hash);
-            if (!isMatch) {
-                client.release();
-                return res.status(401).json({ result: 'error', message: 'Invalid current password' });
-            }
-
-            // 4. Update Password (SYNC BOTH TABLES)
-            const salt = await bcrypt.genSalt(10);
-            const newHash = await bcrypt.hash(newPassword, salt);
-
-            // Update Legacy Table
-            await client.query(`
+                // Update Legacy Table
+                await client.query(`
                     UPDATE admin_users 
                     SET password_hash = $1, 
                         updated_at = NOW(), 
@@ -1323,301 +1323,402 @@ module.exports = async (req, res) => {
                     WHERE username = $2
                 `, [newHash, 'admin']);
 
-            // Update Standard Table (auth.users) - Ensure Sync
-            await client.query(`
+                // Update Standard Table (auth.users) - Ensure Sync
+                await client.query(`
                     UPDATE auth.users 
                     SET password_hash = crypt($1, gen_salt('bf', 10)), 
                         updated_at = NOW() 
                     WHERE res_role = 'admin'
                 `, [newPassword]);
 
-            // 5. Invalidate Session (Minimal: Login again)
-            // We destroy the *current* session. 
-            // To do this, we need the session token from the request.
-            const sessionToken = req.headers['x-session-token'] || req.headers['authorization']?.replace('Bearer ', '');
-            if (sessionToken) {
-                await client.query('SELECT auth.delete_session($1::TEXT)', [sessionToken]);
-            }
-
-            client.release();
-
-            console.log(`🔐 Admin password changed. Session invalidated.`);
-
-            return res.status(200).json({
-                result: 'success',
-                message: 'Password updated successfully. Please log in again.',
-                reauth: true
-            });
-        }
-
-        // --- ORDER CREATION ---
-        // Guard: Only proceed if this looks like an order (has items array)
-        if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
-            client.release();
-            return res.status(400).json({ result: 'error', message: 'Unknown action or missing order items' });
-        }
-
-        // Validate required order fields
-        if (!data.customerName || typeof data.customerName !== 'string' || data.customerName.trim().length === 0) {
-            client.release();
-            return res.status(400).json({ result: 'error', message: 'Customer name is required' });
-        }
-        if (!data.customerPhone || typeof data.customerPhone !== 'string' || data.customerPhone.trim().length === 0) {
-            client.release();
-            return res.status(400).json({ result: 'error', message: 'Customer phone is required' });
-        }
-        if (!data.address || typeof data.address !== 'string' || data.address.trim().length === 0) {
-            client.release();
-            return res.status(400).json({ result: 'error', message: 'Delivery address is required' });
-        }
-        // Validate Bangladeshi phone format
-        const cleanedPhone = data.customerPhone.replace(/\D/g, '');
-        if (!/^01[3-9]\d{8}$/.test(cleanedPhone)) {
-            client.release();
-            return res.status(400).json({ result: 'error', message: 'Invalid phone number format' });
-        }
-
-        // --- SERVER-SIDE ORDER ID GENERATION ---
-        // Start Transaction for Order Creation (Ensures atomic stock updates)
-        await client.query('BEGIN');
-        const generatedOrderId = 'NG-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
-
-        let calculatedSubtotal = 0;
-        const orderItemsToInsert = [];
-
-        // 1. Update Stock & Validate Availability (Locking Rows)
-        if (data.items && Array.isArray(data.items)) {
-            for (const item of data.items) {
-                // Validation (Strict range check)
-                if (item.quantity < 1 || item.quantity > 1000) {
-                    throw new Error('Invalid quantity: Must be between 1 and 1000');
+                // 5. Invalidate Session (Minimal: Login again)
+                // We destroy the *current* session. 
+                // To do this, we need the session token from the request.
+                const sessionToken = req.headers['x-session-token'] || req.headers['authorization']?.replace('Bearer ', '');
+                if (sessionToken) {
+                    await client.query('SELECT auth.delete_session($1::TEXT)', [sessionToken]);
                 }
 
-                if (item.id && item.quantity) {
-                    // LOCK ROW: Check stock availability AND Fetch Price
-                    const stockRes = await client.query('SELECT price, stock_quantity FROM products WHERE id = $1 FOR UPDATE', [item.id]);
+                client.release();
 
-                    if (stockRes.rows.length === 0) throw new Error(`Product ${item.id} not found`);
+                console.log(`🔐 Admin password changed. Session invalidated.`);
 
-                    const product = stockRes.rows[0];
-                    const available = product.stock_quantity;
-                    const price = parseFloat(product.price);
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Password updated successfully. Please log in again.',
+                    reauth: true
+                });
+            }
 
-                    if (available < item.quantity) {
-                        throw new Error(`Insufficient stock for Product ID ${item.id}. Available: ${available}, Requested: ${item.quantity}`);
+            // --- ORDER CREATION ---
+            // Guard: Only proceed if this looks like an order (has items array)
+            if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Unknown action or missing order items' });
+            }
+
+            // Validate required order fields
+            if (!data.customerName || typeof data.customerName !== 'string' || data.customerName.trim().length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Customer name is required' });
+            }
+            if (!data.customerPhone || typeof data.customerPhone !== 'string' || data.customerPhone.trim().length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Customer phone is required' });
+            }
+            if (!data.address || typeof data.address !== 'string' || data.address.trim().length === 0) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Delivery address is required' });
+            }
+            // Validate Bangladeshi phone format
+            const cleanedPhone = data.customerPhone.replace(/\D/g, '');
+            if (!/^01[3-9]\d{8}$/.test(cleanedPhone)) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Invalid phone number format' });
+            }
+
+            // --- SERVER-SIDE ORDER ID GENERATION ---
+            // Start Transaction for Order Creation (Ensures atomic stock updates)
+            await client.query('BEGIN');
+            const generatedOrderId = 'NG-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+            let calculatedSubtotal = 0;
+            const orderItemsToInsert = [];
+
+            // 1. Update Stock & Validate Availability (Locking Rows)
+            if (data.items && Array.isArray(data.items)) {
+                for (const item of data.items) {
+                    // Validation (Strict range check)
+                    if (item.quantity < 1 || item.quantity > 1000) {
+                        throw new Error('Invalid quantity: Must be between 1 and 1000');
                     }
 
-                    // DEDUCT STOCK
-                    await client.query(
-                        'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
-                        [item.quantity, item.id]
-                    );
+                    if (item.id && item.quantity) {
+                        // LOCK ROW: Check stock availability AND Fetch Price
+                        const stockRes = await client.query('SELECT price, stock_quantity FROM products WHERE id = $1 FOR UPDATE', [item.id]);
 
-                    // Calculate Line Total
-                    const lineTotal = price * item.quantity;
-                    calculatedSubtotal += lineTotal;
+                        if (stockRes.rows.length === 0) throw new Error(`Product ${item.id} not found`);
 
-                    orderItemsToInsert.push({
-                        product_id: item.id,
-                        qty: item.quantity,
-                        unit_price: price,
-                        size: item.size || 'M',
-                        line_total: lineTotal,
-                        // Custom Sizing Fields
-                        size_type: item.sizeType || 'standard',
-                        size_label: item.sizeLabel || (item.sizeType === 'custom' ? 'Custom' : item.size),
-                        measurement_unit: item.unit || 'inch',
-                        measurements: item.measurements || null,
-                        measurement_notes: item.notes || ''
-                    });
-                }
-            }
-            // Invalidate cache as stock changed
-            invalidateProductCache();
-        }
+                        const product = stockRes.rows[0];
+                        const available = product.stock_quantity;
+                        const price = parseFloat(product.price);
 
-        // Calculate Shipping Fee Server-Side
-        // Valid zones: 'inside_dhaka' => 70, 'outside_dhaka' => 120
-        const shippingZone = data.shippingZone || 'inside_dhaka';
-        const allowedShippingFees = { 'inside_dhaka': 70, 'outside_dhaka': 120 };
-        const shippingFee = allowedShippingFees[shippingZone] || 70;
-        let finalTotal = calculatedSubtotal + shippingFee;
-
-        // --- COUPON APPLICATION ---
-        let discountAmount = 0;
-        let appliedCouponCode = null;
-
-        if (data.couponCode) {
-            // Validate Coupon (Re-check for security)
-            const couponRes = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [data.couponCode]);
-
-            if (couponRes.rows.length > 0) {
-                const coupon = couponRes.rows[0];
-                let isValid = true;
-
-                // Check Expiry
-                if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) isValid = false;
-                // Check Limits
-                if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) isValid = false;
-                // Check Min Order (on subtotal)
-                if (coupon.min_order_value && calculatedSubtotal < parseFloat(coupon.min_order_value)) isValid = false;
-
-                if (isValid) {
-                    if (coupon.discount_type === 'percent') {
-                        discountAmount = calculatedSubtotal * (parseFloat(coupon.discount_value) / 100);
-                        if (coupon.max_discount_amount) {
-                            discountAmount = Math.min(discountAmount, parseFloat(coupon.max_discount_amount));
+                        if (available < item.quantity) {
+                            throw new Error(`Insufficient stock for Product ID ${item.id}. Available: ${available}, Requested: ${item.quantity}`);
                         }
-                    } else {
-                        discountAmount = parseFloat(coupon.discount_value);
+
+                        // DEDUCT STOCK
+                        await client.query(
+                            'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
+                            [item.quantity, item.id]
+                        );
+
+                        // Calculate Line Total
+                        const lineTotal = price * item.quantity;
+                        calculatedSubtotal += lineTotal;
+
+                        orderItemsToInsert.push({
+                            product_id: item.id,
+                            qty: item.quantity,
+                            unit_price: price,
+                            size: item.size || 'M',
+                            line_total: lineTotal,
+                            // Custom Sizing Fields
+                            size_type: item.sizeType || 'standard',
+                            size_label: item.sizeLabel || (item.sizeType === 'custom' ? 'Custom' : item.size),
+                            measurement_unit: item.unit || 'inch',
+                            measurements: item.measurements || null,
+                            measurement_notes: item.notes || ''
+                        });
                     }
+                }
+                // Invalidate cache as stock changed
+                invalidateProductCache();
+            }
 
-                    // Ensure discount doesn't exceed total
-                    discountAmount = Math.min(discountAmount, finalTotal);
+            // Calculate Shipping Fee Server-Side
+            // Valid zones: 'inside_dhaka' => 70, 'outside_dhaka' => 120
+            const shippingZone = data.shippingZone || 'inside_dhaka';
+            const allowedShippingFees = { 'inside_dhaka': 70, 'outside_dhaka': 120 };
+            const shippingFee = allowedShippingFees[shippingZone] || 70;
+            let finalTotal = calculatedSubtotal + shippingFee;
 
-                    finalTotal -= discountAmount;
-                    appliedCouponCode = coupon.code;
+            // --- COUPON APPLICATION ---
+            let discountAmount = 0;
+            let appliedCouponCode = null;
 
-                    // Increment Usage
-                    await client.query('UPDATE coupons SET usage_count = usage_count + 1 WHERE id = $1', [coupon.id]);
+            if (data.couponCode) {
+                // Validate Coupon (Re-check for security)
+                const couponRes = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [data.couponCode]);
+
+                if (couponRes.rows.length > 0) {
+                    const coupon = couponRes.rows[0];
+                    let isValid = true;
+
+                    // Check Expiry
+                    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) isValid = false;
+                    // Check Limits
+                    if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) isValid = false;
+                    // Check Min Order (on subtotal)
+                    if (coupon.min_order_value && calculatedSubtotal < parseFloat(coupon.min_order_value)) isValid = false;
+
+                    if (isValid) {
+                        if (coupon.discount_type === 'percent') {
+                            discountAmount = calculatedSubtotal * (parseFloat(coupon.discount_value) / 100);
+                            if (coupon.max_discount_amount) {
+                                discountAmount = Math.min(discountAmount, parseFloat(coupon.max_discount_amount));
+                            }
+                        } else {
+                            discountAmount = parseFloat(coupon.discount_value);
+                        }
+
+                        // Ensure discount doesn't exceed total
+                        discountAmount = Math.min(discountAmount, finalTotal);
+
+                        finalTotal -= discountAmount;
+                        appliedCouponCode = coupon.code;
+
+                        // Increment Usage
+                        await client.query('UPDATE coupons SET usage_count = usage_count + 1 WHERE id = $1', [coupon.id]);
+                    }
                 }
             }
-        }
 
 
-        // Define defaults
-        const initialDelivery = 'Pending';
-        const initialPayment = 'Pending';
+            // Define defaults
+            const initialDelivery = 'Pending';
+            const initialPayment = 'Pending';
 
-        // 2. Insert Order
-        const trackingToken = crypto.randomBytes(32).toString('hex');
+            // 2. Insert Order
+            const trackingToken = crypto.randomBytes(32).toString('hex');
 
-        const insertQuery = `
+            const insertQuery = `
                 INSERT INTO orders 
                 (order_id, customer_name, phone, address, product_name, product_id, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
                 RETURNING *
             `;
 
-        // Extract primary product ID (from first item)
-        // If strictly single product per order in 'orders' table design, this matches.
-        // If multiple, this just serves as a reference (e.g. for main thumbnail).
-        const primaryProductId = (orderItemsToInsert.length > 0) ? orderItemsToInsert[0].product_id : null;
+            // Extract primary product ID (from first item)
+            // If strictly single product per order in 'orders' table design, this matches.
+            // If multiple, this just serves as a reference (e.g. for main thumbnail).
+            const primaryProductId = (orderItemsToInsert.length > 0) ? orderItemsToInsert[0].product_id : null;
 
-        const values = [
-            generatedOrderId, // Use server-generated ID
-            data.customerName,
-            data.customerPhone,
-            data.address,
-            data.productName,
-            primaryProductId, // Added product_id
-            finalTotal, // Use Server Calculated Total (with discount)
-            initialDelivery,
-            initialDelivery,
-            initialPayment,
-            data.trxId || '',
-            data.paymentMethod,
-            data.deliveryDate,
-            data.size,
-            data.quantity,
-            data.senderNumber || '',
-            data.customerEmail || null,
-            trackingToken,
-            appliedCouponCode,
-            discountAmount
-        ];
+            const values = [
+                generatedOrderId, // Use server-generated ID
+                data.customerName,
+                data.customerPhone,
+                data.address,
+                data.productName,
+                primaryProductId, // Added product_id
+                finalTotal, // Use Server Calculated Total (with discount)
+                initialDelivery,
+                initialDelivery,
+                initialPayment,
+                data.trxId || '',
+                data.paymentMethod,
+                data.deliveryDate,
+                data.size,
+                data.quantity,
+                data.senderNumber || '',
+                data.customerEmail || null,
+                trackingToken,
+                appliedCouponCode,
+                discountAmount
+            ];
 
-        const result = await client.query(insertQuery, values);
+            const result = await client.query(insertQuery, values);
 
-        // 3. Insert Order Items (New Table)
-        for (const item of orderItemsToInsert) {
-            await client.query(
-                `INSERT INTO order_items 
+            // 3. Insert Order Items (New Table)
+            for (const item of orderItemsToInsert) {
+                await client.query(
+                    `INSERT INTO order_items 
                     (order_id, product_id, qty, unit_price, size, line_total, size_type, size_label, measurement_unit, measurements, measurement_notes) 
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                [
-                    generatedOrderId,
-                    item.product_id,
-                    item.qty,
-                    item.unit_price,
-                    item.size,
-                    item.line_total,
-                    item.size_type,
-                    item.size_label,
-                    item.measurement_unit,
-                    item.measurements,
-                    item.measurement_notes
-                ]
-            );
+                    [
+                        generatedOrderId,
+                        item.product_id,
+                        item.qty,
+                        item.unit_price,
+                        item.size,
+                        item.line_total,
+                        item.size_type,
+                        item.size_label,
+                        item.measurement_unit,
+                        item.measurements,
+                        item.measurement_notes
+                    ]
+                );
+            }
+
+            // --- TRANSACTION COMMIT ---
+            await client.query('COMMIT');
+
+            client.release();
+
+            // Send Email Confirmation (Async - don't block response)
+            if (data.customerEmail) {
+                // Pass structured data to email helper
+                const emailData = {
+                    orderId: generatedOrderId,
+                    customerName: data.customerName,
+                    customerEmail: data.customerEmail,
+                    products: orderItemsToInsert.map(i => ({
+                        name: data.productName, // Simplification: Usage of main product name if multiple items not fully supported in frontend yet, but structure is ready. 
+                        // Actually, let's just pass the string description for now or improve `data.items` mapping if available.
+                        // Better: Pass the aggregated items logic if available
+                        size: i.size,
+                        quantity: i.qty,
+                        price: i.unit_price
+                    })),
+                    totalPrice: finalTotal,
+                    address: data.address,
+                    deliveryDate: data.deliveryDate,
+                    trackingToken: trackingToken
+                };
+
+                // Fire and forget (catch errors inside the function)
+                sendOrderConfirmation(emailData);
+            }
+
+            return res.status(200).json({ result: 'success', message: 'Order Placed', data: { order_id: generatedOrderId, tracking_token: trackingToken } });
         }
 
-        // --- TRANSACTION COMMIT ---
-        await client.query('COMMIT');
+        // --- 3. PUT REQUESTS ---
+        if (method === 'PUT') {
+            const data = body; // Body is already sanitized and parsed
 
-        client.release();
+            // --- ADD ORDER NOTE (Admin) ---
+            if (query.action === 'addOrderNote') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
 
-        // Send Email Confirmation (Async - don't block response)
-        if (data.customerEmail) {
-            // Pass structured data to email helper
-            const emailData = {
-                orderId: generatedOrderId,
-                customerName: data.customerName,
-                customerEmail: data.customerEmail,
-                products: orderItemsToInsert.map(i => ({
-                    name: data.productName, // Simplification: Usage of main product name if multiple items not fully supported in frontend yet, but structure is ready. 
-                    // Actually, let's just pass the string description for now or improve `data.items` mapping if available.
-                    // Better: Pass the aggregated items logic if available
-                    size: i.size,
-                    quantity: i.qty,
-                    price: i.unit_price
-                })),
-                totalPrice: finalTotal,
-                address: data.address,
-                deliveryDate: data.deliveryDate,
-                trackingToken: trackingToken
-            };
+                const { orderId, note } = data;
+                if (!orderId || !note) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Order ID and Note required' });
+                }
 
-            // Fire and forget (catch errors inside the function)
-            sendOrderConfirmation(emailData);
-        }
+                await client.query(
+                    `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, 'note', $2, $3)`,
+                    [orderId, note, 'admin']
+                );
 
-        return res.status(200).json({ result: 'success', message: 'Order Placed', data: { order_id: generatedOrderId, tracking_token: trackingToken } });
-    }
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Note added' });
+            }
 
-    // --- 3. PUT REQUESTS ---
-    if (method === 'PUT') {
-        const data = body; // Body is already sanitized and parsed
+            // --- UPDATE PRODUCT (Protected) ---
+            if (query.action === 'updateProduct') {
+                // ... (existing product update logic)
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
 
-        // --- ADD ORDER NOTE (Admin) ---
-        if (query.action === 'addOrderNote') {
+                const updateQuery = `
+                    UPDATE products 
+                    SET name = $1, price = $2, image = $3, images = $4, description = $5, 
+                    category_slug = $6, category_name = $7, is_featured = $8, 
+                    is_active = $9, stock_quantity = $10, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $11
+                    RETURNING *
+                `;
+                const values = [
+                    data.name,
+                    data.price,
+                    data.image || '',
+                    data.images || [], // Pass raw array for TEXT[] column
+                    data.description || '',
+                    data.category_slug || '',
+                    data.category_name || '',
+                    data.is_featured || false,
+                    data.is_active !== false,
+                    parseInt(data.stock_quantity) || 0,
+                    data.id
+                ];
+
+                const result = await client.query(updateQuery, values);
+                client.release();
+
+                // Invalidate cache
+                invalidateProductCache();
+
+                if (result.rows.length > 0) {
+                    return res.status(200).json({ result: 'success', message: 'Product updated', data: result.rows[0] });
+                } else {
+                    return res.status(404).json({ result: 'error', message: 'Product not found' });
+                }
+            }
+
+            // --- UPDATE ORDER STATUS (Protected) ---
             const auth = await verifySession(req, client);
             if (!auth.valid) {
                 client.release();
-                return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                return res.status(401).json({ error: 'Unauthorized: ' + auth.error });
             }
             if (auth.user.role !== 'admin') {
                 client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
             }
 
-            const { orderId, note } = data;
-            if (!orderId || !note) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Order ID and Note required' });
+
+            let updatedOrder;
+            let eventType = 'status_change';
+            let description = '';
+
+            if (data.type === 'delivery') {
+                const queryResult = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                updatedOrder = queryResult.rows[0];
+                description = `Order status changed to ${data.status}`;
+            } else if (data.type === 'payment') {
+                const queryResult = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
+                updatedOrder = queryResult.rows[0];
+                description = `Payment status updated to ${data.status}`;
+            } else {
+                const queryResult = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                updatedOrder = queryResult.rows[0];
+                description = `Status updated to ${data.status}`;
             }
 
-            await client.query(
-                `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, 'note', $2, $3)`,
-                [orderId, note, 'admin']
-            );
+            if (updatedOrder) {
+                // Log Event
+                await client.query(
+                    `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, $2, $3, $4)`,
+                    [data.orderId, eventType, description, 'admin']
+                );
+            }
 
             client.release();
-            return res.status(200).json({ result: 'success', message: 'Note added' });
+
+            if (updatedOrder) {
+                // Trigger Status Email Async
+                // Only for main status updates, skipping payment-only for now unless desired
+                if (data.type !== 'payment') {
+                    sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error("Email Fail:", e));
+                }
+                return res.status(200).json({ result: 'success', data: updatedOrder });
+            } else {
+                return res.status(404).json({ result: 'error', message: 'Order not found' });
+            }
         }
 
-        // --- UPDATE PRODUCT (Protected) ---
-        if (query.action === 'updateProduct') {
-            // ... (existing product update logic)
+
+
+        // --- 4. DELETE REQUESTS ---
+        if (method === 'DELETE') {
             const auth = await verifySession(req, client);
             if (!auth.valid) {
                 client.release();
@@ -1628,154 +1729,53 @@ module.exports = async (req, res) => {
                 return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
             }
 
-            const updateQuery = `
-                    UPDATE products 
-                    SET name = $1, price = $2, image = $3, images = $4, description = $5, 
-                    category_slug = $6, category_name = $7, is_featured = $8, 
-                    is_active = $9, stock_quantity = $10, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = $11
-                    RETURNING *
-                `;
-            const values = [
-                data.name,
-                data.price,
-                data.image || '',
-                data.images || [], // Pass raw array for TEXT[] column
-                data.description || '',
-                data.category_slug || '',
-                data.category_name || '',
-                data.is_featured || false,
-                data.is_active !== false,
-                parseInt(data.stock_quantity) || 0,
-                data.id
-            ];
+            // --- DELETE COUPON ---
+            if (query.action === 'deleteCoupon') {
+                const couponId = parseInt(query.id);
+                if (!couponId || isNaN(couponId)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Valid Coupon ID required' });
+                }
 
-            const result = await client.query(updateQuery, values);
+                await client.query('DELETE FROM coupons WHERE id = $1', [couponId]);
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Coupon deleted' });
+            }
+
+            const productId = parseInt(query.id);
+            if (!productId || isNaN(productId)) {
+                client.release();
+                return res.status(400).json({ result: 'error', message: 'Valid Product ID required' });
+            }
+
+            // Soft delete by setting is_active to false
+            const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
             client.release();
 
             // Invalidate cache
             invalidateProductCache();
 
             if (result.rows.length > 0) {
-                return res.status(200).json({ result: 'success', message: 'Product updated', data: result.rows[0] });
+                return res.status(200).json({ result: 'success', message: 'Product deleted' });
             } else {
                 return res.status(404).json({ result: 'error', message: 'Product not found' });
             }
         }
 
-        // --- UPDATE ORDER STATUS (Protected) ---
-        const auth = await verifySession(req, client);
-        if (!auth.valid) {
-            client.release();
-            return res.status(401).json({ error: 'Unauthorized: ' + auth.error });
-        }
-        if (auth.user.role !== 'admin') {
-            client.release();
-            return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
-        }
-
-
-        let updatedOrder;
-        let eventType = 'status_change';
-        let description = '';
-
-        if (data.type === 'delivery') {
-            const queryResult = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
-            updatedOrder = queryResult.rows[0];
-            description = `Order status changed to ${data.status}`;
-        } else if (data.type === 'payment') {
-            const queryResult = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
-            updatedOrder = queryResult.rows[0];
-            description = `Payment status updated to ${data.status}`;
-        } else {
-            const queryResult = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
-            updatedOrder = queryResult.rows[0];
-            description = `Status updated to ${data.status}`;
-        }
-
-        if (updatedOrder) {
-            // Log Event
-            await client.query(
-                `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, $2, $3, $4)`,
-                [data.orderId, eventType, description, 'admin']
-            );
-        }
-
         client.release();
+        client = null; // Prevent double-release in catch block
+        return res.status(405).json({ error: 'Method Not Allowed' });
 
-        if (updatedOrder) {
-            // Trigger Status Email Async
-            // Only for main status updates, skipping payment-only for now unless desired
-            if (data.type !== 'payment') {
-                sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error("Email Fail:", e));
-            }
-            return res.status(200).json({ result: 'success', data: updatedOrder });
-        } else {
-            return res.status(404).json({ result: 'error', message: 'Order not found' });
+    } catch (error) {
+        console.error("API Error:", error);
+        if (client) {
+            try { await client.query('ROLLBACK'); } catch (e) { } // Rollback any active transaction
+            try { client.release(); } catch (e) { }
         }
+        return res.status(500).json({
+            result: 'error',
+            message: 'Internal Server Error: ' + error.message,
+            stack: error.stack
+        });
     }
-
-
-
-    // --- 4. DELETE REQUESTS ---
-    if (method === 'DELETE') {
-        const auth = await verifySession(req, client);
-        if (!auth.valid) {
-            client.release();
-            return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
-        }
-        if (auth.user.role !== 'admin') {
-            client.release();
-            return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
-        }
-
-        // --- DELETE COUPON ---
-        if (query.action === 'deleteCoupon') {
-            const couponId = parseInt(query.id);
-            if (!couponId || isNaN(couponId)) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Valid Coupon ID required' });
-            }
-
-            await client.query('DELETE FROM coupons WHERE id = $1', [couponId]);
-            client.release();
-            return res.status(200).json({ result: 'success', message: 'Coupon deleted' });
-        }
-
-        const productId = parseInt(query.id);
-        if (!productId || isNaN(productId)) {
-            client.release();
-            return res.status(400).json({ result: 'error', message: 'Valid Product ID required' });
-        }
-
-        // Soft delete by setting is_active to false
-        const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
-        client.release();
-
-        // Invalidate cache
-        invalidateProductCache();
-
-        if (result.rows.length > 0) {
-            return res.status(200).json({ result: 'success', message: 'Product deleted' });
-        } else {
-            return res.status(404).json({ result: 'error', message: 'Product not found' });
-        }
-    }
-
-    client.release();
-    client = null; // Prevent double-release in catch block
-    return res.status(405).json({ error: 'Method Not Allowed' });
-
-} catch (error) {
-    console.error("API Error:", error);
-    if (client) {
-        try { await client.query('ROLLBACK'); } catch (e) { } // Rollback any active transaction
-        try { client.release(); } catch (e) { }
-    }
-    return res.status(500).json({
-        result: 'error',
-        message: 'Internal Server Error: ' + error.message,
-        stack: error.stack
-    });
-}
 };
