@@ -68,6 +68,11 @@ function checkRateLimit(type, ip) {
     }
 
     if (!rateLimits[type].has(ip)) {
+        // Prevent Memory Leak: Clear map if it gets too large
+        if (rateLimits[type].size > 5000) {
+            rateLimits[type].clear();
+            console.warn(`⚠️ Rate limit map for ${type} cleared (size limit reached)`);
+        }
         rateLimits[type].set(ip, { count: 1, expires: now + window });
         return { allowed: true };
     }

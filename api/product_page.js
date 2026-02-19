@@ -51,18 +51,18 @@ module.exports = async (req, res) => {
 
         // 3. Prepare Data
         // Resolve Image URL (ensure absolute for FB/WhatsApp)
-        let mainImage = product.image || 'https://nongor-brand.vercel.app/assets/logo.jpeg';
+        let mainImage = product.image || 'https://www.nongorr.com/assets/logo.jpeg';
         if (!mainImage.startsWith('http')) {
             // Remove leading ./ or /
             const cleanPath = mainImage.replace(/^(\.\/|\/)/, '');
-            mainImage = `https://nongor-brand.vercel.app/${cleanPath}`;
+            mainImage = `https://www.nongorr.com/${cleanPath}`;
         }
 
         const title = `${product.name} | নোঙর`;
         const description = product.description || 'Premium quality Bangladeshi clothing from Nongor.';
         const price = `${product.price}`;
         const currency = 'BDT';
-        const url = `https://nongor-brand.vercel.app/p/${slug}`;
+        const url = `https://www.nongorr.com/p/${slug}`;
 
         // 4. Inject Meta Tags (Replace Placeholders or Inject in Head)
         // We will maintain the existing HTML structure and replace specific IDs/meta tags.

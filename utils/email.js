@@ -1,6 +1,17 @@
 require('dotenv').config();
 const { generateOrderConfirmationEmail, generatePasswordResetEmail } = require('./emailTemplates');
 
+// HTML escape to prevent XSS in email templates
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 let sgMail;
 let isMockMode = false;
 const apiKey = process.env.SENDGRID_API_KEY;
@@ -39,7 +50,7 @@ const sendOrderConfirmation = async (order) => {
         to: order.customerEmail,
         from: SENDER_EMAIL,
         subject: `Order Confirmation - ${order.orderId}`,
-        text: `Thank you for your order #${order.orderId}. Track here: https://nongor-brand.vercel.app/?track=${order.trackingToken}`,
+        text: `Thank you for your order #${order.orderId}. Track here: https://www.nongorr.com/?track=${order.trackingToken}`,
         html: htmlContent,
     };
 
@@ -129,19 +140,19 @@ const sendStatusUpdateEmail = async (orderData, status) => {
         </div>
         <div class="content">
             <h2>Order Status Update</h2>
-            <p>Hi ${customer_name || 'Customer'},</p>
-            <p>Your order <strong>${order_id}</strong> status has been updated.</p>
+            <p>Hi ${escapeHtml(customer_name) || 'Customer'},</p>
+            <p>Your order <strong>${escapeHtml(order_id)}</strong> status has been updated.</p>
             
             <div style="text-align: center;">
-                <span class="status-badge">${status.toUpperCase()}</span>
+                <span class="status-badge">${escapeHtml(status).toUpperCase()}</span>
             </div>
             
             <p>${messageBody}</p>
             
-            ${tracking_id ? `<p><strong>Tracking ID:</strong> ${tracking_id}</p>` : ''}
+            ${tracking_id ? `<p><strong>Tracking ID:</strong> ${escapeHtml(tracking_id)}</p>` : ''}
             
             <p>
-                <a href="https://nongor-brand.vercel.app/index.html?track=${order_id}" style="color: #E07A5F; font-weight: bold;">Track Order Status</a>
+                <a href="https://www.nongorr.com/index.html?track=${encodeURIComponent(order_id)}" style="color: #E07A5F; font-weight: bold;">Track Order Status</a>
             </p>
         </div>
         <div class="footer">

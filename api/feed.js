@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
         client.release();
 
         const products = result.rows;
-        const baseUrl = 'https://nongor-brand.vercel.app';
+        const baseUrl = 'https://www.nongorr.com';
 
         let items = '';
         for (const p of products) {

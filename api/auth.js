@@ -218,7 +218,7 @@ module.exports = async (req, res) => {
 
             // Normalize email
             const lowerEmail = email.toLowerCase();
-            const appBaseUrl = process.env.APP_BASE_URL || 'https://nongor-brand.vercel.app';
+            const appBaseUrl = process.env.APP_BASE_URL || 'https://www.nongorr.com';
 
             // Check if user exists (admin_users or auth.users)
             // Ideally we check both or just one "source of truth".

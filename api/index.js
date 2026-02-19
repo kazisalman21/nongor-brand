@@ -602,7 +602,7 @@ module.exports = async (req, res) => {
                     // QR Code
                     if (order.trackingToken) {
                         try {
-                            const trackUrl = `https://nongor-brand.vercel.app/index.html?track=${order.trackingToken}`;
+                            const trackUrl = `https://www.nongorr.com/index.html?track=${order.trackingToken}`;
                             const qrDataUrl = await QRCode.toDataURL(trackUrl);
                             const qrBase64 = qrDataUrl.split(',')[1];
                             const qrBytes = Uint8Array.from(Buffer.from(qrBase64, 'base64'));
@@ -865,62 +865,6 @@ module.exports = async (req, res) => {
             }
 
             client.release();
-            // --- GET REVIEWS (Public) ---
-            if (query.action === 'getReviews') {
-                const productId = parseInt(query.productId);
-                if (!productId) {
-                    client.release();
-                    return res.status(400).json({ result: 'error', message: 'productId required' });
-                }
-
-                // Auto-create table (safe check)
-                await client.query(`
-                    CREATE TABLE IF NOT EXISTS reviews (
-                        id SERIAL PRIMARY KEY,
-                        product_id INTEGER NOT NULL,
-                        reviewer_name VARCHAR(100) NOT NULL,
-                        rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
-                        comment TEXT,
-                        is_approved BOOLEAN DEFAULT false,
-                        created_at TIMESTAMP DEFAULT NOW()
-                    )
-                `);
-
-                // Schema Migration: Ensure is_approved column exists (Handle legacy 'approved' column)
-                try {
-                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
-                    if (checkCol.rows.length > 0) {
-                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
-                    } else {
-                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
-                    }
-                } catch (e) { console.warn('Migration warning in getReviews:', e.message); }
-
-                const result = await client.query(
-                    `SELECT id, reviewer_name, rating, comment, created_at 
-                     FROM reviews 
-                     WHERE product_id = $1 AND is_approved = true 
-                     ORDER BY created_at DESC 
-                     LIMIT 50`,
-                    [productId]
-                );
-
-                const avgResult = await client.query(
-                    `SELECT COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as total_reviews 
-                     FROM reviews 
-                     WHERE product_id = $1 AND is_approved = true`,
-                    [productId]
-                );
-
-                client.release();
-                return res.status(200).json({
-                    result: 'success',
-                    reviews: result.rows,
-                    avgRating: parseFloat(avgResult.rows[0].avg_rating).toFixed(1),
-                    totalReviews: parseInt(avgResult.rows[0].total_reviews)
-                });
-            }
-
             return res.status(200).json({ message: 'API Ready' });
         }
 
@@ -970,52 +914,7 @@ module.exports = async (req, res) => {
                 return res.status(201).json({ result: 'success', message: 'Review submitted for approval' });
             }
 
-            // --- UPDATE REVIEW STATUS (Admin) ---
-            if (query.action === 'updateReviewStatus') {
-                const auth = await verifySession(req, client);
-                if (!auth.valid || auth.user.role !== 'admin') {
-                    client.release();
-                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
-                }
 
-                const { reviewId, approved } = data;
-                if (!reviewId) {
-                    client.release();
-                    return res.status(400).json({ result: 'error', message: 'Review ID required' });
-                }
-
-                // If approved is explicitly false, we might want to delete? 
-                // Or just set is_approved=false to hide it?
-                // The prompt says "approve or not approve". 
-                // Let's implement DELETE as a separate action or handle 'rejected' status.
-                // For now, boolean is_approved toggles visibility.
-
-                // Actually, let's support DELETE too if action is deleteReview?
-                // Or just update status.
-
-                await client.query(
-                    'UPDATE reviews SET is_approved = $1 WHERE id = $2',
-                    [!!approved, reviewId]
-                );
-
-                client.release();
-                return res.status(200).json({ result: 'success', message: 'Review status updated' });
-            }
-
-            // --- DELETE REVIEW (Admin) ---
-            if (query.action === 'deleteReview') {
-                const auth = await verifySession(req, client);
-                if (!auth.valid || auth.user.role !== 'admin') {
-                    client.release();
-                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
-                }
-
-                const { reviewId } = data;
-                await client.query('DELETE FROM reviews WHERE id = $1', [reviewId]);
-
-                client.release();
-                return res.status(200).json({ result: 'success', message: 'Review deleted' });
-            }
 
             // --- ADD PRODUCT (Protected) ---
             if (query.action === 'addProduct') {
@@ -1165,22 +1064,6 @@ module.exports = async (req, res) => {
                     return res.status(400).json({ result: 'error', message: 'productId and valid rating (1-5) are required' });
                 }
 
-                // Schema Migration: Handle transition from 'approved' to 'is_approved'
-                try {
-                    // Check if 'approved' column exists
-                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
-                    if (checkCol.rows.length > 0) {
-                        // Rename it to 'is_approved' (preserves data)
-                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
-                        console.log('Migrated "approved" column to "is_approved"');
-                    } else {
-                        // Ensure is_approved exists
-                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
-                    }
-                } catch (e) {
-                    console.warn('Migration warning:', e.message);
-                }
-
                 const result = await client.query(
                     `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
                      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
@@ -1191,25 +1074,7 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', message: 'Review created', data: result.rows[0] });
             }
 
-            // --- GET ALL REVIEWS (Admin) ---
-            if (query.action === 'getAllReviews') {
-                const auth = await verifySession(req, client);
-                if (!auth.valid || auth.user.role !== 'admin') {
-                    client.release();
-                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
-                }
 
-                // Join with products to get product name
-                const result = await client.query(`
-                    SELECT r.*, p.name as product_name 
-                    FROM reviews r
-                    LEFT JOIN products p ON r.product_id = p.id
-                    ORDER BY r.created_at DESC
-                `);
-
-                client.release();
-                return res.status(200).json({ result: 'success', data: result.rows });
-            }
 
             // --- UPDATE REVIEW STATUS (Admin) ---
             if (data.action === 'updateReviewStatus') {
@@ -1225,15 +1090,7 @@ module.exports = async (req, res) => {
                     return res.status(400).json({ result: 'error', message: 'reviewId is required' });
                 }
 
-                // Ensure column exists/renamed BEFORE update
-                try {
-                    const checkCol = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews' AND column_name = 'approved'`);
-                    if (checkCol.rows.length > 0) {
-                        await client.query(`ALTER TABLE reviews RENAME COLUMN approved TO is_approved`);
-                    } else {
-                        await client.query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT false`);
-                    }
-                } catch (e) { }
+
 
                 const result = await client.query(
                     'UPDATE reviews SET is_approved = $1 WHERE id = $2 RETURNING *',
@@ -1304,7 +1161,7 @@ module.exports = async (req, res) => {
 
                 // 3. Verify Current Password (against admin_users)
                 // We assume the user is 'admin' (or we could fetch by ID if we linked them, but for now we look up 'admin')
-                const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin']);
+                const adminRes = await client.query('SELECT * FROM admin_users WHERE id = $1', [auth.user.id]);
 
                 if (adminRes.rows.length === 0) {
                     // Should not happen if migration ran and login succeeded via DB
@@ -1332,8 +1189,8 @@ module.exports = async (req, res) => {
                         updated_at = NOW(), 
                         last_password_change = NOW(),
                         password_version = password_version + 1
-                    WHERE username = $2
-                `, [newHash, 'admin']);
+                    WHERE id = $2
+                `, [newHash, auth.user.id]);
 
                 // Update Standard Table (auth.users) - Ensure Sync
                 await client.query(`
@@ -1784,10 +1641,10 @@ module.exports = async (req, res) => {
             try { await client.query('ROLLBACK'); } catch (e) { } // Rollback any active transaction
             try { client.release(); } catch (e) { }
         }
+        console.error('Stack:', error.stack);
         return res.status(500).json({
             result: 'error',
-            message: 'Internal Server Error: ' + error.message,
-            stack: error.stack
+            message: 'Internal Server Error'
         });
     }
 };

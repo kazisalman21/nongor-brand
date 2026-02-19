@@ -66,7 +66,8 @@ window.getAndValidateMeasurements = function () {
     });
 
     if (!isValid) {
-        showToast('Please check highlighted measurements', 'error');
+        if (typeof showToast === 'function') showToast('অনুগ্রহ করে হাইলাইট করা মাপগুলি চেক করুন', 'error');
+        else if (window.showToast) window.showToast('অনুগ্রহ করে হাইলাইট করা মাপগুলি চেক করুন', 'error');
         return { valid: false };
     }
 

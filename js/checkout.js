@@ -226,12 +226,12 @@ window.confirmOrderFromPage = async function () {
     const email = document.getElementById('cust-email')?.value.trim();
 
     if (!name || !phone || !address) {
-        showToast("Please fill all fields", 'error');
+        showToast("সব তথ্য দিন", 'error');
         return;
     }
 
     if (!window.checkoutPayload || window.checkoutPayload.length === 0) {
-        showToast("Cart is empty", 'error');
+        showToast("কার্ট খালি", 'error');
         return;
     }
 
@@ -251,7 +251,7 @@ window.confirmOrderFromPage = async function () {
         senderNumber = document.getElementById('manual-sender')?.value.trim();
         trxId = document.getElementById('manual-trx')?.value.trim();
         if (!senderNumber || !trxId) {
-            showToast("Please enter bKash details", 'error');
+            showToast("বিকাশ তথ্য দিন", 'error');
             return;
         }
     }
@@ -400,7 +400,7 @@ window.confirmOrder = async function () {
     }];
 
     const orderData = {
-        productId: (window.checkoutPayload && window.checkoutPayload.length > 0) ? window.checkoutPayload[0].id : null,
+        productId: currentProductId || ((window.checkoutPayload && window.checkoutPayload.length > 0) ? window.checkoutPayload[0].id : null),
         customerName: name,
         customerPhone: phone,
         address: address,
@@ -463,7 +463,7 @@ window.confirmOrder = async function () {
 
     } catch (e) {
         console.error("❌ Order failed:", e);
-        showToast("Order Failed: " + e.message, 'error');
+        showToast("অর্ডার ব্যর্থ হয়েছে: " + e.message, 'error');
         confirmBtn.innerHTML = originalHTML;
         confirmBtn.disabled = false;
     }

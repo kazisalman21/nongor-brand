@@ -129,7 +129,7 @@ function generateOrderEmailHTML(data) {
             <p style="margin: 5px 0;"><strong>Expected Delivery:</strong> ${deliveryDate}</p>
             
             <div style="text-align: center; margin-top: 30px;">
-                <a href="https://nongor-brand.vercel.app/index.html?track=${data.trackingToken || orderId}" class="button">
+                <a href="https://www.nongorr.com/index.html?track=${data.trackingToken || orderId}" class="button">
                     Track Your Order
                 </a>
             </div>
@@ -225,7 +225,7 @@ async function sendStatusUpdateEmail(orderData, status) {
             ${tracking_id ? `<p><strong>Tracking ID:</strong> ${tracking_id}</p>` : ''}
             
             <p>
-                <a href="https://nongor-brand.vercel.app/index.html?track=${order_id}" style="color: #E07A5F; font-weight: bold;">Track Order Status</a>
+                <a href="https://www.nongorr.com/index.html?track=${order_id}" style="color: #E07A5F; font-weight: bold;">Track Order Status</a>
             </p>
         </div>
         <div class="footer">

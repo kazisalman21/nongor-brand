@@ -38,7 +38,7 @@ async function testEmail() {
     }
 
     // TEST PASSWORD RESET
-    const resetLink = 'https://nongor-brand.vercel.app/admin-reset.html?token=12345&email=test@example.com';
+    const resetLink = 'https://www.nongorr.com/admin-reset.html?token=12345&email=test@example.com';
     console.log("Subject: Testing Password Reset Email...");
     await sendPasswordResetEmail('test@example.com', resetLink);
 }

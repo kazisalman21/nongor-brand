@@ -47,7 +47,7 @@ window.addToCart = function () {
         });
 
         if (!isValid) {
-            showToast("Please enter valid measurements for all fields", 'error');
+            showToast("ম মাপ সঠিক দিন", 'error');
             return;
         }
 
@@ -58,11 +58,11 @@ window.addToCart = function () {
         cartItem.measurements = measurements;
         cartItem.unit = currentMeasurementUnit;
         cartItem.notes = note;
-        cartItem.sizeLabel = `Custom (${measurements.length || ''})`;
+        cartItem.sizeLabel = `Custom (${Object.keys(measurements).length || ''})`;
 
     } else {
         if (!selectedSize) {
-            showToast("Please select a size", 'error');
+            showToast("সাইজ নির্বাচন করুন", 'error');
             return;
         }
         cartItem.size = selectedSize;
@@ -74,7 +74,7 @@ window.addToCart = function () {
     localStorage.setItem('nongor_cart', JSON.stringify(cart));
 
     updateCartUI();
-    showToast("Added to Bag");
+    showToast("কার্টে যোগ করা হয়েছে");
     closeModal();
     openCart();
 };
@@ -128,7 +128,7 @@ window.updateCartUI = function () {
                             <span class="text-xs text-gray-500 font-bold">Qty:</span>
                             <span class="text-xs font-bold text-brand-deep">${item.quantity}</span>
                         </div>
-                        <p class="font-bold text-brand-deep font-mono">৳${(item.price * item.quantity).toLocaleString()}</p>
+                        <p class="font-bold text-brand-deep font-mono">৳${(parseFloat(item.price) * item.quantity).toLocaleString()}</p>
                     </div>
                 </div>
 
@@ -139,7 +139,7 @@ window.updateCartUI = function () {
         `).join('');
     }
 
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
     const subtotalEl = document.getElementById('cart-subtotal');
     if (subtotalEl) subtotalEl.textContent = `৳${subtotal.toLocaleString()}`;
 };
@@ -189,7 +189,7 @@ window.showCheckout = function (fromCart = false) {
     if (fromCart) {
         const cart = getCart();
         if (cart.length === 0) {
-            showToast("Cart is empty!");
+            showToast("কার্ট খালি!");
             return;
         }
         localStorage.removeItem('nongor_direct_buy');

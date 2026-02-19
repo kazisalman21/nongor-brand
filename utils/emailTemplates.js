@@ -14,7 +14,7 @@ const generateOrderConfirmationEmail = (order) => {
         trackingToken
     } = order;
 
-    const trackingLink = `https://nongor-brand.vercel.app/?track=${trackingToken}`;
+    const trackingLink = `https://www.nongorr.com/?track=${trackingToken}`;
 
     // Parse products if string (legacy) or format array
     let productListHtml = '';

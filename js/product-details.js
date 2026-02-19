@@ -198,7 +198,7 @@ function renderProduct(product) {
 
 function updateMetaTags(product) {
     const url = window.location.href;
-    const imgSrc = product.image?.startsWith('http') ? product.image : `https://nongor-brand.vercel.app/assets/${product.image || 'logo.jpeg'}`;
+    const imgSrc = product.image?.startsWith('http') ? product.image : `https://www.nongorr.com/assets/${product.image || 'logo.jpeg'}`;
     const desc = product.description || 'Premium quality Bangladeshi clothing from Nongor.';
 
     const setMeta = (id, val) => { const el = document.getElementById(id); if (el) el.content = val; };
@@ -266,7 +266,7 @@ window.addToCartFromPage = function () {
         }
     } else {
         if (!window.selectedSize) {
-            window.showToast('Please select a size', 'error');
+            window.showToast('সাইজ নির্বাচন করুন', 'error');
             return;
         }
     }
@@ -290,7 +290,7 @@ window.addToCartFromPage = function () {
     if (window.updateCartUI) window.updateCartUI();
     if (window.openCart) window.openCart();
 
-    window.showToast('Added to cart! 🛒');
+    window.showToast('কার্টে যোগ করা হয়েছে! 🛒');
 };
 
 window.buyNowFromPage = function () {
@@ -315,7 +315,7 @@ window.buyNowFromPage = function () {
         }
     } else {
         if (!window.selectedSize) {
-            window.showToast('Please select a size', 'error');
+            window.showToast('সাইজ নির্বাচন করুন', 'error');
             return;
         }
     }
@@ -348,7 +348,7 @@ window.shareProduct = function () {
         // Using the local showToast if available, otherwise window.showToast if defined elsewhere
         // The inline script defined its own showToast. We should probably use the one from utils/cart.
         // For now, we'll assume showToast function is available or we define it:
-        if (typeof window.showToast === 'function') window.showToast('Link copied! 📋');
+        if (typeof window.showToast === 'function') window.showToast('লিঙ্ক কপি করা হয়েছে! 📋');
         else window.alert('Link copied!');
     }
 };

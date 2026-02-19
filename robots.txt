@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nongor-brand.vercel.app/sitemap.xml
+Sitemap: https://www.nongorr.com/sitemap.xml

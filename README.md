@@ -9,10 +9,10 @@
 
 **ভালোবাসা আর ঐতিহ্যে বোনা** — *Woven with Love and Heritage*
 
-[![Live Site](https://img.shields.io/badge/🌐_Live-nongor--brand.vercel.app-E07A5F?style=for-the-badge&logo=vercel)](https://nongor-brand.vercel.app)
-[![Admin Panel](https://img.shields.io/badge/🔐_Admin-Dashboard-3D405B?style=for-the-badge&logo=shield)](https://nongor-brand.vercel.app/admin.html)
-[![Security](https://img.shields.io/badge/🛡️_Security-Grade%20A+-10B981?style=for-the-badge)](https://nongor-brand.vercel.app)
-[![Performance](https://img.shields.io/badge/⚡_Lighthouse-98%25-FBBF24?style=for-the-badge)](https://nongor-brand.vercel.app)
+[![Live Site](https://img.shields.io/badge/🌐_Live-nongorr.com-E07A5F?style=for-the-badge&logo=vercel)](https://www.nongorr.com)
+[![Admin Panel](https://img.shields.io/badge/🔐_Admin-Dashboard-3D405B?style=for-the-badge&logo=shield)](https://www.nongorr.com/admin.html)
+[![Security](https://img.shields.io/badge/🛡️_Security-Grade%20A+-10B981?style=for-the-badge)](https://www.nongorr.com)
+[![Performance](https://img.shields.io/badge/⚡_Lighthouse-98%25-FBBF24?style=for-the-badge)](https://www.nongorr.com)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech)
 
@@ -806,7 +806,7 @@ OTP_MAX_ATTEMPTS=5
 # ===========================================
 # CORS & SECURITY
 # ===========================================
-ALLOWED_ORIGINS=https://nongor-brand.vercel.app
+ALLOWED_ORIGINS=https://www.nongorr.com
 ```
 
 ---
@@ -883,6 +883,6 @@ This is proprietary software. Unauthorized copying, modification, or distributio
   <img src="https://img.shields.io/badge/Database-Neon-00E599?style=flat-square&logo=postgresql">
 </p>
 
-**[🌐 Visit Site](https://nongor-brand.vercel.app)** • **[📧 Contact](mailto:admin@nongor.com)** • **[🐛 Report Bug](https://github.com/kazisalman21/nongor-brand/issues)**
+**[🌐 Visit Site](https://www.nongorr.com)** • **[📧 Contact](mailto:admin@nongor.com)** • **[🐛 Report Bug](https://github.com/kazisalman21/nongor-brand/issues)**
 
 </div>

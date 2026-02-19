@@ -7,8 +7,8 @@
 // Allowed Origins Configuration
 // ============================================
 const allowedOrigins = [
-    'https://nongor-brand.vercel.app',
-    'https://www.nongor.com',
+    'https://www.nongorr.com',
+    'https://nongorr.com',
     // Add development origins only in development
     ...(process.env.NODE_ENV === 'development' ? [
         'http://localhost:3000',
@@ -55,13 +55,13 @@ function setSecureCorsHeaders(req, res) {
     } else if (!origin) {
         // No origin header (direct API access or same-origin)
         // Allow from main domain as fallback
-        res.setHeader('Access-Control-Allow-Origin', 'https://nongor-brand.vercel.app');
+        res.setHeader('Access-Control-Allow-Origin', 'https://www.nongorr.com');
     } else {
         // Origin not whitelisted - block it (visually) or restrict
         console.warn(`⚠️ Blocked CORS request from unauthorized origin: ${origin}`);
         // We set a valid origin to prevent browser parsing errors, but credentials won't be sent
         // preventing the attack.
-        res.setHeader('Access-Control-Allow-Origin', 'https://nongor-brand.vercel.app');
+        res.setHeader('Access-Control-Allow-Origin', 'https://www.nongorr.com');
     }
 
     // Set other CORS headers
