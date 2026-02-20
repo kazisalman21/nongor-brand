@@ -73,14 +73,16 @@ module.exports = async (req, res) => {
         const body = sanitizeObject(rawBody);
 
         // --- INBOUND EMAIL WEBHOOK (No DB needed) ---
-        if (query.action === 'inboundEmail' && method === 'POST') {
+        if ((query.action === 'inboundEmail' || body.type === 'email.received') && method === 'POST') {
             try {
-                const { sendOrderConfirmation: _skip, ...rest } = body;
-                const fromEmail = body.from || 'Unknown sender';
-                const toEmail = body.to || 'support@nongorr.com';
-                const subject = body.subject || '(No subject)';
-                const textBody = body.text || '';
-                const htmlBody = body.html || '';
+                // Resend wraps the payload in a 'data' object for webhooks
+                const emailData = body.data || body;
+
+                const fromEmail = emailData.from || 'Unknown sender';
+                const toEmail = emailData.to || 'support@nongorr.com';
+                const subject = emailData.subject || '(No subject)';
+                const textBody = emailData.text || '';
+                const htmlBody = emailData.html || '';
                 const date = new Date().toLocaleString('en-BD', { timeZone: 'Asia/Dhaka' });
 
                 console.log(`📧 Inbound email from: ${fromEmail} | Subject: ${subject}`);
