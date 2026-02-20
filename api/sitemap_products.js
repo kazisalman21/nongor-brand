@@ -15,13 +15,6 @@ module.exports = async (req, res) => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- ════════════════ COLLECTION / SHOP PAGE ════════════════ -->
-  <url>
-    <loc>${baseUrl}/index.html#collection</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
 
   <!-- ════════════════ PRODUCT PAGES ════════════════ -->`;
 

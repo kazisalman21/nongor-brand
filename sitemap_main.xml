@@ -11,11 +11,17 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <!-- ═══════════════════════════════ HOMEPAGE ═══════════════════════════════ -->
+  <!-- ═══════════════════════════════ HOMEPAGE ═══════════════════════════════ -->
   <url>
     <loc>https://www.nongorr.com/</loc>
-    <lastmod>2026-02-19</lastmod>
+    <lastmod>2026-02-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/hero-bg.webp</image:loc>
+      <image:title>নোঙর কালেকশন</image:title>
+      <image:caption>নোঙর ক্লথিং ব্র্যান্ড — বাংলাদেশের প্রিমিয়াম পোশাক কালেকশন</image:caption>
+    </image:image>
     <!-- hreflang: tells Google this is Bengali content for Bangladesh -->
     <xhtml:link rel="alternate" hreflang="bn-BD" href="https://www.nongorr.com/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.nongorr.com/"/>
