@@ -72,6 +72,64 @@ module.exports = async (req, res) => {
         }
         const body = sanitizeObject(rawBody);
 
+        // --- INBOUND EMAIL WEBHOOK (No DB needed) ---
+        if (query.action === 'inboundEmail' && method === 'POST') {
+            try {
+                const { sendOrderConfirmation: _skip, ...rest } = body;
+                const fromEmail = body.from || 'Unknown sender';
+                const toEmail = body.to || 'support@nongorr.com';
+                const subject = body.subject || '(No subject)';
+                const textBody = body.text || '';
+                const htmlBody = body.html || '';
+                const date = new Date().toLocaleString('en-BD', { timeZone: 'Asia/Dhaka' });
+
+                console.log(`📧 Inbound email from: ${fromEmail} | Subject: ${subject}`);
+
+                const { sendOrderConfirmation: _unused } = require('./utils/email');
+                let resendInstance = null;
+                try {
+                    const { Resend } = require('resend');
+                    if (process.env.RESEND_API_KEY) {
+                        resendInstance = new Resend(process.env.RESEND_API_KEY);
+                    }
+                } catch (e) { }
+
+                if (!resendInstance) {
+                    return res.status(200).json({ received: true, forwarded: false, reason: 'Resend not initialized' });
+                }
+
+                await resendInstance.emails.send({
+                    from: 'Nongor Support <support@nongorr.com>',
+                    to: 'nongorr.anika@gmail.com',
+                    subject: `📩 FWD: ${subject}`,
+                    html: `
+                        <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                            <div style="background: #f0f0f0; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #d4a853;">
+                                <h3 style="margin: 0 0 10px; color: #333;">📩 Forwarded Email — Nongor Support</h3>
+                                <p style="margin: 4px 0; color: #555;"><strong>From:</strong> ${fromEmail}</p>
+                                <p style="margin: 4px 0; color: #555;"><strong>To:</strong> ${toEmail}</p>
+                                <p style="margin: 4px 0; color: #555;"><strong>Subject:</strong> ${subject}</p>
+                                <p style="margin: 4px 0; color: #555;"><strong>Received:</strong> ${date}</p>
+                            </div>
+                            <div style="padding: 15px 0; border-top: 1px solid #ddd;">
+                                ${htmlBody || `<pre style="white-space: pre-wrap; font-family: inherit;">${textBody}</pre>`}
+                            </div>
+                            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                            <p style="font-size: 11px; color: #999; text-align: center;">
+                                This email was sent to support@nongorr.com and auto-forwarded by Nongor's email system.
+                            </p>
+                        </div>
+                    `,
+                });
+
+                console.log('✅ Forwarded to Gmail');
+                return res.status(200).json({ received: true, forwarded: true });
+            } catch (error) {
+                console.error('❌ Webhook error:', error);
+                return res.status(200).json({ received: true, error: error.message });
+            }
+        }
+
         // Get connection from pool (FAST - reuses existing connections)
         client = await pool.connect();
 
