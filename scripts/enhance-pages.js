@@ -112,9 +112,9 @@ for (const file of allPages) {
     let changed = false;
 
     // Facebook links without aria-label
-    if (html.includes('facebook.com/profile') && !html.match(/facebook\.com\/profile[^>]*aria-label/)) {
+    if (html.includes('facebook.com') && !html.match(/facebook\.com\/[^"]*aria-label/)) {
         html = html.replace(
-            /(<a href="https:\/\/www\.facebook\.com\/profile[^"]*"[^>]*?)(>)/g,
+            /(<a href="https:\/\/www\.facebook\.com\/[^"]*"[^>]*?)(>)/g,
             (match, before, after) => {
                 if (before.includes('aria-label')) return match;
                 changed = true;
