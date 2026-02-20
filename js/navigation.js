@@ -33,18 +33,18 @@ window.initNavigation = function () {
         if (window.scrollY > 50) {
             if (!isMobile) {
                 navbar.classList.remove('bg-transparent', 'text-brand-light');
-                navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep');
+                navbar.classList.add('bg-white', 'shadow-md', 'text-brand-deep');
             } else {
-                navbar.classList.add('shadow-md', 'py-3');
-                navbar.classList.remove('py-6');
+                navbar.classList.add('bg-white', 'shadow-md', 'py-3');
+                navbar.classList.remove('py-6', 'bg-transparent');
             }
         } else {
             if (!isMobile) {
                 navbar.classList.add('bg-transparent', 'text-brand-light');
-                navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep');
+                navbar.classList.remove('bg-white', 'shadow-md', 'text-brand-deep');
             } else {
-                navbar.classList.remove('shadow-md', 'py-3');
-                navbar.classList.add('py-6');
+                navbar.classList.remove('bg-white', 'shadow-md', 'py-3');
+                navbar.classList.add('py-6', 'bg-transparent');
             }
         }
         ticking = false;

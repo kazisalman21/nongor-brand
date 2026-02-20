@@ -54,16 +54,18 @@
     }
 }
 
-/* Pulse Glow - For CTAs and important buttons */
+/* Pulse Glow - Optimized for mobile GPUs */
 @keyframes pulseGlow {
 
     0%,
     100% {
-        box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.4);
+        transform: scale(1);
+        opacity: 1;
     }
 
     50% {
-        box-shadow: 0 0 0 15px rgba(224, 122, 95, 0);
+        transform: scale(1.02);
+        opacity: 0.85;
     }
 }
 
@@ -471,19 +473,19 @@
     content: '';
     position: absolute;
     top: 0;
-    left: -75%;
+    left: 0;
     width: 50%;
     height: 100%;
     background: linear-gradient(90deg,
             transparent,
             rgba(255, 255, 255, 0.3),
             transparent);
-    transform: skewX(-25deg);
-    transition: left 0.6s ease;
+    transform: skewX(-25deg) translateX(-200%);
+    transition: transform 0.6s ease;
 }
 
 .shine:hover::before {
-    left: 125%;
+    transform: skewX(-25deg) translateX(300%);
 }
 
 /* ===== ENHANCED SEARCH BAR ===== */
