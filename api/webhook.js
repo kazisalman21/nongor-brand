@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
         // Forward the email to your personal Gmail
         const forwardResult = await resend.emails.send({
             from: 'Nongor Support <support@nongorr.com>',
-            to: 'kazisalman840@gmail.com',
+            to: 'nongorr.anika@gmail.com',
             subject: `📩 FWD: ${subject}`,
             html: `
                 <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
