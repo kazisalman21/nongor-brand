@@ -1,6 +1,12 @@
-const { Resend } = require('resend');
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend = null;
+try {
+    const { Resend } = require('resend');
+    if (process.env.RESEND_API_KEY) {
+        resend = new Resend(process.env.RESEND_API_KEY);
+    }
+} catch (e) {
+    console.warn('Resend module not found or failed to initialize. Order emails will be skipped.');
+}
 
 /**
  * Sends an HTML Order Confirmation Email to the customer via Resend.
@@ -14,8 +20,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  * @param {string} data.trackingToken
  */
 async function sendOrderConfirmation(data) {
-    if (!process.env.RESEND_API_KEY) {
-        console.warn('RESEND_API_KEY is not configured. Skipping confirmation email.');
+    if (!resend) {
+        console.warn('RESEND IS NOT INITIALIZED. Skipping confirmation email safely without crashing.');
         return;
     }
 
