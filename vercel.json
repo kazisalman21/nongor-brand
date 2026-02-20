@@ -59,6 +59,14 @@
             "destination": "/api/feed.js"
         },
         {
+            "source": "/sitemap_products.xml",
+            "destination": "/api/sitemap_products.js"
+        },
+        {
+            "source": "/p/:slug",
+            "destination": "/api/product_page.js?slug=:slug"
+        },
+        {
             "source": "/api/auth",
             "destination": "/api/auth.js"
         },
