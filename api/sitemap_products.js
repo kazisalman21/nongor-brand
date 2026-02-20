@@ -5,7 +5,8 @@ module.exports = async (req, res) => {
     const baseUrl = 'https://www.nongorr.com';
 
     // 1. Fetch Dynamic Products
-    const result = await pool.query('SELECT slug, name, image, updated_at, stock_quantity FROM products WHERE stock_quantity > 0 ORDER BY created_at DESC');
+    // DB ERROR indicates "slug" column doesn't exist yet, fetching "id" instead to prevent 500 crash
+    const result = await pool.query('SELECT id, name, image, updated_at, stock_quantity FROM products WHERE stock_quantity > 0 ORDER BY created_at DESC');
     const products = result.rows;
 
     // 2. Generate XML
@@ -35,7 +36,7 @@ module.exports = async (req, res) => {
 
       xml += `
   <url>
-    <loc>${baseUrl}/p/${product.slug}</loc>
+    <loc>${baseUrl}/p/${product.id}</loc>
     <lastmod>${lastMod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

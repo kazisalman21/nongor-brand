@@ -181,8 +181,10 @@ module.exports = async (req, res) => {
                 let result;
                 if (productId) {
                     result = await client.query('SELECT * FROM products WHERE id = $1 AND is_active = true', [productId]);
+                } else if (!isNaN(productSlug)) {
+                    result = await client.query('SELECT * FROM products WHERE id = $1 AND is_active = true', [productSlug]);
                 } else {
-                    result = await client.query('SELECT * FROM products WHERE slug = $1 AND is_active = true', [productSlug]);
+                    result = { rows: [] };
                 }
 
                 client.release();

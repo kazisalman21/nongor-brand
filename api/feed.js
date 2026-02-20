@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
     try {
         const client = await pool.connect();
         const result = await client.query(
-            `SELECT id, name, description, price, image, category_name, stock_quantity, slug 
+            `SELECT id, name, description, price, image, category_name, stock_quantity 
              FROM products ORDER BY id`
         );
         client.release();
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
         <g:id>NG${String(p.id).padStart(3, '0')}</g:id>
         <g:title>${escapeXml(p.name)}</g:title>
         <g:description>${escapeXml(p.description || 'Premium Bangladeshi clothing from Nongor.')}</g:description>
-        <g:link>${baseUrl}/p/${p.slug || p.id}</g:link>
+        <g:link>${baseUrl}/p/${p.id}</g:link>
         <g:image_link>${escapeXml(image)}</g:image_link>
         <g:brand>Nongor</g:brand>
         <g:condition>new</g:condition>

@@ -34,7 +34,14 @@ module.exports = async (req, res) => {
         client = await pool.connect();
 
         // 1. Fetch Product
-        const result = await client.query('SELECT * FROM products WHERE slug = $1', [slug]);
+        // The URL is /p/:id but Vercel routes it to ?slug=:id. 
+        // We use the ID column since the 'slug' column doesn't exist in the Postgres schema.
+        let result;
+        if (!isNaN(slug)) {
+            result = await client.query('SELECT * FROM products WHERE id = $1', [slug]);
+        } else {
+            result = { rows: [] }; // Fallback for invalid non-numeric URLs to return a 404 instead of 500
+        }
         const product = result.rows[0];
 
         client.release();
