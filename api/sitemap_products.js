@@ -5,10 +5,8 @@ module.exports = async (req, res) => {
     const baseUrl = 'https://www.nongorr.com';
 
     // 1. Fetch Dynamic Products
-    const client = await pool.connect();
-    const result = await client.query('SELECT slug, name, image, updated_at, stock_quantity FROM products WHERE stock_quantity > 0 ORDER BY created_at DESC');
+    const result = await pool.query('SELECT slug, name, image, updated_at, stock_quantity FROM products WHERE stock_quantity > 0 ORDER BY created_at DESC');
     const products = result.rows;
-    client.release();
 
     // 2. Generate XML
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -60,11 +58,11 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('Sitemap Products Generation Error:', error);
-    // Return XML even on error so GSC doesn't say "Unsupported Format"
+    // Return a 200 with an empty valid XML format on error so GSC doesn't throw "Unsupported Format"
     res.setHeader('Content-Type', 'application/xml');
-    res.status(500).send(`<?xml version="1.0" encoding="UTF-8"?>
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Error generating sitemap: ${error.message} -->
+  <!-- Error generating sitemap records -->
 </urlset>`);
   }
 };

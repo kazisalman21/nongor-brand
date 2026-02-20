@@ -19,7 +19,9 @@
     "twilio": "^5.4.0"
   },
   "scripts": {
-    "build": "npm run build:css",
+    "dev": "vite",
+    "build": "npm run build:css && npm run build:js",
+    "build:js": "vite build",
     "build:css": "node node_modules/tailwindcss/lib/cli.js -i ./assets/input.css -o ./assets/styles.css --minify",
     "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./assets/input.css -o ./assets/styles.css --watch",
     "optimize:images": "node scripts/optimize-images.js",
@@ -33,6 +35,7 @@
     "db:setup:all": "npm run db:migrate:tracking && npm run db:migrate:order-items && npm run db:migrate:images && npm run db:migrate:coupons"
   },
   "devDependencies": {
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "vite": "^7.3.1"
   }
 }
