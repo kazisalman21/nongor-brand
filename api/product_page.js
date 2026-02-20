@@ -76,6 +76,10 @@ module.exports = async (req, res) => {
         // Add Canonical (Inject before </head> or replace placeholder if exists - using injection for safety)
         html = html.replace('</head>', `<link rel="canonical" href="${url}" /></head>`);
 
+        // Inject Keywords
+        const keywords = `${product.name}, ${product.category || 'Kurti'}, Nongorr, Best Kurti, Bangladeshi Kurti, Ethnic Wear, Women Dress, Gift for Women`;
+        html = html.replace('</head>', `<meta name="keywords" content="${escapeHtml(keywords)}" /></head>`);
+
         html = html.replace(/name="description"\s+id="meta-description"\s+content="[^"]*"/, `name="description" id="meta-description" content="${escapeHtml(description)}"`);
 
         // Open Graph
