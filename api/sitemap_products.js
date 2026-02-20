@@ -57,6 +57,8 @@ module.exports = async (req, res) => {
 </urlset>`;
 
     // 3. Send Response
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     res.status(200).send(xml);
 
   } catch (error) {
