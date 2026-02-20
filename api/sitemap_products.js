@@ -11,9 +11,6 @@ module.exports = async (req, res) => {
     client.release();
 
     // 2. Generate XML
-    res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
-
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
@@ -29,7 +26,13 @@ module.exports = async (req, res) => {
   <!-- ════════════════ PRODUCT PAGES ════════════════ -->`;
 
     products.forEach(product => {
-      const lastMod = product.updated_at ? new Date(product.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      let lastMod;
+      try {
+        lastMod = product.updated_at ? new Date(product.updated_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      } catch (e) {
+        lastMod = new Date().toISOString().split('T')[0]; // Fallback to today
+      }
+
       let imageUrl = product.image || 'https://www.nongorr.com/assets/logo.jpeg';
       if (!imageUrl.startsWith('http')) {
         const cleanPath = imageUrl.replace(/^(\.\/|\/)/, '');
@@ -37,7 +40,7 @@ module.exports = async (req, res) => {
       }
 
       // Escape special chars for XML
-      const escapedName = product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+      const escapedName = (product.name || 'Product').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
       xml += `
   <url>
@@ -59,10 +62,16 @@ module.exports = async (req, res) => {
     // 3. Send Response
     res.setHeader('Content-Type', 'application/xml');
     res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+
     res.status(200).send(xml);
 
   } catch (error) {
     console.error('Sitemap Products Generation Error:', error);
-    res.status(500).send('Error generating products sitemap');
+    // Return XML even on error so GSC doesn't say "Unsupported Format"
+    res.setHeader('Content-Type', 'application/xml');
+    res.status(500).send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Error generating sitemap: ${error.message} -->
+</urlset>`);
   }
 };
