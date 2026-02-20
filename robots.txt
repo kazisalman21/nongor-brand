@@ -40,13 +40,8 @@ User-agent: Bingbot
 Allow: /
 Crawl-delay: 5
 
-# Block spam bots
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
+# Allow SEO analysis bots (helps build domain authority visibility)
+# Only block truly malicious bots
 User-agent: MJ12bot
 Disallow: /
 
