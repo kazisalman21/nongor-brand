@@ -73,6 +73,9 @@ module.exports = async (req, res) => {
 
         // Title
         html = html.replace(/<title[^>]*>.*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
+        // Add Canonical (Inject before </head> or replace placeholder if exists - using injection for safety)
+        html = html.replace('</head>', `<link rel="canonical" href="${url}" /></head>`);
+
         html = html.replace(/name="description"\s+id="meta-description"\s+content="[^"]*"/, `name="description" id="meta-description" content="${escapeHtml(description)}"`);
 
         // Open Graph
