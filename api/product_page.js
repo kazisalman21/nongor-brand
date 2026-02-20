@@ -94,6 +94,10 @@ module.exports = async (req, res) => {
             "name": product.name,
             "image": [mainImage],
             "description": description,
+            "brand": {
+                "@type": "Brand",
+                "name": "Nongor"
+            },
             "sku": `SKU-${product.id}`,
             "offers": {
                 "@type": "Offer",
