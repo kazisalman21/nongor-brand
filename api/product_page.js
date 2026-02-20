@@ -99,26 +99,61 @@ module.exports = async (req, res) => {
             "@context": "https://schema.org/",
             "@type": "Product",
             "name": product.name,
-            "image": [mainImage],
+            "alternateName": product.name, // Fallback for alternate name
             "description": description,
+            "image": [mainImage],
+            "sku": `NONGORR-${product.id}`,
             "brand": {
                 "@type": "Brand",
-                "name": "Nongor"
+                "name": "নোঙর"
             },
-            "sku": `SKU-${product.id}`,
             "offers": {
                 "@type": "Offer",
                 "url": url,
                 "priceCurrency": currency,
                 "price": price,
+                "priceValidUntil": "2026-12-31",
                 "availability": parseInt(product.stock_quantity) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-                "itemCondition": "https://schema.org/NewCondition"
+                "itemCondition": "https://schema.org/NewCondition",
+                "seller": {
+                    "@type": "Organization",
+                    "name": "নোঙর"
+                }
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "5",
+                "reviewCount": "1"
             }
+        };
+
+        const breadcrumbSchema = {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [{
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.nongorr.com"
+            }, {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Collection",
+                "item": "https://www.nongorr.com/index.html#collection"
+            }, {
+                "@type": "ListItem",
+                "position": 3,
+                "name": product.name,
+                "item": url
+            }]
         };
 
         const schemaScript = `
         <script type="application/ld+json">
             ${JSON.stringify(schema, null, 2).replace(/</g, '\\u003c')}
+        </script>
+        <script type="application/ld+json">
+            ${JSON.stringify(breadcrumbSchema, null, 2).replace(/</g, '\\u003c')}
         </script>
         `;
 

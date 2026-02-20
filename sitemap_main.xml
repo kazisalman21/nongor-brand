@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MAIN SITEMAP — nongorr.com (নোঙর Clothing Brand)
+  Language: Bengali (bn-BD) — Target market: Bangladesh
+  Tip: Update <lastmod> every time page content changes.
+  Priorities: 1.0 = highest, 0.1 = lowest
+  ✗ Removed: checkout.html (transactional pages harm SEO)
+-->
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ═══════════════════════════════ HOMEPAGE ═══════════════════════════════ -->
+  <url>
+    <loc>https://www.nongorr.com/</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <!-- hreflang: tells Google this is Bengali content for Bangladesh -->
+    <xhtml:link rel="alternate" hreflang="bn-BD" href="https://www.nongorr.com/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.nongorr.com/"/>
+  </url>
+
+  <!-- ══════════════════════════════ KEY PAGES ══════════════════════════════ -->
+  <url>
+    <loc>https://www.nongorr.com/about.html</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.nongorr.com/track.html</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.nongorr.com/shipping-info.html</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.nongorr.com/faq.html</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ═══════════════════════════ LEGAL / POLICY ════════════════════════════ -->
+  <!-- Lower priority — crawl budget preserved for important pages -->
+  <url>
+    <loc>https://www.nongorr.com/return-policy.html</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://www.nongorr.com/privacy-policy.html</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://www.nongorr.com/terms.html</loc>
+    <lastmod>2026-02-19</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+</urlset>

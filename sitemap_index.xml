@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SITEMAP INDEX — nongorr.com
+  Submit this file to Google Search Console & Bing Webmaster Tools.
+  URL: https://www.nongorr.com/sitemap_index.xml
+-->
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Core pages -->
+  <sitemap>
+    <loc>https://www.nongorr.com/sitemap_main.xml</loc>
+    <lastmod>2026-02-19</lastmod>
+  </sitemap>
+
+  <!-- Product / category pages (add when ready) -->
+  <sitemap>
+    <loc>https://www.nongorr.com/sitemap_products.xml</loc>
+    <lastmod>2026-02-19</lastmod>
+  </sitemap>
+
+  <!-- Images sitemap -->
+  <sitemap>
+    <loc>https://www.nongorr.com/sitemap_images.xml</loc>
+    <lastmod>2026-02-19</lastmod>
+  </sitemap>
+
+</sitemapindex>

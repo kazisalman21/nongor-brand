@@ -63,8 +63,20 @@
             "destination": "/api/auth.js"
         },
         {
+            "source": "/sitemap_products.xml",
+            "destination": "/api/sitemap_products.js"
+        },
+        {
+            "source": "/sitemap_main.xml",
+            "destination": "/sitemap_main.xml"
+        },
+        {
+            "source": "/sitemap_images.xml",
+            "destination": "/sitemap_images.xml"
+        },
+        {
             "source": "/sitemap.xml",
-            "destination": "/api/sitemap.js"
+            "destination": "/sitemap_index.xml"
         },
         {
             "source": "/api/(.*)",

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  IMAGE SITEMAP — nongorr.com
+  ✅ Helps Google index your images and rank them in Google Image Search.
+  ✅ Add all key images — product photos, banners, infographics.
+  ✅ Use descriptive <image:title> and <image:caption> — these act like alt text for SEO.
+  ✅ Max 1,000 images per <url> entry.
+-->
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- ════════════════════════ HOMEPAGE IMAGES ═══════════════════════ -->
+  <url>
+    <loc>https://www.nongorr.com/</loc>
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/logo.jpeg</image:loc>
+      <image:title>Nongorr - Main Banner</image:title>
+      <image:caption>Discover our latest products at Nongorr</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Note: Dynamic Product Images are included in sitemap_products.xml -->
+
+</urlset>

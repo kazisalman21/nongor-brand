@@ -1,4 +1,54 @@
-User-agent: *
-Allow: /
+# robots.txt — nongorr.com (নোঙর Clothing Brand)
+# Generated for maximum SEO performance
 
-Sitemap: https://www.nongorr.com/sitemap.xml
+User-agent: *
+
+# Allow all important pages
+Allow: /
+Allow: /about.html
+Allow: /faq.html
+Allow: /shipping-info.html
+Allow: /return-policy.html
+Allow: /privacy-policy.html
+Allow: /terms.html
+Allow: /track.html
+Allow: /assets/
+
+# Block pages that hurt SEO (waste crawl budget)
+Disallow: /checkout.html
+Disallow: /cart
+Disallow: /order-confirmation
+Disallow: /admin/
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+Disallow: /*?*ref=
+
+# Sitemap location
+Sitemap: https://www.nongorr.com/sitemap_index.xml
+
+# Special rules for specific bots
+
+# Google Image Bot
+User-agent: Googlebot-Image
+Allow: /assets/
+Allow: /images/
+
+# Bing Bot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 5
+
+# Block spam bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
