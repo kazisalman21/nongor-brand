@@ -53,12 +53,9 @@ export function initProductPage() {
             return;
         }
 
-        // Only show error if we are actually ON the product page and missing ID/Slug
-        if (document.getElementById('product-title')) {
-            errorPending = true;
-            dataReady = true;
-            tryReveal();
-        }
+        // No product ID or slug found — redirect to homepage
+        // This prevents Google from classifying the page as a Soft 404
+        window.location.replace('https://www.nongorr.com/');
         return;
     }
 
