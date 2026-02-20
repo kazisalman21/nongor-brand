@@ -202,9 +202,15 @@ async function sendOrderConfirmation(data) {
                             
                             <!-- Social Links -->
                             <div style="margin-bottom: 15px;">
-                                <a href="https://www.facebook.com/nongorclothingbd" style="display: inline-block; width: 36px; height: 36px; background: rgba(255,255,255,0.06); border-radius: 50%; line-height: 36px; text-align: center; margin: 0 5px; text-decoration: none; font-size: 16px; color: #8a8a9a;">f</a>
-                                <a href="https://www.instagram.com/nongorr_" style="display: inline-block; width: 36px; height: 36px; background: rgba(255,255,255,0.06); border-radius: 50%; line-height: 36px; text-align: center; margin: 0 5px; text-decoration: none; font-size: 14px; color: #8a8a9a;">ig</a>
-                                <a href="https://wa.me/message/74UB552NKNJYG1" style="display: inline-block; width: 36px; height: 36px; background: rgba(255,255,255,0.06); border-radius: 50%; line-height: 36px; text-align: center; margin: 0 5px; text-decoration: none; font-size: 14px; color: #8a8a9a;">wa</a>
+                                <a href="https://www.facebook.com/nongorclothingbd" style="display: inline-block; margin: 0 6px; text-decoration: none;">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook" width="32" height="32" style="border-radius: 50%; opacity: 0.7;">
+                                </a>
+                                <a href="https://www.instagram.com/nongorr_" style="display: inline-block; margin: 0 6px; text-decoration: none;">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="32" height="32" style="border-radius: 50%; opacity: 0.7;">
+                                </a>
+                                <a href="https://wa.me/message/74UB552NKNJYG1" style="display: inline-block; margin: 0 6px; text-decoration: none;">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" width="32" height="32" style="border-radius: 50%; opacity: 0.7;">
+                                </a>
                             </div>
 
                             <p style="margin: 0 0 6px; font-size: 13px; color: #6a6a7a;">Need help? Contact us at <a href="mailto:support@nongorr.com" style="color: #d4a853; text-decoration: none;">support@nongorr.com</a></p>
