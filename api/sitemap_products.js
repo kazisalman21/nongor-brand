@@ -58,11 +58,11 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('Sitemap Products Generation Error:', error);
-    // Return a 200 with an empty valid XML format on error so GSC doesn't throw "Unsupported Format"
+    // Debug output: return error details temporarily inside comment
     res.setHeader('Content-Type', 'application/xml');
     res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Error generating sitemap records -->
+  <!-- DB ERROR: ${error.message} \n ${error.stack} -->
 </urlset>`);
   }
 };
