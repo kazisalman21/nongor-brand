@@ -81,40 +81,48 @@
     <link rel="preload" href="./assets/hero-bg.webp" as="image" type="image/webp" fetchpriority="high">
 
     <!-- JSON-LD Structured Data -->
-    <!-- JSON-LD Structured Data -->
-    <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ClothingStore",
-      "name": "নোঙর",
-      "alternateName": "Nongorr",
-      "description": "ভালোবাসা আর ঐতিহ্যে বোনা — A Bangladeshi clothing brand rooted in love and heritage.",
-      "url": "https://www.nongorr.com",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://www.nongorr.com/assets/logo.jpeg"
-      },
-      "image": "https://www.nongorr.com/assets/hero-bg.webp",
-      "priceRange": "৳৳",
-      "currenciesAccepted": "BDT",
-      "paymentAccepted": "bKash, Nagad, Visa, Mastercard",
-      "areaServed": {
-        "@type": "Country",
-        "name": "Bangladesh"
-      },
-      "inLanguage": "bn",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "availableLanguage": ["Bengali", "English"],
-        "contactOption": "TollFree"
-      },
-      "sameAs": [
-        "https://www.facebook.com/nongorclothingbd",
-        "https://m.me/857107060814707",
-        "https://wa.me/message/74UB552NKNJYG1",
-        "https://www.instagram.com/nongorr_"
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://www.nongorr.com/#website",
+          "url": "https://www.nongorr.com/",
+          "name": "Nongor",
+          "alternateName": "নোঙর",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://www.nongorr.com/index.html?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "ItemList",
+          "itemListElement": [
+            {
+              "@type": "SiteNavigationElement",
+              "position": 1,
+              "name": "Kurti Collection",
+              "url": "https://www.nongorr.com/index.html#collection"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 2,
+              "name": "Track Parcel",
+              "url": "https://www.nongorr.com/track.html"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 3,
+              "name": "About Us",
+              "url": "https://www.nongorr.com/about.html"
+            }
+          ]
+        }
       ]
     }
     </script>
