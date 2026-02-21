@@ -42,6 +42,9 @@ window.toggleMobileMenu = function () {
 window.initNavigation = function () {
     // Sticky Navbar Logic with Throttle
     const navbar = document.getElementById('navbar');
+    const ctaBtn = navbar ? navbar.querySelector('.nav-cta') : null;
+    const searchInput = navbar ? navbar.querySelector('#desktop-search') : null;
+    const cartBtn = navbar ? navbar.querySelector('.nav-cart') : null;
     let ticking = false;
 
     const updateNavbar = () => {
@@ -49,10 +52,30 @@ window.initNavigation = function () {
         const isMobile = window.innerWidth < 768;
 
         if (window.scrollY > 50) {
-            // Scrolled: solid white background
+            // Scrolled: solid white background, dark text
             navbar.classList.remove('md:bg-transparent', 'md:backdrop-blur-none');
             navbar.classList.add('bg-white/95', 'shadow-md', 'text-brand-deep', 'border-b-gray-100/50');
             navbar.classList.remove('bg-brand-deep/90', 'text-brand-light');
+            navbar.setAttribute('data-scrolled', 'true');
+
+            // Fix CTA button colors for white bg
+            if (ctaBtn) {
+                ctaBtn.classList.remove('text-brand-light', 'bg-brand-terracotta/10', 'border-brand-terracotta/30');
+                ctaBtn.classList.add('text-white', 'bg-brand-terracotta', 'border-brand-terracotta');
+            }
+
+            // Fix search bar for white bg
+            if (searchInput) {
+                searchInput.classList.remove('bg-white/5', 'border-white/10', 'text-brand-light', 'placeholder-white/40');
+                searchInput.classList.add('bg-gray-100', 'border-gray-200', 'text-brand-deep', 'placeholder-gray-400');
+            }
+
+            // Fix cart icon for white bg
+            if (cartBtn) {
+                cartBtn.classList.remove('text-brand-light');
+                cartBtn.classList.add('text-brand-deep');
+            }
+
             if (isMobile) {
                 navbar.classList.remove('py-4');
                 navbar.classList.add('py-3');
@@ -62,6 +85,26 @@ window.initNavigation = function () {
             navbar.classList.add('md:bg-transparent', 'md:backdrop-blur-none');
             navbar.classList.remove('bg-white/95', 'shadow-md', 'text-brand-deep', 'border-b-gray-100/50');
             navbar.classList.add('bg-brand-deep/90', 'text-brand-light');
+            navbar.removeAttribute('data-scrolled');
+
+            // Restore CTA button
+            if (ctaBtn) {
+                ctaBtn.classList.add('text-brand-light', 'bg-brand-terracotta/10', 'border-brand-terracotta/30');
+                ctaBtn.classList.remove('text-white', 'bg-brand-terracotta', 'border-brand-terracotta');
+            }
+
+            // Restore search bar
+            if (searchInput) {
+                searchInput.classList.add('bg-white/5', 'border-white/10', 'text-brand-light', 'placeholder-white/40');
+                searchInput.classList.remove('bg-gray-100', 'border-gray-200', 'text-brand-deep', 'placeholder-gray-400');
+            }
+
+            // Restore cart icon
+            if (cartBtn) {
+                cartBtn.classList.add('text-brand-light');
+                cartBtn.classList.remove('text-brand-deep');
+            }
+
             if (isMobile) {
                 navbar.classList.remove('py-3');
                 navbar.classList.add('py-4');
@@ -94,4 +137,3 @@ window.initNavigation = function () {
         });
     });
 };
-
