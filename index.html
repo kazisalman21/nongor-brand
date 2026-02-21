@@ -145,12 +145,14 @@
             }
         };
         window.mobileNavClick = function (href, event) {
-            if (event) event.preventDefault();
+            // Close mobile menu first
             var menu = document.getElementById('mobile-menu');
             if (menu && !menu.classList.contains('translate-x-full')) {
                 toggleMobileMenu();
             }
             if (href.charAt(0) === '#') {
+                // Hash link — prevent default, handle scroll or redirect
+                if (event) event.preventDefault();
                 var el = document.querySelector(href);
                 if (el) {
                     setTimeout(function () { el.scrollIntoView({ behavior: 'smooth' }); }, 300);
@@ -158,7 +160,8 @@
                     setTimeout(function () { window.location.href = 'index.html' + href; }, 150);
                 }
             } else {
-                setTimeout(function () { window.location.href = href; }, 150);
+                // Page link (e.g. track.html, about.html) — let browser follow href naturally
+                // Don't preventDefault — the native <a href> will navigate
             }
         };
     </script>

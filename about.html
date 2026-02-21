@@ -108,7 +108,7 @@
     <link href="./assets/styles.css?v=3" rel="stylesheet">
     <!-- Critical Mobile Navigation Functions (must load before any onclick handlers) -->
     <script>
-        window.toggleMobileMenu = function() {
+        window.toggleMobileMenu = function () {
             var menu = document.getElementById('mobile-menu');
             var icon = document.getElementById('hamburger-icon');
             var spans = icon ? icon.querySelectorAll('span') : [];
@@ -136,21 +136,23 @@
                 }
             }
         };
-        window.mobileNavClick = function(href, event) {
-            if (event) event.preventDefault();
+        window.mobileNavClick = function (href, event) {
+            // Close mobile menu first
             var menu = document.getElementById('mobile-menu');
             if (menu && !menu.classList.contains('translate-x-full')) {
                 toggleMobileMenu();
             }
             if (href.charAt(0) === '#') {
+                // Hash link — prevent default, handle scroll or redirect
+                if (event) event.preventDefault();
                 var el = document.querySelector(href);
                 if (el) {
-                    setTimeout(function(){ el.scrollIntoView({ behavior: 'smooth' }); }, 300);
+                    setTimeout(function () { el.scrollIntoView({ behavior: 'smooth' }); }, 300);
                 } else {
-                    setTimeout(function(){ window.location.href = 'index.html' + href; }, 150);
+                    setTimeout(function () { window.location.href = 'index.html' + href; }, 150);
                 }
             } else {
-                setTimeout(function(){ window.location.href = href; }, 150);
+                // Page link — let browser follow href naturally
             }
         };
     </script>
@@ -281,19 +283,17 @@
         </div>
         <div class="flex flex-col items-center gap-6">
             <a href="index.html" onclick="mobileNavClick('index.html', event)"
-                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300"
-                >Home</a>
-            <a href="#" class="text-2xl text-brand-terracotta font-bold font-serif tracking-wide"
-                >Story</a>
+                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300">Home</a>
+            <a href="#" class="text-2xl text-brand-terracotta font-bold font-serif tracking-wide">Story</a>
             <a href="index.html#collection"
-                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300"
-                >Collection</a>
+                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300">Collection</a>
             <a href="track.html" onclick="mobileNavClick('track.html', event)"
-                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300"
-                >Track Order</a>
+                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300">Track
+                Order</a>
             <div class="w-12 h-[1px] bg-white/10 my-2"></div>
-            <a href="#contact" onclick="mobileNavClick('#contact', event)" class="text-lg text-brand-terracotta font-serif font-semibold tracking-wide hover:text-brand-sand transition-colors duration-300"
-                >Contact Us</a>
+            <a href="#contact" onclick="mobileNavClick('#contact', event)"
+                class="text-lg text-brand-terracotta font-serif font-semibold tracking-wide hover:text-brand-sand transition-colors duration-300">Contact
+                Us</a>
         </div>
     </div>
 
@@ -595,7 +595,8 @@
                 <!-- Navigation Links -->
                 <div
                     class="flex flex-wrap justify-center gap-3 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
-                    <a href="about.html" onclick="mobileNavClick('about.html', event)" class="text-brand-terracotta font-bold transition">About Us</a>
+                    <a href="about.html" onclick="mobileNavClick('about.html', event)"
+                        class="text-brand-terracotta font-bold transition">About Us</a>
                     <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
                     <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
                     <a href="shipping-info.html" class="hover:text-brand-terracotta transition">Shipping Info</a>

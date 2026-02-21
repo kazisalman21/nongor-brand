@@ -128,15 +128,15 @@ window.initNavigation = function () {
 
     // Global function for mobile menu link navigation (called via inline onclick)
     window.mobileNavClick = function (href, event) {
-        if (event) event.preventDefault();
-
-        // Close the mobile menu
+        // Close the mobile menu first
         const menu = document.getElementById('mobile-menu');
         if (menu && !menu.classList.contains('translate-x-full')) {
             toggleMobileMenu();
         }
 
         if (href.startsWith('#')) {
+            // Hash link — prevent default, handle scroll or redirect
+            if (event) event.preventDefault();
             const targetEl = document.querySelector(href);
             if (targetEl) {
                 // Scroll to the section after menu closes
@@ -146,8 +146,8 @@ window.initNavigation = function () {
                 setTimeout(() => { window.location.href = 'index.html' + href; }, 150);
             }
         } else {
-            // Navigate to a different page
-            setTimeout(() => { window.location.href = href; }, 150);
+            // Page link (e.g. track.html, about.html) — let browser follow href naturally
+            // Don't preventDefault — the native <a href> will navigate
         }
     };
 
