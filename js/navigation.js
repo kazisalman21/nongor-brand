@@ -53,8 +53,8 @@ window.initNavigation = function () {
 
         if (window.scrollY > 50) {
             // Scrolled: solid white background, dark text
-            navbar.classList.remove('md:bg-transparent', 'md:backdrop-blur-none');
-            navbar.classList.add('bg-white/95', 'shadow-md', 'text-brand-deep', 'border-b-gray-100/50');
+            navbar.classList.remove('lg:bg-transparent', 'lg:backdrop-blur-none');
+            navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep', 'border-gray-100/50');
             navbar.classList.remove('bg-brand-deep/90', 'text-brand-light');
             navbar.setAttribute('data-scrolled', 'true');
 
@@ -82,8 +82,8 @@ window.initNavigation = function () {
             }
         } else {
             // Top: transparent/branded
-            navbar.classList.add('md:bg-transparent', 'md:backdrop-blur-none');
-            navbar.classList.remove('bg-white/95', 'shadow-md', 'text-brand-deep', 'border-b-gray-100/50');
+            navbar.classList.add('lg:bg-transparent', 'lg:backdrop-blur-none');
+            navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep', 'border-gray-100/50');
             navbar.classList.add('bg-brand-deep/90', 'text-brand-light');
             navbar.removeAttribute('data-scrolled');
 
