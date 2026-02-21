@@ -114,6 +114,55 @@
     <!-- Preload Critical Images -->
     <link rel="preload" href="./assets/hero-bg.webp" as="image" type="image/webp" fetchpriority="high">
 
+    <!-- Critical Mobile Navigation Functions (must load before any onclick handlers) -->
+    <script>
+        window.toggleMobileMenu = function () {
+            var menu = document.getElementById('mobile-menu');
+            var icon = document.getElementById('hamburger-icon');
+            var spans = icon ? icon.querySelectorAll('span') : [];
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('translate-x-full');
+                document.body.style.overflow = 'hidden';
+                if (spans.length === 3) {
+                    spans[0].style.transform = 'translateY(7px) rotate(45deg)';
+                    spans[0].style.width = '100%';
+                    spans[1].style.opacity = '0';
+                    spans[1].style.transform = 'scaleX(0)';
+                    spans[2].style.transform = 'translateY(-7px) rotate(-45deg)';
+                    spans[2].style.width = '100%';
+                }
+            } else {
+                menu.classList.add('translate-x-full');
+                document.body.style.overflow = '';
+                if (spans.length === 3) {
+                    spans[0].style.transform = '';
+                    spans[0].style.width = '';
+                    spans[1].style.opacity = '';
+                    spans[1].style.transform = '';
+                    spans[2].style.transform = '';
+                    spans[2].style.width = '';
+                }
+            }
+        };
+        window.mobileNavClick = function (href, event) {
+            if (event) event.preventDefault();
+            var menu = document.getElementById('mobile-menu');
+            if (menu && !menu.classList.contains('translate-x-full')) {
+                toggleMobileMenu();
+            }
+            if (href.charAt(0) === '#') {
+                var el = document.querySelector(href);
+                if (el) {
+                    setTimeout(function () { el.scrollIntoView({ behavior: 'smooth' }); }, 300);
+                } else {
+                    setTimeout(function () { window.location.href = 'index.html' + href; }, 150);
+                }
+            } else {
+                setTimeout(function () { window.location.href = href; }, 150);
+            }
+        };
+    </script>
+
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -338,6 +387,15 @@
         class="fixed inset-0 bg-brand-deep z-[55] transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] flex flex-col items-center justify-center md:hidden"
         style="backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); background: rgba(61, 64, 91, 0.98);">
 
+        <!-- Close (X) Button -->
+        <button onclick="toggleMobileMenu()" aria-label="Close menu"
+            class="absolute top-6 right-6 z-10 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 group">
+            <svg class="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
         <!-- Decorative background elements -->
         <div class="absolute top-20 right-10 w-48 h-48 bg-brand-terracotta/5 rounded-full blur-3xl"></div>
         <div class="absolute bottom-20 left-10 w-64 h-64 bg-brand-sand/5 rounded-full blur-3xl"></div>
@@ -361,24 +419,21 @@
             </svg>
         </div>
 
-        <!-- Mobile Nav Links -->
+        <!-- Mobile Nav Links (NO inline onclick — handled by JS in navigation.js) -->
         <div class="flex flex-col items-center gap-6">
-            <a href="#home"
-                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300"
-                onclick="toggleMobileMenu()">Home</a>
-            <a href="about.html"
-                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300"
-                onclick="toggleMobileMenu()">Story</a>
-            <a href="#collection"
-                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300"
-                onclick="toggleMobileMenu()">Collection</a>
-            <a href="track.html"
-                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300"
-                onclick="toggleMobileMenu()">Track Order</a>
+            <a href="#home" onclick="mobileNavClick('#home', event)"
+                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300">Home</a>
+            <a href="about.html" onclick="mobileNavClick('about.html', event)"
+                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300">Story</a>
+            <a href="#collection" onclick="mobileNavClick('#collection', event)"
+                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300">Collection</a>
+            <a href="track.html" onclick="mobileNavClick('track.html', event)"
+                class="text-2xl text-brand-light/90 hover:text-brand-terracotta font-serif font-medium tracking-wide transition-colors duration-300">Track
+                Order</a>
             <div class="w-12 h-[1px] bg-white/10 my-2"></div>
-            <a href="#contact"
-                class="text-lg text-brand-terracotta font-serif font-semibold tracking-wide hover:text-brand-sand transition-colors duration-300"
-                onclick="toggleMobileMenu()">Contact Us</a>
+            <a href="#contact" onclick="mobileNavClick('#contact', event)"
+                class="text-lg text-brand-terracotta font-serif font-semibold tracking-wide hover:text-brand-sand transition-colors duration-300">Contact
+                Us</a>
         </div>
     </div>
 

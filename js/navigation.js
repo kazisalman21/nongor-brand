@@ -126,40 +126,30 @@ window.initNavigation = function () {
         mobileBtn.addEventListener('click', toggleMobileMenu);
     }
 
-    // Fix Mobile Menu Stuck on Link Click & Navigation Failures on Touch
-    const mobileLinks = document.querySelectorAll('#mobile-menu a');
-    mobileLinks.forEach(link => {
-        // Strip inline onclicks to prevent layout-reflow race conditions on mobile browsers
-        link.removeAttribute('onclick');
+    // Global function for mobile menu link navigation (called via inline onclick)
+    window.mobileNavClick = function (href, event) {
+        if (event) event.preventDefault();
 
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const targetHref = this.getAttribute('href');
+        // Close the mobile menu
+        const menu = document.getElementById('mobile-menu');
+        if (menu && !menu.classList.contains('translate-x-full')) {
+            toggleMobileMenu();
+        }
 
-            const menu = document.getElementById('mobile-menu');
-            if (menu && !menu.classList.contains('translate-x-full')) {
-                toggleMobileMenu();
-            }
-
-            if (targetHref.startsWith('#')) {
-                const targetEl = document.querySelector(targetHref);
-                if (targetEl) {
-                    // Small delay to let menu close before scrolling smoothly
-                    setTimeout(() => targetEl.scrollIntoView({ behavior: 'smooth' }), 300);
-                } else {
-                    // Section doesn't exist on this page (e.g. clicked Collection from About page)
-                    setTimeout(() => {
-                        window.location.href = `index.html${targetHref}`;
-                    }, 150);
-                }
+        if (href.startsWith('#')) {
+            const targetEl = document.querySelector(href);
+            if (targetEl) {
+                // Scroll to the section after menu closes
+                setTimeout(() => targetEl.scrollIntoView({ behavior: 'smooth' }), 300);
             } else {
-                // Navigate to the actual page explicitly to prevent touch-cancellation bugs
-                setTimeout(() => {
-                    window.location.href = targetHref;
-                }, 150);
+                // Section doesn't exist on this page — navigate to index.html with the hash
+                setTimeout(() => { window.location.href = 'index.html' + href; }, 150);
             }
-        });
-    });
+        } else {
+            // Navigate to a different page
+            setTimeout(() => { window.location.href = href; }, 150);
+        }
+    };
 
     // Global Search Handling (Desktop & Mobile)
     const handleSearchEnter = (e) => {
