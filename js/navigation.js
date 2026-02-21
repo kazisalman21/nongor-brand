@@ -146,6 +146,11 @@ window.initNavigation = function () {
                 if (targetEl) {
                     // Small delay to let menu close before scrolling smoothly
                     setTimeout(() => targetEl.scrollIntoView({ behavior: 'smooth' }), 300);
+                } else {
+                    // Section doesn't exist on this page (e.g. clicked Collection from About page)
+                    setTimeout(() => {
+                        window.location.href = `index.html${targetHref}`;
+                    }, 150);
                 }
             } else {
                 // Navigate to the actual page explicitly to prevent touch-cancellation bugs
@@ -155,4 +160,34 @@ window.initNavigation = function () {
             }
         });
     });
+
+    // Global Search Handling (Desktop & Mobile)
+    const handleSearchEnter = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = e.target.value.trim();
+            const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+
+            if (isHomePage) {
+                // If on mobile menu, close it
+                const menu = document.getElementById('mobile-menu');
+                if (menu && !menu.classList.contains('translate-x-full')) {
+                    toggleMobileMenu();
+                }
+                // Scroll to collection
+                const collection = document.getElementById('collection');
+                if (collection) collection.scrollIntoView({ behavior: 'smooth' });
+
+                if (window.handleSearch) window.handleSearch(query);
+            } else {
+                // Route to index.html with search query
+                window.location.href = `index.html?search=${encodeURIComponent(query)}#collection`;
+            }
+        }
+    };
+
+    const dSearch = document.getElementById('desktop-search');
+    const mSearch = document.getElementById('mobile-search');
+    if (dSearch) dSearch.addEventListener('keypress', handleSearchEnter);
+    if (mSearch) mSearch.addEventListener('keypress', handleSearchEnter);
 };
