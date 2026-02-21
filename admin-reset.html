@@ -321,6 +321,52 @@
         .back-to-login-btn:hover svg {
             transform: translateX(-4px);
         }
+
+        /* Mobile Optimization */
+        @media (max-width: 480px) {
+            .premium-glass-card {
+                padding: 1.5rem !important;
+                /* Override p-8 */
+                border-radius: 20px;
+            }
+
+            .method-card {
+                padding: 1rem;
+            }
+
+            .method-icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 0.5rem;
+            }
+
+            .otp-input {
+                padding: 14px;
+                font-size: 24px;
+                letter-spacing: 8px;
+            }
+
+            h1.text-2xl {
+                font-size: 1.25rem;
+                /* text-xl */
+                line-height: 1.75rem;
+            }
+
+            .premium-button {
+                padding: 14px 20px;
+            }
+
+            .logo-ring-animated {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 1rem;
+            }
+
+            .logo-ring-animated img {
+                width: 44px;
+                height: 44px;
+            }
+        }
     </style>
 </head>
 
@@ -328,7 +374,7 @@
 
     <div class="w-full max-w-md">
         <!-- Main Card -->
-        <div class="premium-glass-card p-8">
+        <div class="premium-glass-card p-6 sm:p-8">
             <!-- Logo -->
             <div class="logo-ring-animated">
                 <img src="./assets/logo.jpeg" alt="Nongor Logo">
@@ -837,5 +883,3 @@
 </body>
 
 </html>
-
-

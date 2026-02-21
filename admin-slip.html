@@ -144,6 +144,87 @@
             color: #b91c1c;
             border: 1px solid #fecaca;
         }
+
+        /* Mobile specific styles */
+        @media screen and (max-width: 768px) {
+            #slip-container {
+                width: 95% !important;
+                min-height: auto;
+                padding: 15px !important;
+                margin: 10px auto;
+                border-radius: 12px;
+            }
+
+            .watermark {
+                font-size: 3rem;
+            }
+
+            /* Responsive Table for Mobile */
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #e5e7eb;
+                margin-bottom: 1rem;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            tr:last-child {
+                margin-bottom: 0;
+            }
+
+            td {
+                border: none !important;
+                border-bottom: 1px solid #f3f4f6 !important;
+                position: relative;
+                padding-left: 45% !important;
+                text-align: right !important;
+                min-height: 48px;
+            }
+
+            td:last-child {
+                border-bottom: 0 !important;
+            }
+
+            td:before {
+                position: absolute;
+                top: 0;
+                left: 12px;
+                width: 40%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
+                content: attr(data-label);
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            /* Left align content in mobile table for better reading */
+            td>* {
+                text-align: right;
+            }
+
+            td p.text-left {
+                text-align: right !important;
+            }
+        }
     </style>
 </head>
 
@@ -153,31 +234,31 @@
     <div
         class="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm shadow-sm p-4 flex justify-between items-center z-50 no-print border-b border-gray-200">
         <div class="flex items-center gap-3">
-            <a href="admin.html" onclick="mobileNavClick('admin.html', event)" class="text-gray-500 hover:text-brand-deep transition">
+            <a href="admin.html" class="text-gray-500 hover:text-brand-deep transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
             </a>
-            <div class="font-bold text-gray-800">Packing Slip Preview</div>
+            <div class="font-bold text-gray-800 hidden sm:block">Packing Slip Preview</div>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-2 sm:gap-3">
             <button onclick="window.print()"
-                class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 transition font-medium text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 p-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl shadow-sm flex items-center gap-2 transition font-medium text-sm">
+                <svg class="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2-2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
                     </path>
                 </svg>
-                Print
+                <span class="hidden sm:inline">Print</span>
             </button>
-            <button onclick="downloadImage()"
-                class="bg-brand-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2 transition font-medium text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onclick="downloadImage(event)"
+                class="bg-brand-primary hover:bg-red-700 text-white p-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl shadow-md flex items-center gap-2 transition font-medium text-sm">
+                <svg class="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
-                Save as Image
+                <span class="hidden sm:inline">Save</span>
             </button>
         </div>
     </div>
@@ -192,20 +273,24 @@
 
         <!-- Header Section -->
         <div
-            class="flex justify-between items-stretch mb-8 bg-brand-deep text-white rounded-xl overflow-hidden shadow-lg p-0">
-            <div class="p-8 flex-1">
+            class="flex flex-col md:flex-row justify-between items-stretch mb-8 bg-brand-deep text-white rounded-xl overflow-hidden shadow-lg p-0">
+            <div class="p-6 md:p-8 flex-1">
                 <div class="flex items-center gap-4 mb-4">
-                    <img src="/assets/logo.jpeg" alt="NONGOR" class="h-16 rounded-lg shadow-sm">
+                    <img src="/assets/logo.jpeg" alt="NONGOR" class="h-12 md:h-16 rounded-lg shadow-sm">
                     <div>
-                        <h1 class="text-4xl font-extrabold tracking-tight leading-none text-white">NONGOR</h1>
-                        <p class="text-brand-primary font-bold tracking-widest text-[10px] uppercase mt-0.5">The
+                        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-white">NONGOR
+                        </h1>
+                        <p
+                            class="text-brand-primary font-bold tracking-widest text-[8px] md:text-[10px] uppercase mt-0.5">
+                            The
                             Clothing Brand</p>
                     </div>
                 </div>
 
-                <div class="space-y-1 text-sm text-gray-300 mt-6">
+                <div class="space-y-1 text-xs md:text-sm text-gray-300 mt-4 md:mt-6">
                     <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-brand-primary shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
                             </path>
@@ -213,27 +298,30 @@
                         <span>+880 1616-510037</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-brand-primary shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
                             </path>
                         </svg>
-                        <span>nongorr.anika@gmail.com</span>
+                        <span class="break-all">nongorr.anika@gmail.com</span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-gray-800/50 p-8 w-1/3 flex flex-col justify-center text-right border-l border-white/10">
-                <h2 class="text-2xl font-bold uppercase tracking-widest text-white/90">Packing Slip</h2>
-                <div class="mt-4">
-                    <p class="text-xs text-brand-primary uppercase font-bold mb-1">Order Date</p>
-                    <p class="text-lg font-mono text-white" id="order-date">Feb 8, 2026</p>
+            <div
+                class="bg-gray-800/50 p-6 md:p-8 w-full md:w-1/3 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-end text-left md:text-right border-t md:border-t-0 md:border-l border-white/10">
+                <h2 class="text-xl md:text-2xl font-bold uppercase tracking-widest text-white/90">Packing Slip</h2>
+                <div class="mt-0 md:mt-4 text-right">
+                    <p class="text-[10px] md:text-xs text-brand-primary uppercase font-bold mb-0.5 md:mb-1">Order Date
+                    </p>
+                    <p class="text-sm md:text-lg font-mono text-white leading-none" id="order-date">Feb 8, 2026</p>
                 </div>
             </div>
         </div>
 
         <!-- Order & Customer Info -->
-        <div class="grid grid-cols-2 gap-8 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8">
             <!-- Shipping Info -->
             <div class="bg-gray-50 rounded-xl p-6 border border-gray-100">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -312,20 +400,21 @@
                 <tbody id="items-body" class="text-sm">
                     <!-- Default Items (Will be overwritten by JS if real data exists) -->
                     <tr class="group">
-                        <td class="py-4 px-6 border-b border-gray-100 group-last:border-0">
+                        <td class="py-4 px-6 border-b border-gray-100 group-last:border-0" data-label="Item text-left">
                             <p class="font-bold text-gray-800 text-base">মহীয়সীর ঘোড়াগুলি</p>
                             <p class="text-xs text-gray-400 mt-1 uppercase">SKU: NG-ITEM-001</p>
                         </td>
-                        <td class="py-4 px-6 border-b border-gray-100 group-last:border-0">
+                        <td class="py-4 px-6 border-b border-gray-100 group-last:border-0" data-label="Size">
                             <span
                                 class="inline-block bg-brand-light text-brand-deep px-2 py-1 rounded text-xs font-bold border border-gray-200">Custom
                                 Size</span>
                             <div class="mt-1 text-xs text-gray-600 font-mono">Length: 42, Chest: 38</div>
                         </td>
-                        <td class="py-4 px-6 text-center border-b border-gray-100 group-last:border-0 font-medium">2
+                        <td class="py-4 px-6 text-center border-b border-gray-100 group-last:border-0 font-medium"
+                            data-label="Qty">2
                         </td>
-                        <td
-                            class="py-4 px-6 text-right border-b border-gray-100 group-last:border-0 font-bold text-gray-800">
+                        <td class="py-4 px-6 text-right border-b border-gray-100 group-last:border-0 font-bold text-gray-800"
+                            data-label="Total">
                             ৳1,600</td>
                     </tr>
                 </tbody>
@@ -334,7 +423,7 @@
 
         <!-- Totals Section -->
         <div class="flex justify-end mb-12">
-            <div class="w-1/2 md:w-5/12">
+            <div class="w-full md:w-5/12 ml-auto mt-4 md:mt-0">
                 <div class="space-y-3">
                     <div class="flex justify-between text-sm text-gray-600">
                         <span>Subtotal</span>
@@ -362,7 +451,7 @@
 
         <!-- Footer -->
         <div class="mt-auto border-t border-gray-100 pt-8">
-            <div class="grid grid-cols-3 gap-8 text-xs text-gray-500">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-xs text-gray-500">
                 <div>
                     <h4 class="font-bold text-gray-800 uppercase mb-2">Terms & Conditions</h4>
                     <p>Returns accepted within 7 days of delivery. Original tags must be attached. No refunds for custom
@@ -531,15 +620,15 @@
 
                 return `
                 <tr class="group">
-                    <td class="py-4 px-6 border-b border-gray-100 group-last:border-0 align-top">
+                    <td class="py-4 px-6 border-b border-gray-100 group-last:border-0 align-top" data-label="Item">
                         <p class="font-bold text-gray-800 text-base">${item.product_name || item.productName}</p>
                         <p class="text-[10px] text-gray-400 mt-1 uppercase">SKU: ${item.product_id || item.productId || 'N/A'}</p>
                     </td>
-                    <td class="py-4 px-6 border-b border-gray-100 group-last:border-0 align-top">
+                    <td class="py-4 px-6 border-b border-gray-100 group-last:border-0 align-top" data-label="Size">
                         ${sizeHtml}
                     </td>
-                    <td class="py-4 px-6 text-center border-b border-gray-100 group-last:border-0 font-medium align-top">${item.quantity || item.qty}</td>
-                    <td class="py-4 px-6 text-right border-b border-gray-100 group-last:border-0 font-bold text-gray-800 align-top">৳${total.toLocaleString()}</td>
+                    <td class="py-4 px-6 text-center border-b border-gray-100 group-last:border-0 font-medium align-top" data-label="Qty">${item.quantity || item.qty}</td>
+                    <td class="py-4 px-6 text-right border-b border-gray-100 group-last:border-0 font-bold text-gray-800 align-top" data-label="Total">৳${total.toLocaleString()}</td>
                 </tr>
                 `;
             }).join('');
@@ -552,11 +641,19 @@
         }
 
         // Image Download
-        function downloadImage() {
+        function downloadImage(event) {
             const container = document.getElementById('slip-container');
-            const btn = event.currentTarget;
+            const btn = event ? event.currentTarget : document.querySelector('.bg-brand-primary');
             const originalText = btn.innerHTML;
-            btn.innerText = 'Capturing...';
+
+            // Adjust to desktop size temporarily for better image resolution on mobile
+            const wasMobile = window.innerWidth <= 768;
+            if (wasMobile) {
+                container.style.width = '210mm';
+                container.style.margin = '0';
+            }
+
+            btn.innerHTML = '<span>Saving...</span>';
 
             // Hide watermark for cleaner capture? Optional. Keeping it.
 
@@ -570,11 +667,15 @@
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 btn.innerHTML = originalText;
+
+                // Restore mobile view if needed
+                if (wasMobile) {
+                    container.style.width = '';
+                    container.style.margin = '';
+                }
             });
         }
     </script>
 </body>
 
 </html>
-
-
