@@ -1755,43 +1755,104 @@
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
                 position: relative;
                 padding: 16px;
+                overflow: hidden;
             }
 
             #orders-table-body td {
                 border: none;
                 position: relative;
-                padding: 8px 0;
+                padding: 10px 0;
+                padding-left: 45%;
                 font-size: 14px;
                 text-align: right;
+                min-height: 38px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
             }
 
             #orders-table-body td::before {
                 position: absolute;
                 left: 0;
-                width: 45%;
+                top: 0;
+                bottom: 0;
+                width: 42%;
+                display: flex;
+                align-items: center;
                 white-space: nowrap;
                 text-align: left;
-                font-weight: 600;
+                font-weight: 700;
                 color: #64748B;
-                font-size: 12px;
+                font-size: 11px;
                 text-transform: uppercase;
+                letter-spacing: 0.05em;
                 content: attr(data-label);
             }
 
-            /* Hide non-critical columns in mobile orders */
-            /* Hide Date(2), Payment(6) — keep Delivery(7) visible */
-            #orders-table-body td:nth-child(2),
-            #orders-table-body td:nth-child(6) {
+            /* Hide only Date(2) on mobile — show everything else */
+            #orders-table-body td:nth-child(2) {
                 display: none;
             }
 
-            /* Order Status Badge Full Width */
-            #orders-table-body td:nth-child(8) {
-                text-align: left;
-                margin-top: 8px;
+            /* Order ID styling - highlight */
+            #orders-table-body td:nth-child(1) {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f1f5f9;
+                margin-bottom: 4px;
             }
 
-            #orders-table-body td:nth-child(8)::before {
+            /* Customer styling */
+            #orders-table-body td:nth-child(3) {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f1f5f9;
+                margin-bottom: 4px;
+            }
+
+            /* Item styling */
+            #orders-table-body td:nth-child(4) {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f1f5f9;
+                margin-bottom: 4px;
+            }
+
+            /* Total - bold highlight */
+            #orders-table-body td:nth-child(5) {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f1f5f9;
+                margin-bottom: 4px;
+            }
+
+            /* Payment Method(6) — show with proper label */
+            #orders-table-body td:nth-child(6) {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f1f5f9;
+                margin-bottom: 4px;
+            }
+
+            /* Delivery(7) — show with label */
+            #orders-table-body td:nth-child(7) {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f1f5f9;
+                margin-bottom: 4px;
+            }
+
+            /* Status(8) — show with label */
+            #orders-table-body td:nth-child(8) {
+                padding-bottom: 12px;
+                border-bottom: 1px solid #f1f5f9;
+                margin-bottom: 4px;
+            }
+
+            /* Actions(9) — full width, centered */
+            #orders-table-body td:nth-child(9) {
+                padding-left: 0;
+                justify-content: center;
+                text-align: center;
+                margin-top: 8px;
+                padding-top: 12px;
+            }
+
+            #orders-table-body td:nth-child(9)::before {
                 display: none;
             }
 
