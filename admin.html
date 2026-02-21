@@ -1527,8 +1527,13 @@
             }
 
             /* Tablet: Tables keep table layout, but hide non-essential columns */
+            /* Hide Date(2), Customer(3), Payment(6) — keep Actions visible */
+            #orders-table-body td:nth-child(2),
+            #orders-table-body td:nth-child(3),
             #orders-table-body td:nth-child(6),
-            #orders-table-body td:nth-child(9) {
+            thead th:nth-child(2),
+            thead th:nth-child(3),
+            thead th:nth-child(6) {
                 display: none;
             }
 
@@ -1774,9 +1779,9 @@
             }
 
             /* Hide non-critical columns in mobile orders */
+            /* Hide Date(2), Payment(6) — keep Delivery(7) visible */
             #orders-table-body td:nth-child(2),
-            #orders-table-body td:nth-child(6),
-            #orders-table-body td:nth-child(7) {
+            #orders-table-body td:nth-child(6) {
                 display: none;
             }
 
