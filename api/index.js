@@ -1436,7 +1436,7 @@ module.exports = async (req, res) => {
 
             // Define defaults
             const initialDelivery = 'Pending';
-            const initialPayment = 'Pending';
+            const initialPayment = data.paymentMethod === 'COD' ? 'Unpaid' : 'Verifying';
 
             // 2. Insert Order
             const trackingToken = crypto.randomBytes(32).toString('hex');

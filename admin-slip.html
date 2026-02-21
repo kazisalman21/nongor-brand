@@ -604,7 +604,11 @@
             statusContainer.innerHTML = statusBadge;
 
             const payContainer = document.getElementById('payment-status-container');
-            const payStatus = (order.payment_status || 'Unpaid').toLowerCase();
+            let pStatus = order.payment_status;
+            if (!pStatus || pStatus === 'Pending') {
+                pStatus = (order.payment_method === 'COD' ? 'Unpaid' : 'Verifying');
+            }
+            const payStatus = pStatus.toLowerCase();
             const method = order.payment_method || 'COD';
 
             let payBadgeClass = 'badge-cod';

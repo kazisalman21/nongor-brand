@@ -4064,7 +4064,10 @@
                 const dateStr = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
                 const deliveryStatus = order.delivery_status || order.status || 'Pending';
-                const paymentStatus = order.payment_status || (order.payment_method === 'COD' ? 'Unpaid' : 'Verifying');
+                let paymentStatus = order.payment_status;
+                if (!paymentStatus || paymentStatus === 'Pending') {
+                    paymentStatus = (order.payment_method === 'COD' ? 'Unpaid' : 'Verifying');
+                }
 
                 return `
                 <tr class="table-row-hover group border-b border-gray-50 last:border-b-0 cursor-pointer" onclick="openOrderModal('${order.order_id}')">
