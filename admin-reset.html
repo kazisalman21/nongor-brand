@@ -322,7 +322,32 @@
             transform: translateX(-4px);
         }
 
-        /* Mobile Optimization */
+        /* Tablet Optimization (641px – 1024px) */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .premium-glass-card {
+                max-width: 480px;
+                margin-left: auto;
+                margin-right: auto;
+                padding: 2.5rem;
+            }
+
+            .method-card {
+                padding: 1.25rem;
+            }
+
+            .otp-input {
+                padding: 16px;
+                font-size: 28px;
+                letter-spacing: 10px;
+            }
+
+            .logo-ring-animated {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        /* Mobile Optimization (≤480px) */
         @media (max-width: 480px) {
             .premium-glass-card {
                 padding: 1.5rem !important;

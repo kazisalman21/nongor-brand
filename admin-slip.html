@@ -145,7 +145,31 @@
             border: 1px solid #fecaca;
         }
 
-        /* Mobile specific styles */
+        /* Tablet styles (641px – 1024px) */
+        @media screen and (min-width: 641px) and (max-width: 1024px) {
+            #slip-container {
+                width: 90% !important;
+                padding: 20px !important;
+                margin: 16px auto;
+                border-radius: 14px;
+            }
+
+            .watermark {
+                font-size: 4rem;
+            }
+
+            /* Keep table layout on tablet, just compact it */
+            table {
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 10px 12px !important;
+            }
+        }
+
+        /* Mobile specific styles (≤768px) */
         @media screen and (max-width: 768px) {
             #slip-container {
                 width: 95% !important;
