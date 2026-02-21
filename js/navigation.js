@@ -5,19 +5,37 @@
 window.toggleMobileMenu = function () {
     const menu = document.getElementById('mobile-menu');
     const btn = document.getElementById('mobile-menu-btn');
+    const icon = document.getElementById('hamburger-icon');
+    const spans = icon ? icon.querySelectorAll('span') : [];
 
     if (menu.classList.contains('translate-x-full')) {
+        // Open menu
         menu.classList.remove('translate-x-full');
-        btn.innerHTML = '&times;';
-        btn.classList.add('text-brand-light');
-        btn.style.color = '#F4F1DE';
         document.body.style.overflow = 'hidden';
+
+        // Animate hamburger → X
+        if (spans.length === 3) {
+            spans[0].style.transform = 'translateY(7px) rotate(45deg)';
+            spans[0].style.width = '100%';
+            spans[1].style.opacity = '0';
+            spans[1].style.transform = 'scaleX(0)';
+            spans[2].style.transform = 'translateY(-7px) rotate(-45deg)';
+            spans[2].style.width = '100%';
+        }
     } else {
+        // Close menu
         menu.classList.add('translate-x-full');
-        btn.innerHTML = '&#9776;';
-        btn.classList.remove('text-brand-light');
-        btn.style.color = '';
         document.body.style.overflow = '';
+
+        // Animate X → hamburger
+        if (spans.length === 3) {
+            spans[0].style.transform = '';
+            spans[0].style.width = '';
+            spans[1].style.opacity = '';
+            spans[1].style.transform = '';
+            spans[2].style.transform = '';
+            spans[2].style.width = '';
+        }
     }
 };
 
@@ -31,20 +49,22 @@ window.initNavigation = function () {
         const isMobile = window.innerWidth < 768;
 
         if (window.scrollY > 50) {
-            if (!isMobile) {
-                navbar.classList.remove('bg-transparent', 'text-brand-light');
-                navbar.classList.add('bg-white', 'shadow-md', 'text-brand-deep');
-            } else {
-                navbar.classList.add('bg-white', 'shadow-md', 'py-3');
-                navbar.classList.remove('py-6', 'bg-transparent');
+            // Scrolled: solid white background
+            navbar.classList.remove('md:bg-transparent', 'md:backdrop-blur-none');
+            navbar.classList.add('bg-white/95', 'shadow-md', 'text-brand-deep', 'border-b-gray-100/50');
+            navbar.classList.remove('bg-brand-deep/90', 'text-brand-light');
+            if (isMobile) {
+                navbar.classList.remove('py-4');
+                navbar.classList.add('py-3');
             }
         } else {
-            if (!isMobile) {
-                navbar.classList.add('bg-transparent', 'text-brand-light');
-                navbar.classList.remove('bg-white', 'shadow-md', 'text-brand-deep');
-            } else {
-                navbar.classList.remove('bg-white', 'shadow-md', 'py-3');
-                navbar.classList.add('py-6', 'bg-transparent');
+            // Top: transparent/branded
+            navbar.classList.add('md:bg-transparent', 'md:backdrop-blur-none');
+            navbar.classList.remove('bg-white/95', 'shadow-md', 'text-brand-deep', 'border-b-gray-100/50');
+            navbar.classList.add('bg-brand-deep/90', 'text-brand-light');
+            if (isMobile) {
+                navbar.classList.remove('py-3');
+                navbar.classList.add('py-4');
             }
         }
         ticking = false;
@@ -74,3 +94,4 @@ window.initNavigation = function () {
         });
     });
 };
+
