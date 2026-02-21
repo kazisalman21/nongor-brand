@@ -1205,3 +1205,85 @@ html {
     0%, 100% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.4); }
     50% { box-shadow: 0 0 0 8px rgba(224, 122, 95, 0); }
 }
+
+/* ========================================
+   TABLET UI ENHANCEMENTS (641px – 1023px)
+   ======================================== */
+@media (min-width: 641px) and (max-width: 1023px) {
+
+    /* Tablet: Mobile menu as side panel (50% width) instead of full-screen */
+    #mobile-menu {
+        width: 55% !important;
+        left: auto !important;
+        right: 0 !important;
+        border-left: 1px solid rgba(255,255,255,0.05);
+        box-shadow: -20px 0 60px rgba(0,0,0,0.3);
+    }
+
+    /* Tablet: Backdrop behind side panel */
+    #mobile-menu::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        left: -100vw;
+        background: rgba(0,0,0,0.3);
+        pointer-events: none;
+    }
+
+    /* Tablet: Touch-friendly sizing */
+    button, a, .touch-target {
+        min-height: 44px;
+    }
+
+    /* Tablet: Hero text intermediate sizing */
+    .text-5xl {
+        font-size: 3.5rem;
+    }
+
+    /* Tablet: Navbar gets more padding */
+    #navbar {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    /* Tablet: Trust strip 2 columns on tablet */
+    .grid-cols-2.md\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Tablet: Product grid 2 columns */
+    .grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Tablet: Footer columns */
+    .grid-cols-1.md\:grid-cols-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ========================================
+   MOBILE-ONLY ENHANCEMENTS (≤640px)
+   ======================================== */
+@media (max-width: 640px) {
+
+    /* Mobile: Full-screen menu stays as-is (100% width) */
+
+    /* Mobile: Compact navbar */
+    #navbar {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Mobile: Smaller trust strip icons */
+    .grid-cols-2.md\:grid-cols-4 .text-2xl {
+        font-size: 1.5rem;
+    }
+
+    /* Mobile: Reduce hero blobs */
+    .blob {
+        display: none;
+    }
+}

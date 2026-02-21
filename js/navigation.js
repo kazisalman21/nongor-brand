@@ -49,7 +49,7 @@ window.initNavigation = function () {
 
     const updateNavbar = () => {
         if (!navbar) return;
-        const isMobile = window.innerWidth < 768;
+        const isMobile = window.innerWidth < 1024;
 
         if (window.scrollY > 50) {
             // Scrolled: solid white background, dark text
