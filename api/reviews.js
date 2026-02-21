@@ -4,33 +4,16 @@
  * POST /api/reviews               → Submit a new review
  */
 const pool = require('./db');
+const { setSecureCorsHeaders } = require('./cors');
 
 module.exports = async (req, res) => {
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    // CORS — use shared secure configuration
+    setSecureCorsHeaders(req, res);
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     let client;
     try {
         client = await pool.connect();
-
-        // Auto-create reviews table if not exists
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS reviews (
-                id SERIAL PRIMARY KEY,
-                product_id INTEGER NOT NULL,
-                reviewer_name VARCHAR(100) NOT NULL,
-                rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
-                comment TEXT,
-                is_approved BOOLEAN DEFAULT true,
-                created_at TIMESTAMP DEFAULT NOW()
-            )
-        `);
-        await client.query(`
-            CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id)
-        `);
 
         // --- GET: Fetch reviews for a product ---
         if (req.method === 'GET') {
@@ -90,8 +73,7 @@ module.exports = async (req, res) => {
             const safeName = String(name).trim().substring(0, 100);
             const safeComment = comment ? String(comment).trim().substring(0, 1000) : '';
 
-            // Rate limit: max 3 reviews per product per IP per day
-            // (Simple approach - check by name+product combo in last 24h)
+            // Rate limit: max 3 reviews per product per name per day
             const recentCheck = await client.query(
                 `SELECT COUNT(*) FROM reviews 
                  WHERE product_id = $1 AND reviewer_name = $2 
@@ -104,10 +86,10 @@ module.exports = async (req, res) => {
                 return res.status(429).json({ result: 'error', message: 'আপনি ইতিমধ্যে রিভিউ দিয়েছেন। ২৪ ঘণ্টা পরে আবার চেষ্টা করুন।' });
             }
 
-            // Insert review
+            // Insert review (pending approval)
             await client.query(
-                `INSERT INTO reviews (product_id, reviewer_name, rating, comment) 
-                 VALUES ($1, $2, $3, $4)`,
+                `INSERT INTO reviews (product_id, reviewer_name, rating, comment, is_approved) 
+                 VALUES ($1, $2, $3, $4, false)`,
                 [productId, safeName, ratingNum, safeComment]
             );
 
@@ -123,8 +105,8 @@ module.exports = async (req, res) => {
         console.error('Reviews API error:', err);
         return res.status(500).json({
             result: 'error',
-            message: 'Server error: ' + err.message,
-            stack: err.stack
+            message: 'Internal Server Error'
         });
     }
 };
+

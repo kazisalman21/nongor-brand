@@ -112,7 +112,7 @@ window.openModal = function (productId) {
 
 window.closeModal = function () {
     document.getElementById('product-modal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = '';
 };
 
 // Change Main Image in Modal with Fade & Active State
@@ -180,7 +180,7 @@ window.closeLightbox = function () {
         lightbox.classList.add('hidden');
         const modal = document.getElementById('product-modal');
         if (modal && modal.classList.contains('hidden')) {
-            document.body.style.overflow = 'auto';
+            document.body.style.overflow = '';
         }
     }, 300);
 

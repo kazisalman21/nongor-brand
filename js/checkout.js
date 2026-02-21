@@ -58,29 +58,38 @@ window.initCheckout = async function () {
     }
 
     const container = document.getElementById('checkout-items-container');
-    container.innerHTML = checkoutItems.map(item => `
+    container.innerHTML = checkoutItems.map(item => {
+        const safeName = escapeHtml(item.name);
+        const safeSize = escapeHtml(item.size);
+        const safeUnit = escapeHtml(item.unit);
+        const safeMeasurements = item.measurements
+            ? escapeHtml(Object.entries(item.measurements).map(([k, v]) => `${k}:${v}`).join(', '))
+            : '';
+        const imgSrc = item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '');
+        const lineTotal = ((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)).toLocaleString();
+
+        return `
     <div class="flex gap-4 items-start bg-gray-50/50 p-2 rounded-lg">
-        <img src="${item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
+        <img src="${escapeHtml(imgSrc)}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
             <div class="flex-grow">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h4 class="font-bold text-gray-900 text-sm line-clamp-1">${item.name}</h4>
+                        <h4 class="font-bold text-gray-900 text-sm line-clamp-1">${safeName}</h4>
                         ${item.sizeType === 'custom'
-            ? `<p class="text-xs text-gray-500 mt-1">Custom: <span class="font-bold text-brand-deep">${item.unit}</span></p>
-                               <p class="text-[10px] text-gray-400 leading-tight mt-0.5">
-                                 ${Object.entries(item.measurements || {}).map(([k, v]) => `${k}:${v}`).join(', ')}
-                               </p>`
-            : `<p class="text-xs text-gray-500 mt-1">Size: <span class="font-bold text-brand-deep">${item.size}</span></p>`
-        }
+                ? `<p class="text-xs text-gray-500 mt-1">Custom: <span class="font-bold text-brand-deep">${safeUnit}</span></p>
+                               <p class="text-[10px] text-gray-400 leading-tight mt-0.5">${safeMeasurements}</p>`
+                : `<p class="text-xs text-gray-500 mt-1">Size: <span class="font-bold text-brand-deep">${safeSize}</span></p>`
+            }
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-brand-terracotta text-sm">৳${((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)).toLocaleString()}</p>
-                        <p class="text-xs text-gray-500">Qty: ${item.quantity}</p>
+                        <p class="font-bold text-brand-terracotta text-sm">৳${lineTotal}</p>
+                        <p class="text-xs text-gray-500">Qty: ${parseInt(item.quantity) || 1}</p>
                     </div>
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     const total = checkoutItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1), 0);
     document.getElementById('checkout-subtotal').textContent = `৳${total.toLocaleString()} `;
@@ -210,7 +219,7 @@ window.checkCoupon = async function () {
         }
     } catch (e) {
         console.error(e);
-        msgEl.textContent = "Error validation coupon";
+        msgEl.textContent = "Error validating coupon";
         msgEl.className = "text-xs mt-1 min-h-[1.25rem] font-medium text-red-500";
     }
 };
@@ -272,7 +281,7 @@ window.confirmOrderFromPage = async function () {
         address: address,
         productName: itemsDescription,
         items: window.checkoutPayload,
-        price: '0',
+
         size: 'Mixed',
         quantity: window.checkoutPayload.reduce((s, i) => s + i.quantity, 0),
         deliveryDate: new Date(Date.now() + 259200000).toLocaleDateString('en-GB'),
@@ -340,7 +349,7 @@ window.confirmOrder = async function () {
         return;
     }
 
-    const phone = '+88' + phoneInput;
+    const phone = phoneInput;  // Send clean digits only — backend strips non-digits for validation
 
     const date = new Date();
     date.setDate(date.getDate() + 3);

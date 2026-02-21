@@ -52,7 +52,7 @@
     "rewrites": [
         {
             "source": "/p/:slug",
-            "destination": "/api/product_page.js?slug=:slug"
+            "destination": "/api/product_page?slug=:slug"
         },
         {
             "source": "/feed.xml",
@@ -63,16 +63,8 @@
             "destination": "/api/sitemap_products"
         },
         {
-            "source": "/p/:slug",
-            "destination": "/api/product_page?slug=:slug"
-        },
-        {
             "source": "/api/auth",
             "destination": "/api/auth"
-        },
-        {
-            "source": "/sitemap_products.xml",
-            "destination": "/api/sitemap_products"
         },
         {
             "source": "/sitemap_main.xml",

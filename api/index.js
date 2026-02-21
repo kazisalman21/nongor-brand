@@ -9,7 +9,8 @@ const pool = require('./db');
 const { cache, CACHE_KEYS, invalidateProductCache, checkRateLimit } = require('./cache');
 // const { sendOrderConfirmation, sendStatusUpdateEmail } = require('../utils/sendEmail'); // Deprecated
 const { sanitizeObject } = require('./sanitize');
-const { sendOrderConfirmation } = require('./utils/email'); // Unified Service
+const { sendOrderConfirmation } = require('./utils/email'); // Unified Service (Resend)
+const { sendStatusUpdateEmail } = require('../utils/email'); // Status emails (SendGrid)
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
@@ -87,7 +88,7 @@ module.exports = async (req, res) => {
 
                 console.log(`📧 Inbound email from: ${fromEmail} | Subject: ${subject}`);
 
-                const { sendOrderConfirmation: _unused } = require('./utils/email');
+
                 let resendInstance = null;
                 try {
                     const { Resend } = require('resend');
@@ -114,7 +115,7 @@ module.exports = async (req, res) => {
                                 <p style="margin: 4px 0; color: #555;"><strong>Received:</strong> ${date}</p>
                             </div>
                             <div style="padding: 15px 0; border-top: 1px solid #ddd;">
-                                ${htmlBody || `<pre style="white-space: pre-wrap; font-family: inherit;">${textBody}</pre>`}
+                                ${htmlBody ? htmlBody.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '').replace(/on\w+\s*=\s*["'][^"']*["']/gi, '') : `<pre style="white-space: pre-wrap; font-family: inherit;">${textBody.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`}
                             </div>
                             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
                             <p style="font-size: 11px; color: #999; text-align: center;">
@@ -241,8 +242,13 @@ module.exports = async (req, res) => {
                 let result;
                 if (productId) {
                     result = await client.query('SELECT * FROM products WHERE id = $1 AND is_active = true', [productId]);
-                } else if (!isNaN(productSlug)) {
-                    result = await client.query('SELECT * FROM products WHERE id = $1 AND is_active = true', [productSlug]);
+                } else if (productSlug) {
+                    // Try slug first, then fallback to numeric ID
+                    if (!isNaN(productSlug)) {
+                        result = await client.query('SELECT * FROM products WHERE (slug = $1 OR id = $1::int) AND is_active = true', [productSlug]);
+                    } else {
+                        result = await client.query('SELECT * FROM products WHERE slug = $1 AND is_active = true', [productSlug]);
+                    }
                 } else {
                     result = { rows: [] };
                 }
@@ -1286,6 +1292,18 @@ module.exports = async (req, res) => {
             if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
                 client.release();
                 return res.status(400).json({ result: 'error', message: 'Unknown action or missing order items' });
+            }
+
+            // Rate limit order creation to prevent spam
+            const orderIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            const orderRateLimit = checkRateLimit('order', orderIp);
+            if (!orderRateLimit.allowed) {
+                console.warn(`⚠️ Order Rate Limit Exceeded for IP: ${orderIp}`);
+                client.release();
+                return res.status(429).json({
+                    result: 'error',
+                    message: `Too many orders. Please try again in ${orderRateLimit.retryAfter} seconds.`
+                });
             }
 
             // Validate required order fields

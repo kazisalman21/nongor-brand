@@ -62,11 +62,17 @@ window.toggleFilters = function () {
 };
 
 window.clearAllFilters = function () {
-    document.getElementById('search-input').value = '';
-    document.getElementById('min-price').value = '';
-    document.getElementById('max-price').value = '';
-    document.getElementById('sort-select').value = 'newest';
-    document.getElementById('instock-toggle').checked = false;
+    const searchInput = document.getElementById('search-input');
+    const minPrice = document.getElementById('min-price');
+    const maxPrice = document.getElementById('max-price');
+    const sortSelect = document.getElementById('sort-select');
+    const instockToggle = document.getElementById('instock-toggle');
+
+    if (searchInput) searchInput.value = '';
+    if (minPrice) minPrice.value = '';
+    if (maxPrice) maxPrice.value = '';
+    if (sortSelect) sortSelect.value = 'newest';
+    if (instockToggle) instockToggle.checked = false;
     currentCategory = 'all';
 
     document.querySelectorAll('.category-btn').forEach((btn, i) => {

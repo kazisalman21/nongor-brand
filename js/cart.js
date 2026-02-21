@@ -70,7 +70,23 @@ window.addToCart = function () {
     }
 
     const cart = getCart();
-    cart.push(cartItem);
+
+    // Bug 16 Fix: Merge duplicate items (same product + same size + same sizeType)
+    const existingIndex = cart.findIndex(item =>
+        item.id === cartItem.id &&
+        item.size === cartItem.size &&
+        item.sizeType === cartItem.sizeType
+    );
+
+    if (existingIndex !== -1 && cartItem.sizeType !== 'custom') {
+        // Merge: increment quantity (cap at 10)
+        cart[existingIndex].quantity = Math.min(
+            (cart[existingIndex].quantity || 1) + (cartItem.quantity || 1),
+            10
+        );
+    } else {
+        cart.push(cartItem);
+    }
     localStorage.setItem('nongor_cart', JSON.stringify(cart));
 
     updateCartUI();
@@ -195,6 +211,7 @@ window.showCheckout = function (fromCart = false) {
         localStorage.removeItem('nongor_direct_buy');
         window.location.href = `checkout.html`;
     } else {
+        // Buy Now (from modal — not cart)
         const id = currentProductId;
         const product = allProducts.find(p => p.id == id);
 
@@ -208,9 +225,47 @@ window.showCheckout = function (fromCart = false) {
             name: product.name,
             price: product.price,
             image: product.image,
-            size: selectedSize,
             quantity: currentQuantity
         };
+
+        // Bug 13 Fix: Handle custom sizing in Buy Now (same logic as addToCart)
+        if (currentSizeType === 'custom') {
+            const inputs = document.querySelectorAll('#custom-size-form input[data-measure]');
+            const measurements = {};
+            let isValid = true;
+
+            inputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (isNaN(val) || val <= 0) {
+                    isValid = false;
+                    input.classList.add('border-red-500');
+                } else {
+                    input.classList.remove('border-red-500');
+                    measurements[input.dataset.measure] = val;
+                }
+            });
+
+            if (!isValid) {
+                showToast("সব মাপ সঠিক দিন", 'error');
+                return;
+            }
+
+            const note = document.getElementById('custom-note')?.value?.trim() || '';
+
+            buyNowItem.size = 'Custom';
+            buyNowItem.sizeType = 'custom';
+            buyNowItem.sizeLabel = `Custom (${Object.keys(measurements).length || ''})`;
+            buyNowItem.measurements = measurements;
+            buyNowItem.unit = currentMeasurementUnit;
+            buyNowItem.notes = note;
+        } else {
+            if (!selectedSize) {
+                showToast("সাইজ নির্বাচন করুন", 'error');
+                return;
+            }
+            buyNowItem.size = selectedSize;
+            buyNowItem.sizeType = 'standard';
+        }
 
         localStorage.setItem('nongor_direct_buy', JSON.stringify([buyNowItem]));
         window.location.href = `checkout.html?mode=direct`;

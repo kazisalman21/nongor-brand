@@ -1,3 +1,14 @@
+// HTML escape helper to prevent XSS in email templates
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 let resend = null;
 try {
     const { Resend } = require('resend');
@@ -34,8 +45,8 @@ async function sendOrderConfirmation(data) {
             productRowsHtml += `
                 <tr>
                     <td style="padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                        <div style="color: #f0e6d3; font-weight: 600; font-size: 15px;">${p.name || 'Product'}</div>
-                        <div style="color: #8a8a9a; font-size: 12px; margin-top: 3px;">Size: ${p.size || 'N/A'}</div>
+                        <div style="color: #f0e6d3; font-weight: 600; font-size: 15px;">${escapeHtml(p.name || 'Product')}</div>
+                        <div style="color: #8a8a9a; font-size: 12px; margin-top: 3px;">Size: ${escapeHtml(p.size || 'N/A')}</div>
                     </td>
                     <td style="padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: center; color: #c0bfc8; font-size: 14px;">×${p.quantity || 1}</td>
                     <td style="padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: right; color: #d4a853; font-weight: 700; font-size: 15px;">৳${p.price}</td>
@@ -91,7 +102,7 @@ async function sendOrderConfirmation(data) {
                             <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71, #27ae60); margin: 0 auto 20px; line-height: 64px; font-size: 30px; color: #fff; box-shadow: 0 6px 20px rgba(46,204,113,0.3);">✓</div>
                             
                             <h1 style="margin: 0 0 8px; font-size: 24px; font-weight: 700; color: #f0e6d3;">Order Confirmed!</h1>
-                            <p style="margin: 0; font-size: 15px; color: #8a8a9a; line-height: 1.5;">Thank you, <strong style="color: #d4a853;">${data.customerName}</strong>. Your order has been received and is being processed.</p>
+                            <p style="margin: 0; font-size: 15px; color: #8a8a9a; line-height: 1.5;">Thank you, <strong style="color: #d4a853;">${escapeHtml(data.customerName)}</strong>. Your order has been received and is being processed.</p>
                         </td>
                     </tr>
 
@@ -150,7 +161,7 @@ async function sendOrderConfirmation(data) {
                                 <tr>
                                     <td style="background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 18px 20px;">
                                         <div style="font-size: 11px; color: #8a8a9a; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">📦 Shipping To</div>
-                                        <div style="font-size: 14px; color: #c0bfc8; line-height: 1.5;">${data.address || 'Address on file'}</div>
+                                        <div style="font-size: 14px; color: #c0bfc8; line-height: 1.5;">${escapeHtml(data.address || 'Address on file')}</div>
                                     </td>
                                 </tr>
                             </table>

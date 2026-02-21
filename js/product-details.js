@@ -4,8 +4,7 @@
 // We will adapt the code to be a module but attach necessary functions to window for HTML onclick compatibility
 
 // Local state
-window.quantity = 1;
-window.selectedSize = null;
+// Local state — initialized in initProductPage() to avoid overriding globals on other pages
 let currentProduct = null;
 const ANIMATION_MIN_TIME = 3000;
 
@@ -17,6 +16,8 @@ let errorPending = false;
 
 export function initProductPage() {
     // Reset state
+    window.quantity = 1;
+    window.selectedSize = null;
     window.currentSizeType = 'standard';
     window.currentMeasurementUnit = 'inch';
     animDone = false;

@@ -42,8 +42,7 @@ window.API_URL = '/api';
 window.currentProductId = null;
 window.availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
 
-// Cart state
-window.cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+// Cart state (actual cart is managed via getCart() in cart.js, reading from localStorage)
 window.selectedSize = 'M';
 window.currentQuantity = 1;
 

@@ -7,7 +7,7 @@
 
 // === REVIEWS ===
 let selectedRating = 0;
-let currentProductId = null;
+// Use global window.currentProductId to avoid shadowing (shared with modal.js, cart.js)
 
 window.setReviewRating = function (rating) {
     selectedRating = rating;
@@ -19,7 +19,7 @@ window.setReviewRating = function (rating) {
 
 window.loadReviews = async function (productId) {
     if (!productId) return;
-    currentProductId = productId;
+    window.currentProductId = productId;
 
     try {
         const res = await fetch(`${API_URL}?action=getReviews&productId=${productId}`);
@@ -185,15 +185,21 @@ function renderReviewsList(reviews) {
     }).join('');
 }
 
-function escapeHtml(str) {
+// Use global escapeHtml from utils.js (window.escapeHtml)
+// Fallback in case it hasn't loaded yet
+const _escapeHtml = (str) => {
+    if (typeof window.escapeHtml === 'function') return window.escapeHtml(str);
     if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
 
 window.submitReview = async function () {
-    if (!currentProductId) return;
+    if (!window.currentProductId) return;
     if (selectedRating === 0) {
         window.showToast('দয়া করে রেটিং দিন', 'error');
         return;
@@ -218,7 +224,7 @@ window.submitReview = async function () {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'submitReview',
-                productId: currentProductId,
+                productId: window.currentProductId,
                 name: name,
                 rating: selectedRating,
                 comment: comment
@@ -275,8 +281,8 @@ window.isInWishlist = function (productId) {
 };
 
 window.toggleWishlist = function () {
-    if (!currentProductId) return;
-    const id = String(currentProductId);
+    if (!window.currentProductId) return;
+    const id = String(window.currentProductId);
     let list = getWishlist();
 
     if (list.includes(id)) {
@@ -332,7 +338,7 @@ function updateWishlistUI(isWishlisted) {
 
 window.initWishlist = function (productId) {
     if (!productId) return;
-    currentProductId = productId;
+    window.currentProductId = productId;
     updateWishlistUI(isInWishlist(productId));
 };
 
