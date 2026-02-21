@@ -8,14 +8,14 @@ function initCategories() {
 
     filterContainer.innerHTML = `
         <button onclick="filterProducts('all', event)"
-            class="category-btn active px-8 py-3 rounded-full bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/30 transform scale-105 transition-all duration-300 font-medium border border-transparent">
+            class="category-btn active px-8 py-3 rounded-full bg-brand-terracotta text-white shadow-lg shadow-brand-terracotta/30 transform scale-105 transition-all duration-300 font-medium border border-transparent flex-shrink-0 whitespace-nowrap">
             সব
         </button>
     `;
 
     categoriesData.forEach(cat => {
         const btn = document.createElement('button');
-        btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500';
+        btn.className = 'category-btn px-8 py-3 rounded-full text-base font-medium transition-all duration-300 border border-transparent hover:bg-brand-terracotta/10 hover:text-brand-terracotta text-gray-500 flex-shrink-0 whitespace-nowrap';
         btn.textContent = cat.name;
         btn.onclick = (e) => filterProducts(cat.slug, e);
         filterContainer.appendChild(btn);
@@ -152,8 +152,8 @@ async function initProducts(params = {}) {
         }
 
     } catch (error) {
-        console.error('Error loading products:', error);
-        showError(container, error.message);
+        console.warn('Backend API not available or returned non-JSON. Proceeding with fallback mock data.');
+        // showError(container, error.message); // Decoupled to avoid brief flash before renderProducts clears it
         allProducts = fallbackProducts;
         renderProducts(fallbackProducts);
     }

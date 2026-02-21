@@ -81,4 +81,44 @@ window.addEventListener('load', () => {
         loader.style.opacity = '0';
         setTimeout(() => loader.remove(), 700);
     }
+
+    // --- Scroll Reveal System ---
+    initScrollReveal();
 });
+
+// --- Premium Scroll Reveal ---
+function initScrollReveal() {
+    const revealElements = document.querySelectorAll('.reveal, .reveal-up, .reveal-left, .reveal-scale');
+
+    if (revealElements.length === 0) {
+        // Auto-add reveal classes to key sections if not manually set
+        const sections = document.querySelectorAll('section, footer, .product-card');
+        sections.forEach((el, i) => {
+            if (!el.classList.contains('reveal') && !el.classList.contains('reveal-up')) {
+                el.classList.add('reveal-up');
+                el.style.transitionDelay = `${Math.min(i * 0.05, 0.3)}s`;
+            }
+        });
+    }
+
+    const allRevealEls = document.querySelectorAll('.reveal, .reveal-up, .reveal-left, .reveal-scale');
+
+    if ('IntersectionObserver' in window && allRevealEls.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -40px 0px'
+        });
+
+        allRevealEls.forEach(el => observer.observe(el));
+    } else {
+        // Fallback: just show everything
+        allRevealEls.forEach(el => el.classList.add('visible'));
+    }
+}

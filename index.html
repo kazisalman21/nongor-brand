@@ -335,7 +335,8 @@
 
     <!-- Mobile Menu Overlay (Outside nav for proper z-index layering) -->
     <div id="mobile-menu"
-        class="fixed inset-0 bg-brand-deep/98 z-[55] transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] flex flex-col items-center justify-center md:hidden backdrop-blur-2xl">
+        class="fixed inset-0 bg-brand-deep z-[55] transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] flex flex-col items-center justify-center md:hidden"
+        style="backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); background: rgba(61, 64, 91, 0.98);">
 
         <!-- Decorative background elements -->
         <div class="absolute top-20 right-10 w-48 h-48 bg-brand-terracotta/5 rounded-full blur-3xl"></div>
@@ -411,12 +412,12 @@
         <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
             <div class="animate-fade-in-up" style="animation-delay: 0.2s">
                 <!-- Main Brand Title with Neon Glow -->
-                <h1 class="text-5xl md:text-9xl font-bengali-display font-bold text-brand-light mb-2 leading-tight drop-shadow-2xl text-shadow-lg opacity-0 neon-glow"
-                    style="animation: fade-in-up 1s ease-out 0.2s forwards, icon-pulse 3s ease-in-out infinite 1.2s">
+                <h1 class="text-5xl md:text-9xl font-bengali-display font-bold text-brand-light mb-2 leading-tight drop-shadow-2xl text-shadow-lg neon-glow animate-fade-in-up"
+                    style="animation: fade-in-up 1s ease-out 0.2s both, icon-pulse 3s ease-in-out infinite 1.2s">
                     নোঙর
                 </h1>
-                <p class="text-sm md:text-base text-brand-light/60 font-light tracking-widest uppercase opacity-0"
-                    style="animation: fade-in-up 1s ease-out 0.3s forwards">Nongor — Best Handmade Kurti Bangladesh</p>
+                <p class="text-sm md:text-base text-brand-light/60 font-light tracking-widest uppercase animate-fade-in-up"
+                    style="animation: fade-in-up 1s ease-out 0.3s both">Nongor — Best Handmade Kurti Bangladesh</p>
             </div>
             <!-- Animated Divider Line -->
             <div class="w-24 h-1 bg-gradient-to-r from-brand-terracotta via-brand-sand to-brand-terracotta mx-auto mb-8 rounded-full shadow-lg opacity-0 animate-gradient"
@@ -436,7 +437,7 @@
     </header>
 
     <!-- Trust Strip -->
-    <section class="bg-brand-deep text-brand-light py-8 border-b border-white/10 relative z-20">
+    <section class="bg-brand-deep text-brand-light py-8 border-b border-white/10 relative z-20 reveal-up">
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                 <!-- Item 1 -->
@@ -492,7 +493,7 @@
 
 
     <!-- Collection Section -->
-    <section id="collection" class="py-24 px-6 bg-gray-50">
+    <section id="collection" class="py-24 px-6 bg-gray-50 reveal-up">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
                 <span class="text-brand-terracotta font-bengali text-lg cursor-default">মনোমুগ্ধকর সমাহার</span>
@@ -502,7 +503,9 @@
             </div>
 
             <!-- Categories -->
-            <div id="category-filter" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-6 md:mb-8 font-bengali">
+            <div id="category-filter"
+                class="flex md:flex-wrap md:justify-center gap-2 md:gap-4 mb-6 md:mb-8 font-bengali overflow-x-auto no-scrollbar pb-2"
+                style="scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;">
                 <!-- Injected by JS -->
             </div>
 
@@ -957,7 +960,7 @@
 
 
 
-    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100 reveal-up">
         <div class="max-w-6xl mx-auto px-6">
 
             <!-- Top Section: Links & Brand -->
@@ -976,7 +979,7 @@
 
                 <!-- Navigation Links -->
                 <div
-                    class="flex flex-wrap justify-center gap-6 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    class="flex flex-wrap justify-center gap-3 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
                     <a href="about.html" class="hover:text-brand-terracotta transition">About Us</a>
                     <a href="#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
                     <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
