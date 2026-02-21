@@ -1604,7 +1604,7 @@
             .mobile-sidebar-drawer {
                 position: fixed;
                 top: 0;
-                left: -280px;
+                left: -320px;
                 width: 280px;
                 height: 100%;
                 background: #ffffff;
@@ -1613,10 +1613,13 @@
                 transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
                 display: flex;
                 flex-direction: column;
+                visibility: hidden;
+                /* Prevent focus access when closed */
             }
 
             .mobile-sidebar-drawer.active {
-                transform: translateX(280px);
+                transform: translateX(320px);
+                visibility: visible;
             }
 
             /* 4. Dashboard Stats Cards - Horizontal Scroll */
@@ -1790,11 +1793,11 @@
 
 <body class="bg-gray-50 min-h-screen text-gray-800 antialiased selection:bg-brand-accent selection:text-white">
 
-    <!-- Mobile Sidebar Overlay -->
-    <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+    <!-- Mobile Sidebar Overlay (Only on Mobile) -->
+    <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay md:hidden" onclick="toggleMobileSidebar()"></div>
 
-    <!-- Mobile Sidebar Drawer -->
-    <div id="mobile-sidebar" class="mobile-sidebar-drawer pt-16 pb-6 px-6 relative z-[105]">
+    <!-- Mobile Sidebar Drawer (Only on Mobile) -->
+    <div id="mobile-sidebar" class="mobile-sidebar-drawer pt-16 pb-6 px-6 relative z-[105] md:hidden">
         <!-- Close button inside drawer -->
         <button onclick="toggleMobileSidebar()"
             class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-full">
@@ -1847,7 +1850,7 @@
     </div>
 
     <!-- Mobile Bottom Tab Bar -->
-    <div class="hidden mobile-bottom-bar" id="mobile-bottom-bar">
+    <div class="hidden md:hidden mobile-bottom-bar" id="mobile-bottom-bar">
         <!-- Orders -->
         <button onclick="switchTab('orders')" class="mobile-tab-btn active" id="mob-tab-orders">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
