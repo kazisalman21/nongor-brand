@@ -249,12 +249,24 @@
         }
 
         .floating-label-input:focus~.floating-label,
-        .floating-label-input:not(:placeholder-shown)~.floating-label {
+        .floating-label-input:not(:placeholder-shown)~.floating-label,
+        .floating-label-input:-webkit-autofill~.floating-label,
+        .floating-label-input.has-value~.floating-label {
             top: 12px;
             font-size: 12px;
             color: #3B82F6;
             font-weight: 600;
             transform: translateY(0);
+        }
+
+        /* Fix autofill background and text color */
+        .floating-label-input:-webkit-autofill,
+        .floating-label-input:-webkit-autofill:hover,
+        .floating-label-input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 30px rgba(248, 250, 252, 0.95) inset !important;
+            -webkit-text-fill-color: #1E293B !important;
+            caret-color: #1E293B;
+            transition: background-color 5000s ease-in-out 0s;
         }
 
         /* Input Icon Container */
@@ -5643,7 +5655,7 @@
             if (passInput) passInput.classList.remove('error');
         }
 
-        // Clear errors on input
+        // Clear errors on input + Autofill detection
         document.addEventListener('DOMContentLoaded', () => {
             const inputs = ['admin-email', 'admin-password'];
             inputs.forEach(id => {
@@ -5651,6 +5663,9 @@
                 if (el) {
                     el.addEventListener('input', () => {
                         el.classList.remove('error');
+                        // Also mark as has-value for floating label
+                        if (el.value) el.classList.add('has-value');
+                        else el.classList.remove('has-value');
                         const errorBox = document.getElementById('error-message');
                         if (errorBox && errorBox.classList.contains('show')) {
                             closeErrorMessage();
@@ -5658,6 +5673,29 @@
                     });
                 }
             });
+
+            // Detect browser autofill (Chrome/Edge fill before JS can detect)
+            function checkAutofill() {
+                inputs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        try {
+                            if (el.matches(':-webkit-autofill')) {
+                                el.classList.add('has-value');
+                            }
+                        } catch (e) { }
+                        // Fallback: check if value is non-empty
+                        if (el.value && el.value.length > 0) {
+                            el.classList.add('has-value');
+                        }
+                    }
+                });
+            }
+            // Check multiple times as autofill timing varies
+            setTimeout(checkAutofill, 100);
+            setTimeout(checkAutofill, 500);
+            setTimeout(checkAutofill, 1000);
+            setTimeout(checkAutofill, 2000);
         });
 
 
