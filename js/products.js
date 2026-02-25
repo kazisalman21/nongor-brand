@@ -129,7 +129,7 @@ async function initProducts(params = {}) {
             let fetchedProducts = result.data.map(p => ({
                 ...p,
                 price: parseFloat(p.price),
-                images: typeof p.images === 'string' ? JSON.parse(p.images || '[]') : (p.images || []),
+                images: typeof p.images === 'string' ? (() => { try { return JSON.parse(p.images || '[]'); } catch { return []; } })() : (p.images || []),
                 category: {
                     name: p.category_name || 'অন্যান্য',
                     slug: p.category_slug || 'other'

@@ -497,13 +497,16 @@ window.closeTrackingModal = function () {
 };
 
 window.trackOrder = async function () {
-    const idInput = document.getElementById('track-id-input').value.trim();
+    const trackInput = document.getElementById('track-id-input');
+    if (!trackInput) return;
+    const idInput = trackInput.value.trim();
     if (!idInput) {
         showToast('অর্ডারের আইডি দিন (Enter Order ID)', 'error');
         return;
     }
 
     const trackBtn = document.querySelector('#btn-track-submit');
+    if (!trackBtn) return;
 
     try {
         const originalText = trackBtn.innerHTML;
