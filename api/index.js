@@ -3,6 +3,27 @@
  * - Uses connection pooling for 50-70% faster responses
  * - Caches product queries for 90% faster repeated requests
  * - Removed redundant table creation statements
+ *
+ * ROUTE MAP (for navigation):
+ * ──────────────────────────────────────────────────────
+ * GET  getProducts       → L142   Public product listing with filters & cache
+ * GET  getProduct        → L217   Single product by ID or slug
+ * GET  getAllProducts    → L266   Admin: all active products
+ * GET  (orderId/token)  → L284   Public order tracking
+ * GET  getLowStock       → L318   Admin: low stock products
+ * GET  getOrderEvents    → L335   Admin: order event history
+ * GET  getOrderDetails   → L358   Admin: full order + items
+ * GET  downloadOrder     → L484   Admin: PDF invoice generation
+ * GET  checkCoupon       → L800+  Public: validate coupon code
+ * GET  getOrders         → L850+  Admin: order list with pagination
+ * GET  getDashboard      → L900+  Admin: dashboard analytics
+ * POST createOrder       → L1000+ Public: place new order
+ * POST updateOrder       → L1100+ Admin: update order status
+ * POST addProduct        → L1200+ Admin: create product
+ * POST updateProduct     → L1300+ Admin: edit product
+ * POST deleteProduct     → L1400+ Admin: soft-delete product
+ * POST inboundEmail      → L77    Webhook: Resend email forwarding
+ * ──────────────────────────────────────────────────────
  */
 require('regenerator-runtime/runtime');
 const pool = require('./db');

@@ -26,17 +26,22 @@
     "watch:css": "node node_modules/tailwindcss/lib/cli.js -i ./assets/input.css -o ./assets/styles.css --watch",
     "optimize:images": "node scripts/optimize-images.js",
     "setup:db": "node scripts/setup_auth_pg.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:db": "node test-fixes.js",
     "db:backup": "node scripts/backup_db.js",
     "db:migrate:tracking": "node scripts/add_tracking_token.js",
     "db:migrate:order-items": "node scripts/create_order_items_table.js",
     "db:migrate:images": "node scripts/migrate_images_to_jsonb.js",
     "db:migrate:coupons": "node scripts/create_coupons_table.js",
-    "db:setup:all": "npm run db:migrate:tracking && npm run db:migrate:order-items && npm run db:migrate:images && npm run db:migrate:coupons"
+    "db:migrate:blog": "node scripts/create_blog_table.js",
+    "db:setup:all": "npm run db:migrate:tracking && npm run db:migrate:order-items && npm run db:migrate:images && npm run db:migrate:coupons && npm run db:migrate:blog"
   },
   "devDependencies": {
+    "jsdom": "^28.1.0",
     "sharp": "^0.33.1",
     "tailwindcss": "^3.4.1",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vitest": "^4.0.18"
   }
 }

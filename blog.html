@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth scroll-pt-24">
+
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L96D9CXWFY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-L96D9CXWFY');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://www.nongorr.com/blog.html" />
+    <link rel="alternate" hreflang="bn-BD" href="https://www.nongorr.com/blog.html" />
+
+    <meta name="description"
+        content="Nongorr Blog — Explore Bangladeshi fashion heritage, kurti styling tips, and handmade clothing stories. নোঙর ব্লগ — বাংলাদেশি ফ্যাশন, কুর্তি স্টাইলিং ও হ্যান্ডমেইড পোশাকের গল্প।" />
+    <meta name="keywords"
+        content="Nongorr blog, kurti styling, Bangladeshi fashion, handmade clothing, নোঙর ব্লগ, কুর্তি স্টাইলিং, বাংলাদেশী ফ্যাশন, হ্যান্ডমেইড পোশাক" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Nongorr (নোঙর)" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="blog" />
+    <meta property="og:title" content="Nongorr Blog | নোঙর ব্লগ | Fashion & Heritage Stories" />
+    <meta property="og:description"
+        content="Explore Bangladeshi fashion heritage, kurti styling tips, and handmade clothing stories from Nongorr." />
+    <meta property="og:image" content="https://www.nongorr.com/assets/hero-bg.webp" />
+    <meta property="og:url" content="https://www.nongorr.com/blog.html" />
+    <meta property="og:site_name" content="Nongorr (নোঙর)" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Nongorr Blog | নোঙর ব্লগ | Fashion & Heritage Stories">
+    <meta name="twitter:description"
+        content="Explore Bangladeshi fashion heritage and kurti styling tips from Nongorr.">
+    <meta name="twitter:image" content="https://www.nongorr.com/assets/hero-bg.webp">
+
+    <title>Nongorr Blog | নোঙর ব্লগ | Fashion & Heritage Stories</title>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      "name": "Nongorr Blog",
+      "alternateName": "নোঙর ব্লগ",
+      "description": "Fashion heritage, kurti styling tips, and handmade clothing stories from Bangladesh's #1 kurti brand.",
+      "url": "https://www.nongorr.com/blog.html",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Nongorr",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.nongorr.com/assets/logo.jpeg"
+        }
+      }
+    }
+    </script>
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/jpeg" href="./assets/logo.jpeg" />
+    <link rel="apple-touch-icon" href="./assets/logo.jpeg" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./assets/styles.css">
+    <link href="./assets/animations.css?v=3" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Montserrat:wght@300;400;500;600&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap"
+        rel="stylesheet">
+
+    <style>
+        .blog-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .blog-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(61, 64, 91, 0.12);
+        }
+
+        .blog-card:hover .blog-card-image {
+            transform: scale(1.05);
+        }
+
+        .blog-card-image {
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .tag-pill {
+            transition: all 0.2s ease;
+        }
+
+        .tag-pill:hover {
+            background-color: #E07A5F;
+            color: white;
+        }
+
+        .blog-content h2 {
+            font-family: 'Noto Serif Bengali', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3D405B;
+            margin: 2rem 0 1rem;
+        }
+
+        .blog-content p {
+            line-height: 1.9;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .blog-content h2:first-child {
+            margin-top: 0;
+        }
+
+        /* Single post view animations */
+        .slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-brand-light text-brand-deep font-sans antialiased overflow-x-hidden">
+    <!-- No JavaScript Fallback -->
+    <noscript>
+        <div
+            style="text-align:center;padding:60px 20px;font-family:'Segoe UI',sans-serif;background:#f8f7f4;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:3rem;margin-bottom:16px">⚓</div>
+            <h2 style="color:#3D405B;margin-bottom:12px;font-size:1.5rem">JavaScript প্রয়োজন</h2>
+            <p style="color:#666;max-width:400px;line-height:1.6">এই ওয়েবসাইট ব্যবহার করতে আপনার ব্রাউজারে JavaScript
+                চালু করুন।</p>
+        </div>
+    </noscript>
+
+    <!-- Cinematic Loading Overlay -->
+    <div id="app-loading-overlay"
+        class="fixed inset-0 z-[9999] bg-brand-deep flex flex-col items-center justify-center transition-all duration-1000 ease-[cubic-bezier(0.65,0,0.35,1)]">
+        <div class="relative flex flex-col items-center">
+            <div class="overflow-hidden rounded-2xl mb-8 shadow-2xl ring-1 ring-white/10 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-brand-deep/50 to-transparent z-10"></div>
+                <img src="./assets/logo.jpeg" alt="Nongorr" class="w-24 h-24 object-cover"
+                    style="animation: subtle-zoom 20s infinite alternate">
+            </div>
+            <h1 class="text-3xl md:text-4xl font-serif text-brand-light tracking-wide font-light"
+                style="animation: fade-in-up 1.5s ease-out both">নোঙর</h1>
+            <div class="w-32 h-[2px] bg-brand-deep/50 mt-8 overflow-hidden rounded-full relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-terracotta to-transparent w-full h-full"
+                    style="animation: shimmer-flow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Failsafe: Remove overlay after 5s -->
+    <script>setTimeout(function () { var o = document.getElementById('app-loading-overlay'); if (o) { o.style.transition = 'opacity 0.5s'; o.style.opacity = '0'; setTimeout(function () { o.remove() }, 600) } }, 5000);</script>
+
+    <!-- Premium Navbar -->
+    <nav id="navbar"
+        class="fixed w-full z-50 transition-all duration-500 bg-brand-deep/90 lg:bg-transparent py-4 px-6 lg:px-12 text-brand-light border-b border-transparent backdrop-blur-md lg:backdrop-blur-none">
+
+        <div
+            class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-terracotta to-transparent opacity-60">
+        </div>
+
+        <div class="flex justify-between items-center max-w-[1440px] mx-auto">
+            <a href="index.html" class="flex items-center gap-3 group relative z-10">
+                <div class="relative">
+                    <img src="./assets/logo.jpeg" alt="Nongorr"
+                        class="h-11 w-11 rounded-xl object-cover shadow-lg ring-1 ring-white/10 group-hover:ring-brand-terracotta/50 group-hover:scale-105 transition-all duration-500">
+                    <div
+                        class="absolute -inset-0.5 bg-gradient-to-tr from-brand-terracotta/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span
+                        class="text-xl font-bold tracking-wide font-serif uppercase leading-none group-hover:text-brand-terracotta transition-colors duration-300">নোঙর</span>
+                    <span class="text-[0.6rem] tracking-[0.25em] font-sans uppercase opacity-60 mt-0.5 font-medium">The
+                        Clothing Brand</span>
+                </div>
+            </a>
+
+            <div class="hidden lg:flex items-center gap-7 font-serif text-[13px] tracking-wide font-medium">
+                <a href="index.html"
+                    class="relative py-1 hover:text-brand-terracotta transition-colors duration-300 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-[2px] after:bg-brand-terracotta after:transition-all after:duration-300 hover:after:w-full after:rounded-full">Home</a>
+                <a href="about.html"
+                    class="relative py-1 hover:text-brand-terracotta transition-colors duration-300 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-[2px] after:bg-brand-terracotta after:transition-all after:duration-300 hover:after:w-full after:rounded-full">Story</a>
+                <a href="index.html#collection"
+                    class="relative py-1 hover:text-brand-terracotta transition-colors duration-300 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-[2px] after:bg-brand-terracotta after:transition-all after:duration-300 hover:after:w-full after:rounded-full">Collection</a>
+                <a href="#"
+                    class="relative py-1 text-brand-terracotta font-bold after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-full after:h-[2px] after:bg-brand-terracotta after:rounded-full">Blog</a>
+                <a href="track.html"
+                    class="relative py-1 hover:text-brand-terracotta transition-colors duration-300 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-[2px] after:bg-brand-terracotta after:transition-all after:duration-300 hover:after:w-full after:rounded-full">Track
+                    Order</a>
+                <a href="index.html#contact"
+                    class="ml-2 px-5 py-2 rounded-full bg-brand-terracotta/10 hover:bg-brand-terracotta text-brand-light hover:text-white transition-all duration-300 border border-brand-terracotta/30 hover:border-brand-terracotta hover:shadow-[0_4px_20px_rgba(224,122,95,0.3)] font-semibold nav-cta">Contact
+                    Us</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn"
+                class="lg:hidden relative z-[60] w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+                aria-label="Open navigation menu">
+                <div class="w-5 flex flex-col gap-[5px] transition-all duration-300" id="hamburger-icon">
+                    <span
+                        class="block w-full h-[2px] bg-current rounded-full transition-all duration-300 origin-center"></span>
+                    <span
+                        class="block w-3/4 h-[2px] bg-current rounded-full transition-all duration-300 origin-center"></span>
+                    <span
+                        class="block w-1/2 h-[2px] bg-current rounded-full transition-all duration-300 origin-center"></span>
+                </div>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu"
+        class="fixed inset-0 z-[55] bg-brand-deep translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] flex flex-col items-center justify-center gap-6 text-brand-light font-serif text-xl">
+        <a href="index.html" onclick="mobileNavClick('index.html', event)"
+            class="hover:text-brand-terracotta transition-colors">Home</a>
+        <a href="about.html" onclick="mobileNavClick('about.html', event)"
+            class="hover:text-brand-terracotta transition-colors">Story</a>
+        <a href="index.html#collection" onclick="mobileNavClick('index.html#collection', event)"
+            class="hover:text-brand-terracotta transition-colors">Collection</a>
+        <a href="blog.html" class="text-brand-terracotta font-bold">Blog</a>
+        <a href="track.html" onclick="mobileNavClick('track.html', event)"
+            class="hover:text-brand-terracotta transition-colors">Track Order</a>
+        <a href="index.html#contact" onclick="mobileNavClick('#contact', event)"
+            class="mt-4 px-8 py-3 bg-brand-terracotta text-white rounded-full font-semibold hover:bg-brand-terracotta/80 transition">Contact
+            Us</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative bg-brand-deep text-brand-light pt-28 pb-16 md:pt-36 md:pb-20">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0 bg-gradient-to-b from-brand-deep via-brand-deep/80 to-brand-deep"></div>
+        </div>
+        <div class="relative max-w-4xl mx-auto px-6 text-center">
+            <p class="text-brand-terracotta text-sm uppercase tracking-[0.3em] font-sans font-semibold mb-4">হোম / ব্লগ
+            </p>
+            <h1 class="text-4xl md:text-6xl font-serif font-bold leading-tight mb-6"
+                style="font-family: 'Noto Serif Bengali', serif">
+                নোঙর ব্লগ
+            </h1>
+            <p class="text-lg md:text-xl text-brand-light/70 max-w-2xl mx-auto leading-relaxed"
+                style="font-family: 'Tiro Bangla', serif">
+                ফ্যাশন, ঐতিহ্য, এবং হ্যান্ডমেইড — বাংলাদেশি পোশাকের গল্প
+            </p>
+            <div class="w-16 h-1 bg-brand-terracotta rounded-full mx-auto mt-8"></div>
+        </div>
+    </section>
+
+    <!-- Blog Content Area -->
+    <main class="max-w-6xl mx-auto px-6 py-16">
+
+        <!-- Blog List View -->
+        <div id="blog-list-view">
+            <!-- Tag Filters -->
+            <div class="flex flex-wrap justify-center gap-3 mb-12" id="tag-filters">
+                <button onclick="filterByTag(null)"
+                    class="tag-pill px-4 py-2 rounded-full text-sm font-semibold bg-brand-deep text-white shadow-sm">সব</button>
+                <button onclick="filterByTag('kurti')"
+                    class="tag-pill px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-600 border border-gray-200 shadow-sm">কুর্তি</button>
+                <button onclick="filterByTag('heritage')"
+                    class="tag-pill px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-600 border border-gray-200 shadow-sm">ঐতিহ্য</button>
+                <button onclick="filterByTag('styling')"
+                    class="tag-pill px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-600 border border-gray-200 shadow-sm">স্টাইলিং</button>
+                <button onclick="filterByTag('handmade')"
+                    class="tag-pill px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-600 border border-gray-200 shadow-sm">হ্যান্ডমেইড</button>
+            </div>
+
+            <!-- Posts Grid -->
+            <div id="blog-posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Posts loaded dynamically -->
+            </div>
+
+            <!-- Loading State -->
+            <div id="blog-loading" class="flex justify-center py-20">
+                <div class="flex flex-col items-center gap-4">
+                    <div
+                        class="w-10 h-10 border-4 border-brand-terracotta/20 border-t-brand-terracotta rounded-full animate-spin">
+                    </div>
+                    <p class="text-gray-400 font-bengali">ব্লগ লোড হচ্ছে...</p>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="blog-empty" class="hidden text-center py-20">
+                <div class="text-6xl mb-4">📝</div>
+                <h3 class="text-xl font-serif font-bold text-gray-700 mb-2">কোনো পোস্ট পাওয়া যায়নি</h3>
+                <p class="text-gray-400">শীঘ্রই নতুন কন্টেন্ট আসছে!</p>
+            </div>
+        </div>
+
+        <!-- Single Post View -->
+        <div id="blog-single-view" class="hidden">
+            <button onclick="showListView()"
+                class="mb-8 flex items-center gap-2 text-brand-terracotta hover:text-brand-deep transition-colors font-semibold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                সব পোস্ট দেখুন
+            </button>
+
+            <article class="max-w-3xl mx-auto slide-in">
+                <div id="post-cover" class="w-full h-64 md:h-96 rounded-2xl overflow-hidden mb-8 bg-gray-100">
+                    <img id="post-cover-img" src="" alt="" class="w-full h-full object-cover">
+                </div>
+
+                <div class="mb-6">
+                    <div id="post-tags" class="flex flex-wrap gap-2 mb-4"></div>
+                    <h1 id="post-title" class="text-3xl md:text-4xl font-bold leading-tight mb-4"
+                        style="font-family: 'Noto Serif Bengali', serif"></h1>
+                    <div class="flex items-center gap-4 text-sm text-gray-400">
+                        <span id="post-author"></span>
+                        <span>•</span>
+                        <span id="post-date"></span>
+                        <span>•</span>
+                        <span id="post-views"></span>
+                    </div>
+                </div>
+
+                <hr class="border-gray-100 my-8">
+
+                <div id="post-content" class="blog-content font-bengali text-lg leading-relaxed"></div>
+
+                <hr class="border-gray-100 my-12">
+
+                <!-- Share buttons -->
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-bold text-gray-400 uppercase tracking-wider">Share:</span>
+                    <button onclick="shareOnFacebook()"
+                        class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                    </button>
+                    <button onclick="copyLink()"
+                        class="w-10 h-10 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-white text-brand-deep pt-16 pb-8 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                    <img src="./assets/logo.jpeg" alt="Nongorr" class="h-14 rounded-lg mix-blend-multiply opacity-90">
+                    <div>
+                        <h4 class="text-3xl font-serif font-bold tracking-wider text-brand-deep leading-none">নোঙর</h4>
+                        <p class="text-[0.65rem] tracking-[0.3em] font-sans uppercase opacity-60 mt-1">The Clothing
+                            Brand</p>
+                    </div>
+                </div>
+                <div
+                    class="flex flex-wrap justify-center gap-3 md:gap-10 font-sans text-sm tracking-wide font-medium text-gray-600">
+                    <a href="about.html" class="hover:text-brand-terracotta transition">About Us</a>
+                    <a href="index.html#collection" class="hover:text-brand-terracotta transition">Our Collection</a>
+                    <a href="blog.html" class="text-brand-terracotta font-bold transition">Blog</a>
+                    <a href="return-policy.html" class="hover:text-brand-terracotta transition">Return Policy</a>
+                    <a href="shipping-info.html" class="hover:text-brand-terracotta transition">Shipping Info</a>
+                    <a href="faq.html" class="hover:text-brand-terracotta transition">FAQ</a>
+                    <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                    <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
+                </div>
+            </div>
+            <hr class="border-gray-100 mb-10">
+            <div class="flex justify-center gap-6 mb-10">
+                <a href="https://www.facebook.com/nongorclothingbd" target="_blank" rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1"
+                    aria-label="Facebook">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                </a>
+                <a href="https://www.instagram.com/nongorr_?igsh=ajhra2hiZDV1OGJp" target="_blank"
+                    rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1"
+                    aria-label="Instagram">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                </a>
+                <a href="https://m.me/857107060814707" target="_blank" rel="noopener noreferrer"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-brand-deep hover:text-white transition transform hover:-translate-y-1"
+                    aria-label="Messenger">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.03 2 11C2 13.66 3.34 16.05 5.5 17.65V22L9.64 19.74C10.4 19.91 11.19 20 12 20C17.52 20 22 15.97 22 11C22 6.03 17.52 2 12 2ZM13.19 14.88L10.79 12.33L6.11 14.88L11.21 9.46L13.61 12.01L18.29 9.46L13.19 14.88Z" />
+                    </svg>
+                </a>
+            </div>
+            <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+                <div class="flex flex-col md:flex-row items-center gap-4">
+                    <p>&copy; <span class="cr-year">2026</span> নোঙর Brand. All Rights Reserved.</p>
+                    <script>document.querySelector('.cr-year').textContent = new Date().getFullYear();</script>
+                    <div class="flex gap-4">
+                        <a href="privacy-policy.html" class="hover:text-brand-terracotta transition">Privacy Policy</a>
+                        <a href="terms.html" class="hover:text-brand-terracotta transition">Terms & Conditions</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold italic text-blue-800 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">VISA</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-red-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">MasterCard</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-pink-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">bKash</span>
+                    <span
+                        class="border border-gray-300 px-2 py-1 rounded bg-white font-bold text-orange-600 grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition duration-300 cursor-default">Nagad</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Action Buttons -->
+    <div class="fixed bottom-6 right-6 z-40 flex flex-col gap-3 items-end safe-bottom">
+        <a href="https://wa.me/message/74UB552NKNJYG1" target="_blank" rel="noopener noreferrer"
+            aria-label="Chat on WhatsApp"
+            class="bg-green-500 text-white p-3.5 rounded-full shadow-2xl hover:bg-green-600 transition-all transform hover:scale-110 hover:-translate-y-1 relative group">
+            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+            </svg>
+        </a>
+        <a href="https://m.me/857107060814707" target="_blank" rel="noopener noreferrer" aria-label="Chat on Messenger"
+            class="bg-blue-600 text-white p-3.5 rounded-full shadow-2xl hover:bg-blue-700 transition-all transform hover:scale-110 hover:-translate-y-1 relative group">
+            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M12 2C6.48 2 2 6.03 2 11C2 13.66 3.34 16.05 5.5 17.65V22L9.64 19.74C10.4 19.91 11.19 20 12 20C17.52 20 22 15.97 22 11C22 6.03 17.52 2 12 2ZM13.19 14.88L10.79 12.33L6.11 14.88L11.21 9.46L13.61 12.01L18.29 9.46L13.19 14.88Z" />
+            </svg>
+        </a>
+    </div>
+
+    <!-- Blog JavaScript -->
+    <script>
+        const API_URL = '/api/blog';
+        let currentTag = null;
+        let currentSlug = null;
+
+        // --- Tag name mapping ---
+        const tagLabels = {
+            'kurti': 'কুর্তি',
+            'heritage': 'ঐতিহ্য',
+            'fashion': 'ফ্যাশন',
+            'styling': 'স্টাইলিং',
+            'handmade': 'হ্যান্ডমেইড',
+            'sustainable': 'টেকসই',
+            'tips': 'টিপস',
+            'bangladesh': 'বাংলাদেশ'
+        };
+
+        // --- Initialize ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check URL for slug
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('post');
+            if (slug) {
+                loadSinglePost(slug);
+            } else {
+                loadPosts();
+            }
+
+            // Remove loading overlay
+            setTimeout(() => {
+                const overlay = document.getElementById('app-loading-overlay');
+                if (overlay) {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.remove(), 600);
+                }
+            }, 1500);
+
+            // Init navbar scroll
+            initNavbarScroll();
+        });
+
+        // --- Load Posts ---
+        async function loadPosts(tag = null) {
+            const grid = document.getElementById('blog-posts-grid');
+            const loading = document.getElementById('blog-loading');
+            const empty = document.getElementById('blog-empty');
+
+            loading.classList.remove('hidden');
+            grid.innerHTML = '';
+            empty.classList.add('hidden');
+
+            try {
+                let url = `${API_URL}?action=getPosts`;
+                if (tag) url += `&tag=${encodeURIComponent(tag)}`;
+
+                const res = await fetch(url);
+                const data = await res.json();
+
+                loading.classList.add('hidden');
+
+                if (data.result === 'success' && data.data.length > 0) {
+                    grid.innerHTML = data.data.map((post, i) => createPostCard(post, i)).join('');
+                } else {
+                    empty.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error('Blog load error:', e);
+                loading.classList.add('hidden');
+                empty.classList.remove('hidden');
+            }
+        }
+
+        // --- Create Post Card ---
+        function createPostCard(post, index) {
+            const date = new Date(post.created_at).toLocaleDateString('bn-BD', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+            const tags = (post.tags || []).map(t =>
+                `<span class="text-xs font-semibold text-brand-terracotta bg-brand-terracotta/10 px-2 py-1 rounded-full">${tagLabels[t] || t}</span>`
+            ).join('');
+
+            const coverImg = post.cover_image || './assets/hero-bg.webp';
+
+            return `
+                <div class="blog-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer group"
+                     onclick="loadSinglePost('${post.slug}')"
+                     style="animation: slideIn 0.4s ease-out ${index * 0.1}s both">
+                    <div class="h-52 overflow-hidden">
+                        <img src="${coverImg}" alt="${post.title}"
+                             class="blog-card-image w-full h-full object-cover"
+                             onerror="this.src='./assets/hero-bg.webp'">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex flex-wrap gap-2 mb-3">${tags}</div>
+                        <h3 class="text-xl font-bold mb-3 group-hover:text-brand-terracotta transition-colors leading-snug"
+                            style="font-family: 'Noto Serif Bengali', serif">${post.title}</h3>
+                        <p class="text-gray-500 text-sm mb-4 line-clamp-2" style="font-family: 'Tiro Bangla', serif">${post.excerpt || ''}</p>
+                        <div class="flex items-center justify-between text-xs text-gray-400">
+                            <span>${post.author || 'নোঙর টিম'}</span>
+                            <span>${date}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Load Single Post ---
+        async function loadSinglePost(slug) {
+            currentSlug = slug;
+            history.pushState(null, '', `blog.html?post=${slug}`);
+
+            document.getElementById('blog-list-view').classList.add('hidden');
+            document.getElementById('blog-single-view').classList.remove('hidden');
+            document.getElementById('blog-single-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            try {
+                const res = await fetch(`${API_URL}?action=getPost&slug=${encodeURIComponent(slug)}`);
+                const data = await res.json();
+
+                if (data.result === 'success') {
+                    const post = data.data;
+
+                    document.getElementById('post-cover-img').src = post.cover_image || './assets/hero-bg.webp';
+                    document.getElementById('post-cover-img').alt = post.title;
+                    document.getElementById('post-title').textContent = post.title;
+                    document.getElementById('post-content').innerHTML = post.content;
+                    document.getElementById('post-author').textContent = post.author || 'নোঙর টিম';
+                    document.getElementById('post-views').textContent = `${post.views || 0} views`;
+
+                    const date = new Date(post.created_at).toLocaleDateString('bn-BD', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                    document.getElementById('post-date').textContent = date;
+
+                    const tagsHtml = (post.tags || []).map(t =>
+                        `<span class="text-xs font-semibold text-brand-terracotta bg-brand-terracotta/10 px-3 py-1.5 rounded-full">${tagLabels[t] || t}</span>`
+                    ).join('');
+                    document.getElementById('post-tags').innerHTML = tagsHtml;
+
+                    // Update page title and meta
+                    document.title = (post.meta_title || post.title) + ' | নোঙর ব্লগ';
+                    const metaDesc = document.querySelector('meta[name="description"]');
+                    if (metaDesc) metaDesc.content = post.meta_description || post.excerpt || '';
+                }
+            } catch (e) {
+                console.error('Post load error:', e);
+            }
+        }
+
+        // --- Show List View ---
+        function showListView() {
+            currentSlug = null;
+            history.pushState(null, '', 'blog.html');
+            document.getElementById('blog-single-view').classList.add('hidden');
+            document.getElementById('blog-list-view').classList.remove('hidden');
+            document.title = 'Nongorr Blog | নোঙর ব্লগ | Fashion & Heritage Stories';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- Filter by Tag ---
+        function filterByTag(tag) {
+            currentTag = tag;
+            loadPosts(tag);
+
+            // Update active tag button
+            document.querySelectorAll('.tag-pill').forEach((btn, i) => {
+                if ((tag === null && i === 0) || btn.textContent.trim() === (tagLabels[tag] || '')) {
+                    btn.className = 'tag-pill px-4 py-2 rounded-full text-sm font-semibold bg-brand-deep text-white shadow-sm';
+                } else {
+                    btn.className = 'tag-pill px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-600 border border-gray-200 shadow-sm';
+                }
+            });
+        }
+
+        // --- Share ---
+        function shareOnFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('লিংক কপি হয়েছে! ✅');
+            });
+        }
+
+        // --- Back button handling ---
+        window.addEventListener('popstate', () => {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('post');
+            if (slug) {
+                loadSinglePost(slug);
+            } else {
+                showListView();
+            }
+        });
+
+        // --- Navbar Scroll ---
+        function initNavbarScroll() {
+            const navbar = document.getElementById('navbar');
+            if (!navbar) return;
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        if (window.scrollY > 50) {
+                            navbar.classList.remove('lg:bg-transparent', 'lg:backdrop-blur-none');
+                            navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep', 'border-gray-100/50');
+                            navbar.classList.remove('bg-brand-deep/90', 'text-brand-light');
+                        } else {
+                            navbar.classList.add('lg:bg-transparent', 'lg:backdrop-blur-none');
+                            navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'text-brand-deep', 'border-gray-100/50');
+                            navbar.classList.add('bg-brand-deep/90', 'text-brand-light');
+                        }
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }, { passive: true });
+        }
+
+        // --- Mobile Menu ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = document.getElementById('hamburger-icon');
+            const spans = icon ? icon.querySelectorAll('span') : [];
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('translate-x-full');
+                document.body.style.overflow = 'hidden';
+                if (spans.length === 3) {
+                    spans[0].style.transform = 'translateY(7px) rotate(45deg)';
+                    spans[0].style.width = '100%';
+                    spans[1].style.opacity = '0';
+                    spans[2].style.transform = 'translateY(-7px) rotate(-45deg)';
+                    spans[2].style.width = '100%';
+                }
+            } else {
+                menu.classList.add('translate-x-full');
+                document.body.style.overflow = '';
+                if (spans.length === 3) {
+                    spans[0].style.transform = '';
+                    spans[0].style.width = '';
+                    spans[1].style.opacity = '';
+                    spans[2].style.transform = '';
+                    spans[2].style.width = '';
+                }
+            }
+        }
+        document.getElementById('mobile-menu-btn')?.addEventListener('click', toggleMobileMenu);
+    </script>
+</body>
+
+</html>
