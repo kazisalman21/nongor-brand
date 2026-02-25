@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PRODUCT SITEMAP — nongorr.com (নোঙর Clothing Brand)
+  ✅ Lists individual product pages for Google indexing.
+  ✅ Update this file when new products are added.
+  ✅ Product pages are dynamically generated — add entries as you publish them.
+  💡 Tip: Use descriptive <image:title> and <image:caption> for image SEO.
+-->
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- ═══════════════════════ PRODUCT PAGES ════════════════════════ -->
+  <!-- Add product entries below as new products are published -->
+  <!-- Example:
+  <url>
+    <loc>https://www.nongorr.com/product.html?id=PRODUCT_ID</loc>
+    <lastmod>2026-02-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/PRODUCT_IMAGE.webp</image:loc>
+      <image:title>Product Name — Nongorr</image:title>
+      <image:caption>Premium handmade Kurti from Nongorr (নোঙর)</image:caption>
+    </image:image>
+  </url>
+  -->
+
+</urlset>

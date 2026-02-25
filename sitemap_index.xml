@@ -9,19 +9,19 @@
   <!-- Core pages -->
   <sitemap>
     <loc>https://www.nongorr.com/sitemap_main.xml</loc>
-    <lastmod>2026-02-19</lastmod>
+    <lastmod>2026-02-26</lastmod>
   </sitemap>
 
   <!-- Product / category pages (add when ready) -->
   <sitemap>
     <loc>https://www.nongorr.com/sitemap_products.xml</loc>
-    <lastmod>2026-02-19</lastmod>
+    <lastmod>2026-02-26</lastmod>
   </sitemap>
 
   <!-- Images sitemap -->
   <sitemap>
     <loc>https://www.nongorr.com/sitemap_images.xml</loc>
-    <lastmod>2026-02-19</lastmod>
+    <lastmod>2026-02-26</lastmod>
   </sitemap>
 
 </sitemapindex>

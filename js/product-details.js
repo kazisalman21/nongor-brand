@@ -269,7 +269,14 @@ window.addToCartFromPage = function () {
         }
     }
 
-    const cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+    let cart;
+    try {
+        cart = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+    } catch (e) {
+        console.error('Cart data corrupted:', e);
+        cart = [];
+        localStorage.removeItem('nongor_cart');
+    }
     cart.push({
         id: currentProduct.id,
         name: currentProduct.name,

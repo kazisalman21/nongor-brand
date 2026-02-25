@@ -18,6 +18,9 @@ Allow: /assets/
 Disallow: /checkout.html
 Disallow: /cart
 Disallow: /order-confirmation
+Disallow: /admin.html
+Disallow: /admin-reset.html
+Disallow: /email-preview.html
 Disallow: /admin/
 Disallow: /api/
 Disallow: /*.json$

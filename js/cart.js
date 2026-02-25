@@ -47,7 +47,7 @@ window.addToCart = function () {
         });
 
         if (!isValid) {
-            showToast("ম মাপ সঠিক দিন", 'error');
+            showToast("সব মাপ সঠিকভাবে দিন", 'error');
             return;
         }
 
@@ -148,7 +148,7 @@ window.updateCartUI = function () {
                     </div>
                 </div>
 
-                <button onclick="removeFromCart(${index})" class="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="Remove">
+                <button onclick="removeFromCart(${index})" class="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100" title="Remove">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>

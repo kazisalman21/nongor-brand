@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  IMAGE SITEMAP — nongorr.com
+  IMAGE SITEMAP — nongorr.com (নোঙর Clothing Brand)
   ✅ Helps Google index your images and rank them in Google Image Search.
   ✅ Add all key images — product photos, banners, infographics.
   ✅ Use descriptive <image:title> and <image:caption> — these act like alt text for SEO.
   ✅ Max 1,000 images per <url> entry.
+  Last updated: 2026-02-26
 -->
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -13,13 +14,76 @@
   <!-- ════════════════════════ HOMEPAGE IMAGES ═══════════════════════ -->
   <url>
     <loc>https://www.nongorr.com/</loc>
+
+    <!-- Brand Logo -->
     <image:image>
       <image:loc>https://www.nongorr.com/assets/logo.jpeg</image:loc>
-      <image:title>Nongorr - Main Banner</image:title>
-      <image:caption>Discover our latest products at Nongorr</image:caption>
+      <image:title>Nongorr Logo — নোঙর ক্লথিং ব্র্যান্ড</image:title>
+      <image:caption>Nongorr (নোঙর) — Premium Bangladeshi handmade Kurti brand logo</image:caption>
+    </image:image>
+
+    <!-- Hero Banner -->
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/hero-bg.webp</image:loc>
+      <image:title>Nongorr Kurti Collection — নোঙর কুর্তি কালেকশন</image:title>
+      <image:caption>Premium handmade Kurti collection from Nongorr (নোঙর) — Best Bangladeshi Kurti brand</image:caption>
+    </image:image>
+
+    <!-- Product Images -->
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/20250821_195801(1).webp</image:loc>
+      <image:title>Nongorr Kurti — হ্যান্ডমেইড কুর্তি</image:title>
+      <image:caption>Handmade premium Kurti from Nongorr (নোঙর) — Best Kurti in Bangladesh</image:caption>
+    </image:image>
+
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/IMG20251101152351.webp</image:loc>
+      <image:title>Nongorr Women Dress Collection</image:title>
+      <image:caption>Premium women dress from Nongorr (নোঙর) — Bangladeshi handmade clothing</image:caption>
+    </image:image>
+
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/IMG20251101152835.webp</image:loc>
+      <image:title>Nongorr Kurti Design — কুর্তি ডিজাইন</image:title>
+      <image:caption>Exclusive Kurti design from Nongorr — Top Kurti collection in Bangladesh</image:caption>
+    </image:image>
+
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/IMG20251101154409.webp</image:loc>
+      <image:title>Nongorr Handmade Collection</image:title>
+      <image:caption>Handmade clothing collection from Nongorr (নোঙর) — Best Bangladeshi Kurti</image:caption>
+    </image:image>
+
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/IMG20251101154524.webp</image:loc>
+      <image:title>Nongorr Premium Kurti — প্রিমিয়াম কুর্তি</image:title>
+      <image:caption>Premium quality Kurti from Nongorr — Buy Kurti online Bangladesh</image:caption>
+    </image:image>
+
+    <!-- Decorative / Brand Assets -->
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/butterfly.webp</image:loc>
+      <image:title>Nongorr Brand Element — প্রজাপতি</image:title>
+      <image:caption>Decorative brand element from Nongorr (নোঙর) clothing brand</image:caption>
+    </image:image>
+
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/tulip.webp</image:loc>
+      <image:title>Nongorr Brand Element — টিউলিপ</image:title>
+      <image:caption>Decorative brand element from Nongorr (নোঙর) clothing brand</image:caption>
     </image:image>
   </url>
 
-  <!-- Note: Dynamic Product Images are included in sitemap_products.xml -->
+  <!-- ═══════════════════════ ABOUT PAGE IMAGES ════════════════════════ -->
+  <url>
+    <loc>https://www.nongorr.com/about.html</loc>
+    <image:image>
+      <image:loc>https://www.nongorr.com/assets/about-bg.webp</image:loc>
+      <image:title>About Nongorr — নোঙর সম্পর্কে</image:title>
+      <image:caption>The story behind Nongorr (নোঙর) — A Bangladeshi handmade clothing brand rooted in love and heritage</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Note: Dynamic product images are included in sitemap_products.xml -->
 
 </urlset>

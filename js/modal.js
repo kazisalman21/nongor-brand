@@ -22,7 +22,7 @@ window.openModal = function (productId) {
 
     document.getElementById('modal-title').textContent = product.name;
     document.getElementById('modal-price').textContent = `৳${product.price} `;
-    document.getElementById('modal-category').textContent = product.category.name;
+    document.getElementById('modal-category').textContent = product.category?.name || product.category_name || 'অন্যান্য';
     document.getElementById('modal-description').textContent = product.description;
 
     const imgElement = document.getElementById('modal-image');
@@ -179,7 +179,7 @@ window.closeLightbox = function () {
     setTimeout(() => {
         lightbox.classList.add('hidden');
         const modal = document.getElementById('product-modal');
-        if (modal && modal.classList.contains('hidden')) {
+        if (!modal || modal.classList.contains('hidden')) {
             document.body.style.overflow = '';
         }
     }, 300);

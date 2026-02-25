@@ -49,7 +49,13 @@ window.initCheckout = async function () {
             });
         }
     } else {
-        checkoutItems = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+        try {
+            checkoutItems = JSON.parse(localStorage.getItem('nongor_cart')) || [];
+        } catch (e) {
+            console.error('Cart data corrupted:', e);
+            checkoutItems = [];
+            localStorage.removeItem('nongor_cart');
+        }
     }
 
     if (checkoutItems.length === 0) {
@@ -227,6 +233,7 @@ window.checkCoupon = async function () {
 // --- Order Submission (Page) ---
 window.confirmOrderFromPage = async function () {
     const confirmBtn = document.getElementById('btn-confirm-order');
+    if (!confirmBtn) return;
     const originalText = confirmBtn.innerHTML;
 
     const name = document.getElementById('cust-name').value.trim();
@@ -252,7 +259,7 @@ window.confirmOrderFromPage = async function () {
     let fullPhone = phone.replace(/\D/g, '');
     if (fullPhone.startsWith('8801')) fullPhone = fullPhone.substring(2);
 
-    const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'COD';
     const shippingZone = document.querySelector('input[name="shipping_zone"]:checked')?.value || 'inside_dhaka';
     let senderNumber = '', trxId = '';
 
@@ -413,7 +420,7 @@ window.confirmOrder = async function () {
         customerName: name,
         customerPhone: phone,
         address: address,
-        productName: document.getElementById('modal-title').textContent + (sizeType === 'custom' ? ` - ${sizeLabel}` : ''),
+        productName: (document.getElementById('modal-title')?.textContent || (items[0]?.name ?? 'Product')) + (sizeType === 'custom' ? ` - ${sizeLabel}` : ''),
         items: items,
         size: sizeLabel,
         quantity: currentQuantity,
