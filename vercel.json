@@ -63,10 +63,6 @@
             "destination": "/api/sitemap_products"
         },
         {
-            "source": "/api/blog",
-            "destination": "/api/blog"
-        },
-        {
             "source": "/api/auth",
             "destination": "/api/auth"
         },
