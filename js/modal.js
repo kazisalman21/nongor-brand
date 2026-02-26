@@ -15,22 +15,22 @@
 // ==============================================
 
 window.openModal = function (productId) {
-    const product = allProducts.find(p => p.id === productId);
+    const product = (window.allProducts || []).find(p => p.id === productId);
     if (!product) return;
 
-    currentProductId = productId;
+    window.currentProductId = productId;
 
     const images = product.images && product.images.length > 0
         ? product.images
         : [product.image].filter(Boolean);
 
     const mainImgData = images[0];
-    const mainImgSrc = getOptimizedImage(mainImgData, 'main');
+    const mainImgSrc = window.getOptimizedImage(mainImgData, 'main');
     const mainImgOriginal = mainImgData && mainImgData.startsWith('http') ? mainImgData : `./assets/${(mainImgData || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
 
     const modalImgEl = document.getElementById('modal-image');
     modalImgEl.src = mainImgSrc;
-    modalImgEl.onerror = function () { handleImageError(this, mainImgOriginal); };
+    modalImgEl.onerror = function () { window.handleImageError(this, mainImgOriginal); };
 
     document.getElementById('modal-title').textContent = product.name;
     document.getElementById('modal-price').textContent = `৳${product.price} `;
@@ -45,9 +45,9 @@ window.openModal = function (productId) {
     const galleryContainer = document.getElementById('modal-gallery');
     if (galleryContainer && images.length > 1) {
         galleryContainer.innerHTML = images.map((img, index) => {
-            const thumbSrc = getOptimizedImage(img, 'thumb');
+            const thumbSrc = window.getOptimizedImage(img, 'thumb');
             const originalSrc = img && img.startsWith('http') ? img : `./assets/${(img || 'logo.jpeg').replace(/^\.?\/?assets\//, '')}`;
-            const mainSwapSrc = getOptimizedImage(img, 'main');
+            const mainSwapSrc = window.getOptimizedImage(img, 'main');
 
             return `
                 <img src="${thumbSrc}" alt="Thumbnail ${index + 1}" 
@@ -63,13 +63,13 @@ window.openModal = function (productId) {
     }
 
     // Reset state
-    currentQuantity = 1;
-    selectedSize = 'M';
-    document.getElementById('quantity-display').textContent = currentQuantity;
+    window.currentQuantity = 1;
+    window.selectedSize = 'M';
+    document.getElementById('quantity-display').textContent = window.currentQuantity;
 
     // Render sizes
     const sizeContainer = document.getElementById('size-selector');
-    sizeContainer.innerHTML = availableSizes.map(size => `
+    sizeContainer.innerHTML = window.availableSizes.map(size => `
         <button onclick="selectSize('${size}')" 
             class="size-btn w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 transform hover:scale-110 
             ${size === 'M'
@@ -211,7 +211,6 @@ window.closeLightbox = function () {
 
 // --- Size Selection ---
 window.selectSize = function (size) {
-    selectedSize = size;
     window.selectedSize = size;
     document.querySelectorAll('.size-btn').forEach(btn => {
         const btnSize = btn.innerText.trim();

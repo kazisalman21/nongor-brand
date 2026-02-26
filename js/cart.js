@@ -30,9 +30,9 @@ window.initCart = function () {
 };
 
 window.addToCart = function () {
-    if (!currentProductId) return;
+    if (!window.currentProductId) return;
 
-    const product = allProducts.find(p => p.id === currentProductId);
+    const product = (window.allProducts || []).find(p => p.id === window.currentProductId);
     if (!product) return;
 
     let cartItem = {
@@ -40,11 +40,11 @@ window.addToCart = function () {
         name: product.name,
         price: product.price,
         image: product.image,
-        quantity: currentQuantity,
+        quantity: window.currentQuantity,
         timestamp: Date.now()
     };
 
-    if (currentSizeType === 'custom') {
+    if (window.currentSizeType === 'custom') {
         const inputs = document.querySelectorAll('#custom-size-form input[data-measure]');
         const measurements = {};
         let isValid = true;
@@ -61,7 +61,7 @@ window.addToCart = function () {
         });
 
         if (!isValid) {
-            showToast("সব মাপ সঠিকভাবে দিন", 'error');
+            window.showToast("সব মাপ সঠিকভাবে দিন", 'error');
             return;
         }
 
@@ -70,16 +70,16 @@ window.addToCart = function () {
         cartItem.size = 'Custom';
         cartItem.sizeType = 'custom';
         cartItem.measurements = measurements;
-        cartItem.unit = currentMeasurementUnit;
+        cartItem.unit = window.currentMeasurementUnit;
         cartItem.notes = note;
         cartItem.sizeLabel = `Custom (${Object.keys(measurements).length || ''})`;
 
     } else {
-        if (!selectedSize) {
-            showToast("সাইজ নির্বাচন করুন", 'error');
+        if (!window.selectedSize) {
+            window.showToast("সাইজ নির্বাচন করুন", 'error');
             return;
         }
-        cartItem.size = selectedSize;
+        cartItem.size = window.selectedSize;
         cartItem.sizeType = 'standard';
     }
 
@@ -103,10 +103,10 @@ window.addToCart = function () {
     }
     localStorage.setItem('nongor_cart', JSON.stringify(cart));
 
-    updateCartUI();
-    showToast("কার্টে যোগ করা হয়েছে");
-    closeModal();
-    openCart();
+    window.updateCartUI();
+    window.showToast("কার্টে যোগ করা হয়েছে");
+    window.closeModal();
+    window.openCart();
 };
 
 window.removeFromCart = function (index) {
@@ -143,15 +143,15 @@ window.updateCartUI = function () {
         container.innerHTML = cart.map((item, index) => `
             <div class="group flex items-center gap-4 bg-white p-3 pr-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in relative overflow-hidden">
                 <div class="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
-                    <img src="${escapeHtml(getOptimizedImage(item.image, 'thumb'))}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="handleImageError(this)">
+                    <img src="${window.escapeHtml(window.getOptimizedImage(item.image, 'thumb'))}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="handleImageError(this)">
                 </div>
                 
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start mb-1">
-                        <h4 class="font-bold text-base text-brand-deep font-serif line-clamp-1 pr-6">${escapeHtml(item.name)}</h4>
+                        <h4 class="font-bold text-base text-brand-deep font-serif line-clamp-1 pr-6">${window.escapeHtml(item.name)}</h4>
                     </div>
                     
-                    <p class="text-xs text-brand-terracotta uppercase tracking-wider font-bold mb-2">Size: ${escapeHtml(item.size)}</p>
+                    <p class="text-xs text-brand-terracotta uppercase tracking-wider font-bold mb-2">Size: ${window.escapeHtml(item.size)}</p>
                     
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-2 py-1">
@@ -216,11 +216,11 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.updateQuantity = function (change) {
-    const newQuantity = currentQuantity + change;
+    const newQuantity = window.currentQuantity + change;
     if (newQuantity >= 1 && newQuantity <= 10) {
-        currentQuantity = newQuantity;
+        window.currentQuantity = newQuantity;
         const disp = document.getElementById('quantity-display');
-        if (disp) disp.textContent = currentQuantity;
+        if (disp) disp.textContent = window.currentQuantity;
     }
 };
 
@@ -229,18 +229,18 @@ window.showCheckout = function (fromCart = false) {
     if (fromCart) {
         const cart = getCart();
         if (cart.length === 0) {
-            showToast("কার্ট খালি!");
+            window.showToast("কার্ট খালি!");
             return;
         }
         localStorage.removeItem('nongor_direct_buy');
         window.location.href = `checkout.html`;
     } else {
         // Buy Now (from modal — not cart)
-        const id = currentProductId;
-        const product = allProducts.find(p => p.id == id);
+        const id = window.currentProductId;
+        const product = (window.allProducts || []).find(p => p.id == id);
 
         if (!product) {
-            showToast("Product data not found. Please reload.", 'error');
+            window.showToast("Product data not found. Please reload.", 'error');
             return;
         }
 
@@ -249,11 +249,11 @@ window.showCheckout = function (fromCart = false) {
             name: product.name,
             price: product.price,
             image: product.image,
-            quantity: currentQuantity
+            quantity: window.currentQuantity
         };
 
         // Bug 13 Fix: Handle custom sizing in Buy Now (same logic as addToCart)
-        if (currentSizeType === 'custom') {
+        if (window.currentSizeType === 'custom') {
             const inputs = document.querySelectorAll('#custom-size-form input[data-measure]');
             const measurements = {};
             let isValid = true;
@@ -270,7 +270,7 @@ window.showCheckout = function (fromCart = false) {
             });
 
             if (!isValid) {
-                showToast("সব মাপ সঠিক দিন", 'error');
+                window.showToast("সব মাপ সঠিক দিন", 'error');
                 return;
             }
 
@@ -280,14 +280,14 @@ window.showCheckout = function (fromCart = false) {
             buyNowItem.sizeType = 'custom';
             buyNowItem.sizeLabel = `Custom (${Object.keys(measurements).length || ''})`;
             buyNowItem.measurements = measurements;
-            buyNowItem.unit = currentMeasurementUnit;
+            buyNowItem.unit = window.currentMeasurementUnit;
             buyNowItem.notes = note;
         } else {
-            if (!selectedSize) {
-                showToast("সাইজ নির্বাচন করুন", 'error');
+            if (!window.selectedSize) {
+                window.showToast("সাইজ নির্বাচন করুন", 'error');
                 return;
             }
-            buyNowItem.size = selectedSize;
+            buyNowItem.size = window.selectedSize;
             buyNowItem.sizeType = 'standard';
         }
 

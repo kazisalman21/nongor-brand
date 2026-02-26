@@ -29,7 +29,7 @@ window.initCheckout = async function () {
         }
     } else if (legacyId) {
         const id = parseInt(legacyId);
-        if (allProducts.length === 0) {
+        if ((window.allProducts || []).length === 0) {
             try {
                 const response = await fetch(`${window.API_URL}?action=getProducts`);
                 const data = await response.json();
@@ -88,7 +88,7 @@ window.initCheckout = async function () {
 
         return `
     <div class="flex gap-4 items-start bg-gray-50/50 p-2 rounded-lg">
-        <img src="${escapeHtml(imgSrc)}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
+        <img src="${(window.escapeHtml || String)(imgSrc)}" class="w-16 h-20 object-cover rounded-md bg-white border border-gray-100" onerror="this.src='./assets/logo.jpeg'">
             <div class="flex-grow">
                 <div class="flex justify-between items-start">
                     <div>

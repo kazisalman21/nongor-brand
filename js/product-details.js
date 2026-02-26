@@ -1,3 +1,14 @@
+/**
+ * @module product-details
+ * @description Dedicated product page logic for Nongorr (product.html).
+ * Loads a single product by ID or slug, renders full details (images,
+ * pricing, stock, sizes, reviews), handles add-to-cart and buy-now
+ * from the standalone product page, and updates OG/Twitter meta tags.
+ * @see {@link module:cart} — addToCartFromPage, buyNowFromPage
+ * @see {@link module:reviews} — loadReviews called after render
+ * @see {@link module:custom-sizing} — custom measurements UI
+ */
+
 // JS Module for Product Details
 // Dependencies: Assumes utils.js or similar provides basic utilities, but we'll include local fallbacks.
 
