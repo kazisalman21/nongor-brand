@@ -628,11 +628,11 @@ window.copyOrderId = function () {
 
 // --- WhatsApp Order Link ---
 function setWhatsAppOrderLink(orderId) {
-    const waPhone = '8801794493684'; // Nongorr WhatsApp number
+    const waPhone = '8801616510037'; // Updated Nongorr WhatsApp number
     const msg = encodeURIComponent(
         `আসসালামু আলাইকুম! 🛍️\n\nআমি Nongorr থেকে অর্ডার দিয়েছি।\nOrder ID: ${orderId}\n\nআমার অর্ডারের আপডেট জানাবেন প্লিজ। ধন্যবাদ! 🙏`
     );
-    const waUrl = `https://wa.me/${waPhone}?text=${msg}`;
+    const waUrl = `https://wa.me/message/74UB552NKNJYG1?text=${msg}`;
 
     // Set link on all WhatsApp order buttons
     const links = document.querySelectorAll('#wa-order-link, #wa-order-link-modal');
