@@ -4580,24 +4580,7 @@
                 }
             }
 
-            // Show image previews
-            const previewsContainer = document.getElementById('image-previews');
-            previewsContainer.innerHTML = '';
-
-            if (images.length > 0) {
-                images.forEach((imgUrl, index) => {
-                    const img = document.createElement('img');
-                    img.src = imgUrl.startsWith('http') ? imgUrl : `/assets/${imgUrl}`;
-                    img.className = 'w-16 h-16 object-cover rounded-lg border-2 border-gray-200';
-                    img.alt = `Preview ${index + 1}`;
-                    previewsContainer.appendChild(img);
-                });
-                document.getElementById('image-preview-container').classList.remove('hidden');
-                document.getElementById('upload-placeholder').classList.add('hidden');
-            } else {
-                document.getElementById('image-preview-container').classList.add('hidden');
-                document.getElementById('upload-placeholder').classList.remove('hidden');
-            }
+            // renderImagePreviews() already shows/hides containers and renders premium badges
 
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
