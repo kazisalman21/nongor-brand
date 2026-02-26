@@ -330,6 +330,7 @@ window.confirmOrderFromPage = async function () {
             document.getElementById('order-success').classList.replace('hidden', 'flex');
             document.getElementById('checkout-form').classList.add('hidden');
             document.body.style.overflow = 'hidden';
+            setWhatsAppOrderLink(serverOrderId);
 
             localStorage.removeItem('nongor_cart');
         } else {
@@ -485,6 +486,7 @@ window.confirmOrder = async function () {
             }
 
             showToast("✅ অর্ডার সফল হয়েছে!");
+            setWhatsAppOrderLink(serverOrderId);
         } else {
             throw new Error(result.message || "Unknown Error");
         }
@@ -623,4 +625,19 @@ window.copyOrderId = function () {
         showToast('Order ID copied! 📋');
     });
 };
+
+// --- WhatsApp Order Link ---
+function setWhatsAppOrderLink(orderId) {
+    const waPhone = '8801794493684'; // Nongorr WhatsApp number
+    const msg = encodeURIComponent(
+        `আসসালামু আলাইকুম! 🛍️\n\nআমি Nongorr থেকে অর্ডার দিয়েছি।\nOrder ID: ${orderId}\n\nআমার অর্ডারের আপডেট জানাবেন প্লিজ। ধন্যবাদ! 🙏`
+    );
+    const waUrl = `https://wa.me/${waPhone}?text=${msg}`;
+
+    // Set link on all WhatsApp order buttons
+    const links = document.querySelectorAll('#wa-order-link, #wa-order-link-modal');
+    links.forEach(link => {
+        if (link) link.href = waUrl;
+    });
+}
 

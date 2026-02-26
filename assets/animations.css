@@ -1468,3 +1468,155 @@ textarea:focus-visible {
         color: ButtonText;
     }
 }
+
+/* ===== PUSH NOTIFICATION BANNER ===== */
+
+.push-banner {
+    position: fixed;
+    bottom: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9998;
+    width: calc(100% - 2rem);
+    max-width: 480px;
+    transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: auto;
+}
+
+.push-banner-visible {
+    bottom: 1.5rem;
+}
+
+.push-banner-hiding {
+    bottom: -200px;
+    opacity: 0;
+    transition: bottom 0.3s ease-in, opacity 0.3s ease-in;
+}
+
+.push-banner-content {
+    background: rgba(61, 64, 91, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.push-banner-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    animation: bellRing 2s ease-in-out infinite;
+}
+
+@keyframes bellRing {
+
+    0%,
+    80%,
+    100% {
+        transform: rotate(0);
+    }
+
+    85% {
+        transform: rotate(15deg);
+    }
+
+    90% {
+        transform: rotate(-10deg);
+    }
+
+    95% {
+        transform: rotate(5deg);
+    }
+}
+
+.push-banner-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.push-banner-text strong {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 0.125rem;
+    color: #f0e6d3;
+}
+
+.push-banner-text p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+.push-banner-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    flex-shrink: 0;
+}
+
+.push-btn-enable {
+    background: linear-gradient(135deg, #e07a5f, #d4683f);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.push-btn-enable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(224, 122, 95, 0.4);
+}
+
+.push-btn-dismiss {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    border: none;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+    cursor: pointer;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.push-btn-dismiss:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Mobile: Stack banner layout */
+@media (max-width: 400px) {
+    .push-banner-content {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .push-banner-actions {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* Reduced motion: Disable bell animation */
+@media (prefers-reduced-motion: reduce) {
+    .push-banner-icon {
+        animation: none;
+    }
+
+    .push-banner {
+        transition: none;
+    }
+}

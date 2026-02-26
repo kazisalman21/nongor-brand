@@ -15,6 +15,7 @@ import './js/cart.js';
 import './js/checkout.js';
 import './js/product-details.js';
 import './js/reviews.js';
+import { initPushNotifications } from './js/push-notifications.js';
 
 
 
@@ -121,4 +122,7 @@ function initScrollReveal() {
         // Fallback: just show everything
         allRevealEls.forEach(el => el.classList.add('visible'));
     }
+
+    // 7. Push Notifications
+    initPushNotifications();
 }
