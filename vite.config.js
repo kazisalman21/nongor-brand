@@ -3,18 +3,8 @@ import { resolve } from 'path';
 
 export default defineConfig({
     build: {
-        // Minify HTML and JS output
-        minify: 'terser',
-        terserOptions: {
-            compress: {
-                drop_console: false, // Keep console.warn for debugging
-                drop_debugger: true,
-                passes: 2
-            },
-            format: {
-                comments: false
-            }
-        },
+        // Minify JS (esbuild — Vite default, no extra deps needed)
+        minify: 'esbuild',
         // CSS minification
         cssMinify: true,
         // Chunk splitting for better caching
