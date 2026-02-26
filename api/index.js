@@ -899,7 +899,7 @@ module.exports = async (req, res) => {
                     return res.status(400).json({ result: 'error', message: 'Coupon code required' });
                 }
 
-                const resCoupon = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [code]);
+                const resCoupon = await client.query('SELECT * FROM coupons WHERE UPPER(code) = UPPER($1) AND is_active = true', [code]);
 
                 if (resCoupon.rows.length === 0) {
                     client.release();
