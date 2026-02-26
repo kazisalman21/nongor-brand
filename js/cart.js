@@ -1,3 +1,17 @@
+/**
+ * @module cart
+ * @description Shopping cart module for Nongorr e-commerce.
+ * Manages cart items in localStorage, renders the cart drawer UI,
+ * handles add/remove operations, quantity updates, and checkout routing.
+ * 
+ * Cart data format: Array<{id, name, price, image, quantity, size, sizeType, measurements?, unit?, notes?}>
+ * Persisted in localStorage under key 'nongor_cart'.
+ * 
+ * @see {@link module:modal} — openModal triggers addToCart flow
+ * @see {@link module:checkout} — showCheckout reads cart data
+ * @see {@link module:custom-sizing} — Custom size data attached to cart items
+ */
+
 // ==============================================
 // CART — Cart CRUD, drawer, quantity
 // ==============================================
@@ -190,6 +204,16 @@ window.closeCart = function () {
         }, 300);
     }
 };
+
+// Close cart drawer on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const drawer = document.getElementById('cart-drawer');
+        if (drawer && !drawer.classList.contains('hidden')) {
+            window.closeCart();
+        }
+    }
+});
 
 window.updateQuantity = function (change) {
     const newQuantity = currentQuantity + change;

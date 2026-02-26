@@ -1,14 +1,23 @@
+/**
+ * @module custom-sizing
+ * @description Custom garment measurement input and validation for Nongorr.
+ * Manages size type toggling (standard vs custom), unit switching (inch/cm),
+ * input validation with min/max boundaries, and exposes measurements for
+ * the checkout module to include in order data.
+ * @see {@link module:checkout} — getAndValidateMeasurements called before order submit
+ */
+
 // ==============================================
 // CUSTOM SIZING — Logic for custom measurements
 // ==============================================
 
 window.toggleSizeType = function (type) {
-    currentSizeType = type;
-    updateSizeTypeUI();
+    window.currentSizeType = type;
+    window.updateSizeTypeUI();
 };
 
 window.toggleUnit = function (unit) {
-    currentMeasurementUnit = unit;
+    window.currentMeasurementUnit = unit;
     const btnInch = document.getElementById('btn-unit-inch');
     const btnCm = document.getElementById('btn-unit-cm');
 
@@ -24,7 +33,7 @@ window.updateSizeTypeUI = function () {
 
     if (!stdBtn || !cstBtn || !stdSelector || !cstForm) return;
 
-    if (currentSizeType === 'standard') {
+    if (window.currentSizeType === 'standard') {
         stdBtn.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all bg-white shadow-sm text-brand-deep ring-1 ring-gray-200";
         cstBtn.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all text-gray-500 hover:text-brand-deep";
         stdSelector.classList.remove('hidden');
@@ -38,7 +47,7 @@ window.updateSizeTypeUI = function () {
 };
 
 window.getAndValidateMeasurements = function () {
-    if (currentSizeType === 'standard') return { valid: true };
+    if (window.currentSizeType === 'standard') return { valid: true };
 
     const inputs = document.querySelectorAll('#custom-size-form input[data-measure]');
     const measurements = {};
@@ -54,10 +63,10 @@ window.getAndValidateMeasurements = function () {
             isValid = false;
             input.classList.add('border-red-500');
         } else {
-            if (currentMeasurementUnit === 'inch' && (val < 5 || val > 100)) {
+            if (window.currentMeasurementUnit === 'inch' && (val < 5 || val > 100)) {
                 isValid = false;
                 input.classList.add('border-red-500');
-            } else if (currentMeasurementUnit === 'cm' && (val < 10 || val > 250)) {
+            } else if (window.currentMeasurementUnit === 'cm' && (val < 10 || val > 250)) {
                 isValid = false;
                 input.classList.add('border-red-500');
             }
@@ -66,8 +75,7 @@ window.getAndValidateMeasurements = function () {
     });
 
     if (!isValid) {
-        if (typeof showToast === 'function') showToast('অনুগ্রহ করে হাইলাইট করা মাপগুলি চেক করুন', 'error');
-        else if (window.showToast) window.showToast('অনুগ্রহ করে হাইলাইট করা মাপগুলি চেক করুন', 'error');
+        if (window.showToast) window.showToast('অনুগ্রহ করে হাইলাইট করা মাপগুলি চেক করুন', 'error');
         return { valid: false };
     }
 
@@ -76,7 +84,7 @@ window.getAndValidateMeasurements = function () {
     return {
         valid: true,
         measurements,
-        unit: currentMeasurementUnit,
+        unit: window.currentMeasurementUnit,
         notes: note
     };
 };

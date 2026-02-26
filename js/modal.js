@@ -1,3 +1,15 @@
+/**
+ * @module modal
+ * @description Product detail modal for Nongorr e-commerce.
+ * Handles opening/closing the product modal, image gallery with
+ * thumbnail navigation, fullscreen lightbox with zoom animations,
+ * size selection UI, and stock status display.
+ * 
+ * @see {@link module:cart} — addToCart reads modal state (selectedSize, currentQuantity)
+ * @see {@link module:products} — Product cards trigger openModal
+ * @see {@link module:custom-sizing} — Custom sizing form embedded in modal
+ */
+
 // ==============================================
 // MODAL — Product modal, lightbox, size selection
 // ==============================================
@@ -114,6 +126,16 @@ window.closeModal = function () {
     document.getElementById('product-modal').classList.add('hidden');
     document.body.style.overflow = '';
 };
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('product-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            window.closeModal();
+        }
+    }
+});
 
 // Change Main Image in Modal with Fade & Active State
 window.changeMainImage = function (src, thumbnail, originalSrc) {

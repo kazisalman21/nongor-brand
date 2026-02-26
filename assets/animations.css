@@ -1338,3 +1338,133 @@ html {
         display: none;
     }
 }
+
+/* ===== SKIP-TO-CONTENT LINK (WCAG 2.1 AA) ===== */
+
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 9999;
+    padding: 0.75rem 1.5rem;
+    background: #e07a5f;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    text-decoration: none;
+    transition: top 0.2s ease;
+    box-shadow: 0 4px 12px rgba(224, 122, 95, 0.4);
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid #3d405b;
+    outline-offset: 2px;
+}
+
+/* ===== ENHANCED FOCUS-VISIBLE (WCAG 2.1 AA Keyboard Navigation) ===== */
+
+/* Global keyboard focus ring — only shows for keyboard, not mouse */
+:focus-visible {
+    outline: 3px solid #e07a5f;
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* Suppress browser default for mouse users */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Buttons */
+button:focus-visible,
+[role="button"]:focus-visible {
+    outline: 3px solid #e07a5f;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgba(224, 122, 95, 0.2);
+    border-radius: 6px;
+}
+
+/* Links */
+a:focus-visible {
+    outline: 3px solid #e07a5f;
+    outline-offset: 3px;
+    border-radius: 3px;
+}
+
+/* Inputs & Selects */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #e07a5f;
+    outline-offset: 0;
+    border-color: #e07a5f;
+    box-shadow: 0 0 0 4px rgba(224, 122, 95, 0.15);
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+
+    /* Hide navigation, CTAs, chat, animations */
+    nav,
+    #mobile-menu,
+    #cart-drawer,
+    #cart-panel,
+    #product-modal,
+    .safe-bottom,
+    footer .flex.gap-2,
+    .btn-premium::before,
+    .animate-float,
+    .animate-pulse-glow {
+        display: none !important;
+    }
+
+    /* Reset colors for print readability */
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 12pt;
+    }
+
+    /* Expand any collapsed sections */
+    .hidden {
+        display: block !important;
+    }
+
+    /* Remove shadows and borders for print */
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* Ensure links are readable */
+    a[href]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    /* Page breaks */
+    section {
+        page-break-inside: avoid;
+    }
+}
+
+/* ===== HIGH-CONTRAST MODE SUPPORT ===== */
+
+@media (forced-colors: active) {
+
+    .btn-premium,
+    .glass,
+    .glass-dark {
+        border: 2px solid ButtonText;
+    }
+
+    .gradient-text,
+    .gradient-text-gold {
+        -webkit-text-fill-color: ButtonText;
+        color: ButtonText;
+    }
+}

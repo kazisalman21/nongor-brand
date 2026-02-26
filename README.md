@@ -855,13 +855,52 @@ npx vercel --prod
 
 ---
 
+## 🧪 Testing
+
+We use [Vitest](https://vitest.dev/) with jsdom for comprehensive unit testing.
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage report
+npx vitest run --coverage
+
+# Watch mode (re-runs on file changes)
+npx vitest
+```
+
+### Test Suite — 145 Tests Across 8 Files
+
+| Test File | Module | Tests | Coverage |
+|-----------|--------|-------|----------|
+| `utils.test.js` | escapeHtml, phone validation, image optimization | 23 | Utility helpers |
+| `cart.test.js` | Cart CRUD, localStorage persistence | 14 | Cart module |
+| `checkout.test.js` | Order payload, form validation, payment | 14 | Checkout flow |
+| `sanitize.test.js` | XSS prevention, entity encoding, recursive sanitization | 21 | Security |
+| `products.test.js` | Category/price/search filtering, sorting, data parsing | 27 | Product listing |
+| `custom-sizing.test.js` | Measurement validation, unit conversion, boundaries | 19 | Custom sizing |
+| `navigation.test.js` | Search routing, mobile nav, scroll state | 16 | Navigation |
+| `cache.test.js` | Rate limiting (login/TOTP/order), memory safety, expiry | 11 | API security |
+
+### Running Coverage Report
+
+```bash
+npx vitest run --coverage
+# Generates HTML report at ./coverage/index.html
+```
+
+---
+
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines including:
+- Quick start setup
+- Testing guide & writing tests
+- Git workflow & branch naming
+- Code style (JS, HTML, CSS)
+- Security guidelines
+- PR checklist
 
 ---
 

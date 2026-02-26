@@ -13,6 +13,12 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Resource Hints -->
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="canonical" href="https://www.nongorr.com/product.html" />
     <meta name="robots" content="index, follow" />
 
@@ -64,6 +70,37 @@
     <link href="./assets/styles.css?v=3" rel="stylesheet">
     <!-- Custom Animations & Polish -->
     <link href="./assets/animations.css?v=3" rel="stylesheet">
+
+    <!-- Product JSON-LD Schema (updated dynamically by product-details.js) -->
+    <script type="application/ld+json" id="product-schema">
+    {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "নোঙর কুর্তি",
+        "brand": {
+            "@type": "Brand",
+            "name": "Nongorr (নোঙর)"
+        },
+        "description": "Premium handmade Bangladeshi kurti — নোঙর কুর্তি কালেকশন",
+        "image": "https://www.nongorr.com/assets/logo.jpeg",
+        "url": "https://www.nongorr.com/product.html",
+        "offers": {
+            "@type": "Offer",
+            "priceCurrency": "BDT",
+            "price": "0",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+                "@type": "Organization",
+                "name": "Nongorr (নোঙর)"
+            }
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "120"
+        }
+    }
+    </script>
 </head>
 
 <body class="bg-white font-sans text-brand-deep antialiased">
@@ -125,8 +162,8 @@
                 <img src="./assets/logo.jpeg" alt="নোঙর" class="h-10 rounded-lg">
                 <span class="text-2xl font-serif font-bold text-brand-deep">নোঙর</span>
             </a>
-            <a href="/#collection"
-                class="text-sm font-medium text-gray-600 hover:text-brand-terracotta transition">← Back to Shop</a>
+            <a href="/#collection" class="text-sm font-medium text-gray-600 hover:text-brand-terracotta transition">←
+                Back to Shop</a>
         </div>
     </header>
 

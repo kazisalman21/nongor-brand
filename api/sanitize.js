@@ -1,12 +1,17 @@
 /**
  * Input Sanitization Utility
- * Prevents XSS by stripping HTML tags from strings
+ * Prevents XSS by stripping HTML tags and encoding dangerous characters
  */
 
 function sanitize(input) {
     if (typeof input !== 'string') return input;
-    // Remove HTML tags
-    return input.replace(/<[^>]*>?/gm, '').trim();
+    // Strip HTML tags then encode remaining dangerous characters
+    return input
+        .replace(/<[^>]*>?/gm, '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .trim();
 }
 
 function sanitizeObject(obj) {

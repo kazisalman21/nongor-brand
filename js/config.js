@@ -1,3 +1,11 @@
+/**
+ * @module config
+ * @description Global constants and shared state for the Nongorr frontend.
+ * Defines API URL, product categories, fallback data, available sizes,
+ * and mutable state for cart, checkout, filters, and modals.
+ * All state exposed via `window.*` for cross-module access.
+ */
+
 // ==============================================
 // CONFIG — Data constants, shared state
 // ==============================================

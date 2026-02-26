@@ -1,3 +1,15 @@
+/**
+ * @module checkout
+ * @description Checkout, coupon validation, and order tracking for Nongorr.
+ * Handles page-level checkout (checkout.html) and modal quick-checkout,
+ * including bKash payment info, shipping zone selection, coupon discount,
+ * and order submission to the API.
+ *
+ * @see {@link module:cart} — cart data read from localStorage
+ * @see {@link module:custom-sizing} — custom measurements attached to order
+ * @see {@link module:config} — shared state (currentProductId, selectedSize)
+ */
+
 // ==============================================
 // CHECKOUT — Order placement, coupons, tracking
 // ==============================================
@@ -19,23 +31,23 @@ window.initCheckout = async function () {
         const id = parseInt(legacyId);
         if (allProducts.length === 0) {
             try {
-                const response = await fetch(`${API_URL}?action=getProducts`);
+                const response = await fetch(`${window.API_URL}?action=getProducts`);
                 const data = await response.json();
                 if (data.result === 'success' && data.data) {
-                    allProducts = data.data;
+                    window.allProducts = data.data;
                 } else if (data.success && data.products) {
-                    allProducts = data.products;
+                    window.allProducts = data.products;
                 } else {
-                    allProducts = fallbackProducts;
+                    window.allProducts = window.fallbackProducts;
                 }
             } catch (err) {
-                allProducts = fallbackProducts;
+                window.allProducts = window.fallbackProducts;
             }
         }
 
         const qty = parseInt(params.get('qty')) || 1;
         const size = params.get('size') || 'M';
-        const product = allProducts.find(p => p.id == id);
+        const product = (window.allProducts || []).find(p => p.id == id);
 
         if (product) {
             checkoutItems.push({
@@ -65,11 +77,11 @@ window.initCheckout = async function () {
 
     const container = document.getElementById('checkout-items-container');
     container.innerHTML = checkoutItems.map(item => {
-        const safeName = escapeHtml(item.name);
-        const safeSize = escapeHtml(item.size);
-        const safeUnit = escapeHtml(item.unit);
+        const safeName = (window.escapeHtml || String)(item.name);
+        const safeSize = (window.escapeHtml || String)(item.size);
+        const safeUnit = (window.escapeHtml || String)(item.unit);
         const safeMeasurements = item.measurements
-            ? escapeHtml(Object.entries(item.measurements).map(([k, v]) => `${k}:${v}`).join(', '))
+            ? (window.escapeHtml || String)(Object.entries(item.measurements).map(([k, v]) => `${k}:${v}`).join(', '))
             : '';
         const imgSrc = item.image && item.image.startsWith('http') ? item.image : './assets/' + (item.image || 'logo.jpeg').replace(/^\.?\/?assets\//, '');
         const lineTotal = ((parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)).toLocaleString();
@@ -251,7 +263,7 @@ window.confirmOrderFromPage = async function () {
         return;
     }
 
-    if (!isValidBangladeshiPhone(phone)) {
+    if (!(window.isValidBangladeshiPhone || (() => false))(phone)) {
         showToast("Invalid Phone Number (Must be 11 digits starting with 01)", 'error');
         return;
     }
@@ -305,7 +317,7 @@ window.confirmOrderFromPage = async function () {
     confirmBtn.textContent = "Processing...";
 
     try {
-        const res = await fetch(API_URL, {
+        const res = await fetch(window.API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
@@ -324,7 +336,7 @@ window.confirmOrderFromPage = async function () {
             throw new Error(result.error || result.message || "Failed");
         }
     } catch (e) {
-        alert("Error: " + e.message);
+        (window.showToast || alert)("অর্ডার ব্যর্থ হয়েছে: " + e.message, 'error');
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = originalText;
     }
@@ -375,7 +387,7 @@ window.confirmOrder = async function () {
         trxId = document.getElementById('manual-trx')?.value.trim();
 
         if (!senderNumber || !trxId) {
-            alert("Please enter your Sender Number and Transaction ID to proceed.");
+            (window.showToast || alert)("বিকাশ নম্বর ও ট্রানজেকশন আইডি দিন", 'error');
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = "অর্ডার নিশ্চিত করুন";
             return;
@@ -383,13 +395,13 @@ window.confirmOrder = async function () {
     }
 
     let measurements = null;
-    let sizeLabel = selectedSize;
+    let sizeLabel = window.selectedSize;
     let unit = 'inch';
     let notes = '';
     let sizeType = 'standard';
 
     if (window.getAndValidateMeasurements) {
-        if (typeof currentSizeType !== 'undefined' && currentSizeType === 'custom') {
+        if (window.currentSizeType === 'custom') {
             const val = getAndValidateMeasurements();
             if (!val.valid) {
                 confirmBtn.innerHTML = "অর্ডার নিশ্চিত করুন";
@@ -406,8 +418,8 @@ window.confirmOrder = async function () {
     }
 
     const items = [{
-        id: currentProductId,
-        quantity: currentQuantity,
+        id: window.currentProductId,
+        quantity: window.currentQuantity,
         size: sizeLabel,
         sizeType: sizeType,
         unit: unit,
@@ -416,14 +428,14 @@ window.confirmOrder = async function () {
     }];
 
     const orderData = {
-        productId: currentProductId || ((window.checkoutPayload && window.checkoutPayload.length > 0) ? window.checkoutPayload[0].id : null),
+        productId: window.currentProductId || ((window.checkoutPayload && window.checkoutPayload.length > 0) ? window.checkoutPayload[0].id : null),
         customerName: name,
         customerPhone: phone,
         address: address,
-        productName: (document.getElementById('modal-title')?.textContent || (items[0]?.name ?? 'Product')) + (sizeType === 'custom' ? ` - ${sizeLabel}` : ''),
+        productName: (document.getElementById('modal-title')?.textContent || (items[0]?.name ?? 'Product')) + (window.currentSizeType === 'custom' ? ` - ${sizeLabel}` : ''),
         items: items,
         size: sizeLabel,
-        quantity: currentQuantity,
+        quantity: window.currentQuantity,
         deliveryDate: deliveryDate,
         paymentMethod: paymentMethod,
         senderNumber: senderNumber,
@@ -444,7 +456,7 @@ window.confirmOrder = async function () {
 
     try {
 
-        const response = await fetch(API_URL, {
+        const response = await fetch(window.API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)

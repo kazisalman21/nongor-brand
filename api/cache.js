@@ -46,17 +46,17 @@ const rateLimits = {
 function checkRateLimit(type, ip) {
     // Limits configuration
     let limit = 10;
-    let window = 60 * 60 * 1000;
+    let windowMs = 60 * 60 * 1000;
 
     if (type === 'login' || type === 'passwordReset' || type === 'otpRequest' || type === 'telegramOtpRequest') {
         limit = 5;
-        window = 15 * 60 * 1000; // 15 mins
+        windowMs = 15 * 60 * 1000; // 15 mins
     } else if (type === 'otpVerify' || type === 'telegramOtpVerify') {
         limit = 10;
-        window = 15 * 60 * 1000; // 15 mins
+        windowMs = 15 * 60 * 1000; // 15 mins
     } else if (type === 'totpVerify') {
         limit = 30; // Higher limit for TOTP to avoid lockout
-        window = 15 * 60 * 1000; // 15 mins
+        windowMs = 15 * 60 * 1000; // 15 mins
     }
 
     const now = Date.now();
@@ -73,7 +73,7 @@ function checkRateLimit(type, ip) {
             rateLimits[type].clear();
             console.warn(`⚠️ Rate limit map for ${type} cleared (size limit reached)`);
         }
-        rateLimits[type].set(ip, { count: 1, expires: now + window });
+        rateLimits[type].set(ip, { count: 1, expires: now + windowMs });
         return { allowed: true };
     }
 

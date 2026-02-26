@@ -1,3 +1,12 @@
+/**
+ * @module utils
+ * @description Shared utility functions for the Nongorr frontend.
+ * Contains UI helpers (toast, animations), security (escapeHtml),
+ * image optimization (Cloudinary URL building), phone validation,
+ * and color helpers for order/payment status display.
+ * All functions exposed via `window.*` for cross-module access.
+ */
+
 // ==============================================
 // UTILS — Helper functions
 // ==============================================
@@ -126,6 +135,7 @@ window.validatePhoneRealtime = function (input) {
 
 // --- Status Color Helpers ---
 window.getPaymentColor = function (status) {
+    if (!status) return 'text-gray-600';
     status = status.toLowerCase();
     if (status === 'paid') return 'text-green-600 bg-green-50 px-2 py-0.5 rounded';
     if (status === 'due') return 'text-orange-600 bg-orange-50 px-2 py-0.5 rounded';
@@ -135,6 +145,7 @@ window.getPaymentColor = function (status) {
 };
 
 window.getStatusColor = function (status) {
+    if (!status) return 'text-gray-600';
     status = status.toLowerCase();
     if (status.includes('pending')) return 'text-orange-600';
     if (status.includes('processing')) return 'text-blue-600';

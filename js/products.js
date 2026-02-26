@@ -1,3 +1,17 @@
+/**
+ * @module products
+ * @description Product listing, filtering, and card rendering for Nongorr.
+ * Fetches products from the API, applies category/price/search/stock filters,
+ * sorts results, and renders premium product cards with hover animations.
+ * Falls back to config.fallbackProducts when API is unavailable.
+ * 
+ * Rendering states: loading (skeleton), empty, error, products grid.
+ * 
+ * @see {@link module:config} — API_URL, categoriesData, fallbackProducts
+ * @see {@link module:modal} — Product cards navigate to product page
+ * @see {@link module:utils} — escapeHtml, getOptimizedImage
+ */
+
 // ==============================================
 // PRODUCTS — Listing, filtering, rendering, cards
 // ==============================================
@@ -115,7 +129,7 @@ async function initProducts(params = {}) {
 
 
 
-        const response = await fetch(`${API_URL}?${urlP.toString()}`);
+        const response = await fetch(`${window.API_URL}?${urlP.toString()}`);
 
 
         if (!response.ok) {
@@ -152,10 +166,13 @@ async function initProducts(params = {}) {
         }
 
     } catch (error) {
-        console.warn('Backend API not available or returned non-JSON. Proceeding with fallback mock data.');
-        // showError(container, error.message); // Decoupled to avoid brief flash before renderProducts clears it
-        allProducts = fallbackProducts;
-        renderProducts(fallbackProducts);
+        console.warn('Backend API not available:', error.message);
+        if (fallbackProducts && fallbackProducts.length > 0) {
+            allProducts = fallbackProducts;
+            renderProducts(fallbackProducts);
+        } else {
+            showError(container, 'সার্ভারে সংযোগ করা যায়নি। ইন্টারনেট সংযোগ চেক করুন।');
+        }
     }
 }
 
@@ -519,7 +536,7 @@ function showEmptyState(container) {
 }
 
 function showError(container, errorMsg) {
-    const safeMsg = escapeHtml(errorMsg || 'অজানা ত্রুটি');
+    const safeMsg = (window.escapeHtml || String)(errorMsg || 'অজানা ত্রুটি');
     container.innerHTML = `
         <div class="col-span-full text-center py-20">
             <div class="text-6xl mb-4">⚠️</div>

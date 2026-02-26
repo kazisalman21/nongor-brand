@@ -1,3 +1,10 @@
+/**
+ * @module navigation
+ * @description Sticky navbar, mobile menu, and global search for Nongorr.
+ * Manages scroll-based navbar styling, hamburger/X animation, Escape key
+ * close for mobile menu, and search routing between pages.
+ */
+
 // ==============================================
 // NAVIGATION — Navbar and mobile menu
 // ==============================================
@@ -125,6 +132,16 @@ window.initNavigation = function () {
     if (mobileBtn) {
         mobileBtn.addEventListener('click', toggleMobileMenu);
     }
+
+    // Close mobile menu on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const menu = document.getElementById('mobile-menu');
+            if (menu && !menu.classList.contains('translate-x-full')) {
+                toggleMobileMenu();
+            }
+        }
+    });
 
     // Global function for mobile menu link navigation (called via inline onclick)
     window.mobileNavClick = function (href, event) {
