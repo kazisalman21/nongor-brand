@@ -2886,22 +2886,42 @@
     <!-- Product Modal -->
     <div id="product-modal" class="fixed inset-0 z-[150] hidden">
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeProductModal()"></div>
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onclick="closeProductModal()"></div>
 
         <!-- Modal Content -->
         <div
-            class="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            class="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.15)] max-w-2xl w-full max-h-[90vh] overflow-y-auto ring-1 ring-black/5">
 
-            <!-- Header -->
-            <div
-                class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-2xl">
-                <h3 class="text-xl font-bold text-gray-800" id="product-modal-title">Add New Product</h3>
-                <button onclick="closeProductModal()" class="p-2 hover:bg-gray-100 rounded-full transition">
-                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
+            <!-- Premium Header with accent line -->
+            <div class="relative">
+                <div
+                    class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-accent via-purple-500 to-pink-500 rounded-t-2xl">
+                </div>
+                <div
+                    class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-sm z-10 rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-accent to-purple-600 flex items-center justify-center shadow-lg shadow-brand-accent/20">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800" id="product-modal-title">Add New Product</h3>
+                            <p class="text-xs text-slate-400 font-medium">Fill in the details below</p>
+                        </div>
+                    </div>
+                    <button onclick="closeProductModal()"
+                        class="p-2 hover:bg-red-50 rounded-xl transition-all duration-200 group">
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Form -->
@@ -2910,33 +2930,57 @@
 
                 <!-- Product Name -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Product Name *</label>
+                    <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                        <svg class="w-4 h-4 text-brand-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Product Name <span class="text-red-400">*</span>
+                    </label>
                     <input type="text" id="product-name" required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent transition"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent/30 focus:border-brand-accent bg-slate-50/50 transition-all duration-200 text-slate-800 placeholder:text-slate-400"
                         placeholder="Enter product name">
                 </div>
 
-                <!-- Stock Quantity -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Stock Quantity *</label>
-                    <input type="number" id="product-stock" required min="0" value="0"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent transition"
-                        placeholder="Enter stock quantity">
-                </div>
-
-                <!-- Price -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Price (৳) *</label>
-                    <input type="number" id="product-price" required min="0" step="0.01"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent transition"
-                        placeholder="Enter price">
+                <!-- Row: Stock + Price -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            Stock <span class="text-red-400">*</span>
+                        </label>
+                        <input type="number" id="product-stock" required min="0" value="0"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent/30 focus:border-brand-accent bg-slate-50/50 transition-all duration-200 text-slate-800"
+                            placeholder="0">
+                    </div>
+                    <div>
+                        <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Price (৳) <span class="text-red-400">*</span>
+                        </label>
+                        <input type="number" id="product-price" required min="0" step="0.01"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent/30 focus:border-brand-accent bg-slate-50/50 transition-all duration-200 text-slate-800"
+                            placeholder="0.00">
+                    </div>
                 </div>
 
                 <!-- Category -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
+                    <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Category <span class="text-red-400">*</span>
+                    </label>
                     <select id="product-category" required
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent transition">
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent/30 focus:border-brand-accent bg-slate-50/50 transition-all duration-200 text-slate-800 appearance-none cursor-pointer">
                         <option value="">Select Category</option>
                         <option value="panjabi|পাঞ্জাবি">পাঞ্জাবি</option>
                         <option value="kurti|কুর্তি">কুর্তি</option>
@@ -2948,49 +2992,97 @@
 
                 <!-- Description -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h7" />
+                        </svg>
+                        Description
+                    </label>
                     <textarea id="product-description" rows="3"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent transition resize-none"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent/30 focus:border-brand-accent bg-slate-50/50 transition-all duration-200 resize-none text-slate-800 placeholder:text-slate-400"
                         placeholder="Enter product description"></textarea>
+                </div>
+
+                <!-- Divider -->
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-100"></div>
+                    </div>
+                    <div class="relative flex justify-center"><span
+                            class="bg-white px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Media</span>
+                    </div>
                 </div>
 
                 <!-- Image Upload (Multiple) -->
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Product Images (Multiple)</label>
-                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-brand-accent transition cursor-pointer relative"
+                    <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2">
+                        <svg class="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Product Images
+                        <span class="text-xs font-normal text-slate-400 ml-1">(drag to reorder, ★ = main)</span>
+                    </label>
+                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center hover:border-brand-accent/50 hover:bg-brand-accent/[0.02] transition-all duration-300 cursor-pointer relative group/drop"
                         id="drop-zone" onclick="document.getElementById('product-image-input').click()"
                         ondrop="handleDrop(event)" ondragover="handleDragOver(event)"
                         ondragleave="handleDragLeave(event)">
                         <input type="file" id="product-image-input" accept="image/*" multiple class="hidden"
                             onchange="handleMultipleImagePreview(event)">
                         <div id="image-preview-container" class="hidden mb-3">
-                            <div id="image-previews" class="flex flex-wrap gap-2 justify-center"></div>
+                            <div id="image-previews" class="flex flex-wrap gap-3 justify-center"></div>
+                            <button type="button"
+                                onclick="event.stopPropagation(); document.getElementById('product-image-input').click()"
+                                class="mt-3 px-4 py-1.5 text-xs font-semibold text-brand-accent border border-brand-accent/30 rounded-lg hover:bg-brand-accent/5 transition-all">
+                                + Add More Images
+                            </button>
                         </div>
-                        <div id="upload-placeholder" class="pointer-events-none">
-                            <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                </path>
-                            </svg>
-                            <p class="text-sm text-gray-500">Click or Drag to upload images</p>
-                            <p class="text-xs text-gray-400 mt-1">Select multiple images (PNG, JPG)</p>
+                        <div id="upload-placeholder" class="pointer-events-none py-4">
+                            <div
+                                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center mx-auto mb-3 group-hover/drop:scale-110 transition-transform duration-300">
+                                <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                    </path>
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium text-slate-600">Click or drag images to upload</p>
+                            <p class="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB each • Multiple files supported
+                            </p>
                         </div>
                     </div>
                     <input type="hidden" id="product-images-urls" value="[]">
                 </div>
 
                 <!-- Featured Toggle -->
-                <div class="flex items-center gap-3">
+                <div
+                    class="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50/80 to-orange-50/50 rounded-xl border border-amber-100/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <label for="product-featured"
+                                class="text-sm font-semibold text-slate-700 cursor-pointer">Featured Product</label>
+                            <p class="text-xs text-slate-400">Show on homepage hero section</p>
+                        </div>
+                    </div>
                     <input type="checkbox" id="product-featured"
-                        class="w-5 h-5 text-brand-accent rounded focus:ring-brand-accent">
-                    <label for="product-featured" class="text-sm font-semibold text-gray-700">Featured Product</label>
+                        class="w-5 h-5 text-amber-500 rounded focus:ring-amber-400 cursor-pointer">
                 </div>
 
                 <!-- Submit Button -->
                 <button type="submit" id="product-submit-btn"
-                    class="w-full bg-brand-accent text-white py-3 px-6 rounded-xl font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2">
+                    class="w-full bg-gradient-to-r from-brand-accent to-purple-600 text-white py-3.5 px-6 rounded-xl font-semibold hover:shadow-lg hover:shadow-brand-accent/25 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-[15px]">
                     <span id="submit-btn-text">Save Product</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
                     <div id="submit-btn-spinner"
                         class="hidden animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                 </button>
