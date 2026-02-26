@@ -2895,13 +2895,13 @@
             <!-- Premium Header with accent line -->
             <div class="relative">
                 <div
-                    class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-accent via-purple-500 to-pink-500 rounded-t-2xl">
+                    style="background: linear-gradient(to right, #7e3af2, #9333ea, #ec4899); height: 4px; border-radius: 16px 16px 0 0; position: absolute; top: 0; left: 0; right: 0; z-index: 20;">
                 </div>
                 <div
                     class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur-sm z-10 rounded-t-2xl">
                     <div class="flex items-center gap-3">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-accent to-purple-600 flex items-center justify-center shadow-lg shadow-brand-accent/20">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                            style="background: linear-gradient(135deg, #7e3af2, #9333ea);">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
@@ -4644,8 +4644,8 @@
                             Remove
                         </button>
                     </div>
-                    <img src="${item.preview}" class="w-full h-full object-cover rounded-xl border-2 ${index === 0 ? 'border-brand-accent ring-2 ring-brand-accent/20' : 'border-gray-200'} transition-all duration-200 group-hover:scale-[0.97] relative z-0">
-                    <span class="absolute top-1.5 left-1.5 z-[5] ${index === 0 ? 'bg-gradient-to-r from-brand-accent to-purple-600' : 'bg-slate-700/80'} text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-md shadow-md px-1">${index === 0 ? '★' : index + 1}</span>
+                    <img src="${item.preview}" class="w-full h-full object-cover rounded-xl border-2 ${index === 0 ? 'border-brand-accent ring-2 ring-brand-accent/20' : 'border-gray-200'} transition-all duration-200 group-hover:scale-[0.97]">
+                    <span class="absolute top-1.5 left-1.5 z-[5] text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-md px-1" style="background: ${index === 0 ? 'linear-gradient(135deg, #7e3af2, #9333ea)' : 'rgba(30,41,59,0.85)'}; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">${index === 0 ? '★' : index + 1}</span>
                 `;
                 container.appendChild(div);
             });
