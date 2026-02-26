@@ -1492,7 +1492,7 @@ module.exports = async (req, res) => {
 
             if (data.couponCode) {
                 // Validate Coupon (Re-check for security)
-                const couponRes = await client.query('SELECT * FROM coupons WHERE code = $1 AND is_active = true', [data.couponCode]);
+                const couponRes = await client.query('SELECT * FROM coupons WHERE UPPER(code) = UPPER($1) AND is_active = true', [data.couponCode]);
 
                 if (couponRes.rows.length > 0) {
                     const coupon = couponRes.rows[0];
@@ -1549,10 +1549,10 @@ module.exports = async (req, res) => {
 
             const values = [
                 generatedOrderId, // Use server-generated ID
-                data.customerName,
-                data.customerPhone,
+                data.customerName ? String(data.customerName).substring(0, 100) : 'Guest',
+                data.customerPhone ? String(data.customerPhone).substring(0, 20) : '',
                 data.address,
-                data.productName,
+                data.productName ? String(data.productName).substring(0, 100) : 'Products',
                 primaryProductId, // Added product_id
                 finalTotal, // Use Server Calculated Total (with discount)
                 initialDelivery,
@@ -1560,8 +1560,8 @@ module.exports = async (req, res) => {
                 initialPayment,
                 data.trxId || '',
                 data.paymentMethod,
-                data.deliveryDate,
-                data.size,
+                data.deliveryDate ? String(data.deliveryDate).substring(0, 50) : '',
+                data.size ? String(data.size).substring(0, 10) : 'M',
                 data.quantity,
                 data.senderNumber || '',
                 data.customerEmail || null,
