@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. Checkout
     // Only if we are on checkout page
-    if (window.location.pathname.includes('checkout.html')) {
+    if (window.location.pathname.includes('checkout')) {
         if (window.initCheckout) window.initCheckout();
     }
 
