@@ -7178,7 +7178,7 @@
             tbody.innerHTML = '';
 
             try {
-                const response = await authenticatedFetch(`${API_URL}?action=getAllBlogPosts&_t=${Date.now()}`);
+                const response = await authenticatedFetch(`${API_URL}?action=getAllPosts&_t=${Date.now()}`);
                 const result = await response.json();
                 loading?.classList.add('hidden');
 
@@ -7269,7 +7269,7 @@
         async function editBlogPost(id) {
             try {
                 // Fetch full post content (admin endpoint returns limited fields)
-                const response = await authenticatedFetch(`${API_URL}?action=getBlogPost&id=${id}&_t=${Date.now()}`);
+                const response = await authenticatedFetch(`${API_URL}?action=getAdminPost&id=${id}&_t=${Date.now()}`);
                 const result = await response.json();
                 if (result.result === 'success') {
                     openBlogModal(result.data);

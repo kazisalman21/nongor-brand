@@ -1039,6 +1039,30 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
+            // --- BLOG: Get Full Single Post By ID (Admin) ---
+            if (query.action === 'getAdminPost') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                const id = query.id;
+                if (!id) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'ID is required' });
+                }
+
+                const result = await client.query('SELECT * FROM blog_posts WHERE id = $1', [id]);
+                if (result.rows.length === 0) {
+                    client.release();
+                    return res.status(404).json({ result: 'error', message: 'Post not found' });
+                }
+
+                client.release();
+                return res.status(200).json({ result: 'success', data: result.rows[0] });
+            }
+
             // --- GET VAPID PUBLIC KEY (Public) ---
             if (query.action === 'pushVapidKey') {
                 client.release();
