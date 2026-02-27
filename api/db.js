@@ -23,6 +23,7 @@ if (!envKey) {
 // Resolve connection string: provider-specific → legacy fallbacks
 const connectionString = (envKey && process.env[envKey])
     || process.env.DATABASE_URL
+    || process.env.POSTGRES_URL
     || process.env.NETLIFY_DATABASE_URL;
 
 if (!connectionString) {
