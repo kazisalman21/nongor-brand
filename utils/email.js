@@ -224,5 +224,88 @@ const sendPasswordResetEmail = async (email, resetUrl) => {
         return false;
     }
 };
+/**
+ * Send Admin Invite Email
+ * @param {String} email - Invited admin's email
+ * @param {String} name - Display name
+ * @param {String} role - Assigned role
+ * @param {String} inviterName - Who invited them
+ */
+const sendAdminInviteEmail = async (email, name, role, inviterName) => {
+    if (!email) return false;
 
-module.exports = { sendOrderConfirmation, sendStatusUpdateEmail, sendPasswordResetEmail };
+    const loginUrl = 'https://www.nongorr.com/admin';
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f4f4f7; }
+        .container { max-width: 600px; margin: 30px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #7e3af2, #9333ea); color: white; padding: 40px 30px; text-align: center; }
+        .header h1 { margin: 0 0 5px 0; font-size: 28px; letter-spacing: 2px; }
+        .header p { margin: 0; opacity: 0.85; font-size: 14px; }
+        .content { padding: 35px 30px; }
+        .role-badge { display: inline-block; padding: 6px 16px; background: #f3e8ff; color: #7e3af2; border-radius: 50px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn { display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #7e3af2, #9333ea); color: white !important; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 15px; margin: 15px 0; }
+        .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin: 20px 0; }
+        .footer { background: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NONGOR</h1>
+            <p>Admin Dashboard Invitation</p>
+        </div>
+        <div class="content">
+            <h2 style="margin-top:0">You're Invited! 🎉</h2>
+            <p>Hi <strong>${escapeHtml(name)}</strong>,</p>
+            <p><strong>${escapeHtml(inviterName || 'A super admin')}</strong> has invited you to the <strong>Nongor Admin Dashboard</strong> as:</p>
+            <p style="text-align:center;"><span class="role-badge">${escapeHtml(role).replace('_', ' ')}</span></p>
+            
+            <div class="info-box">
+                <p style="margin:0"><strong>How to sign in:</strong></p>
+                <p style="margin:5px 0 0 0">Click the button below and use <strong>"Continue with Google"</strong> with this email address (<code>${escapeHtml(email)}</code>).</p>
+            </div>
+            
+            <p style="text-align:center;">
+                <a href="${loginUrl}" class="btn">Sign In to Dashboard →</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>Nongor Brand &mdash; nongorr.com</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    const msg = {
+        to: email,
+        from: SENDER_EMAIL,
+        subject: `You're Invited to Nongor Admin Dashboard`,
+        text: `Hi ${name}, you've been invited as ${role} to the Nongor Admin Dashboard. Sign in at: ${loginUrl}`,
+        html: html
+    };
+
+    if (isMockMode) {
+        console.log('================ [MOCK EMAIL: ADMIN INVITE] ================');
+        console.log(`To: ${email}`);
+        console.log(`Name: ${name}`);
+        console.log(`Role: ${role}`);
+        console.log('=============================================================');
+        return true;
+    }
+
+    try {
+        await sgMail.send(msg);
+        console.log(`✅ Admin invite email sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('❌ Invite email error:', error);
+        return false;
+    }
+};
+
+module.exports = { sendOrderConfirmation, sendStatusUpdateEmail, sendPasswordResetEmail, sendAdminInviteEmail };

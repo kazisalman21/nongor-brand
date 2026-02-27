@@ -6,7 +6,7 @@ const pool = require('./db');
 const AUTH_SCHEMA = pool.AUTH_SCHEMA;
 const { checkRateLimit } = require('./cache');
 const { sanitizeObject } = require('./sanitize');
-const { sendPasswordResetEmail } = require('../utils/email');
+const { sendPasswordResetEmail, sendAdminInviteEmail } = require('../utils/email');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
@@ -1312,7 +1312,12 @@ module.exports = async (req, res) => {
                 [username, inviteEmail, role, inviteName || baseUsername, requester.rows[0].id]
             );
 
-            return res.status(201).json({ result: 'success', message: 'Admin invited successfully.', admin: result.rows[0] });
+            // Send invite email (fire and forget)
+            sendAdminInviteEmail(inviteEmail, inviteName || baseUsername, role, requester.rows[0].display_name || requester.rows[0].username).catch(err => {
+                console.error('Failed to send invite email:', err);
+            });
+
+            return res.status(201).json({ result: 'success', message: 'Admin invited successfully. An email has been sent.', admin: result.rows[0] });
         }
 
         // ============================================
