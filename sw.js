@@ -5,7 +5,7 @@
  * @version 2.0
  */
 
-const CACHE_NAME = 'nongorr-v2';
+const CACHE_NAME = 'nongorr-v3';
 const STATIC_ASSETS = [
     '/',
     '/assets/logo.jpeg',
