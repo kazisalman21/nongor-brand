@@ -20,6 +20,8 @@
     <!-- Tailwind CSS (Local Build) -->
     <link href="./assets/styles.css?v=3" rel="stylesheet">
     <!-- Fonts -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap"
         rel="stylesheet">
@@ -2183,6 +2185,33 @@
                     </div>
                 </form>
 
+                <!-- OR Divider -->
+                <div class="flex items-center my-5">
+                    <div class="flex-grow h-px bg-white/20"></div>
+                    <span class="px-4 text-sm text-white/50 font-medium">or</span>
+                    <div class="flex-grow h-px bg-white/20"></div>
+                </div>
+
+                <!-- Google Sign-In Button -->
+                <button type="button" onclick="handleGoogleSignIn()" id="google-login-btn"
+                    class="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 transition-all duration-300 text-white font-semibold text-sm backdrop-blur-sm group">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                            fill="#4285F4" />
+                        <path
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            fill="#34A853" />
+                        <path
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            fill="#FBBC05" />
+                        <path
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            fill="#EA4335" />
+                    </svg>
+                    <span>Continue with Google</span>
+                </button>
+
                 <!-- Error Message -->
                 <div id="error-message" class="error-message-box" style="display: none;">
                     <div class="error-icon">⚠️</div>
@@ -3205,6 +3234,11 @@
                                     <span class="text-lg">⚙️</span>
                                     <span>Advanced</span>
                                 </button>
+                                <button onclick="switchSettingsTab('admins')" data-settings-tab="admins"
+                                    class="settings-nav-btn flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 w-full text-left">
+                                    <span class="text-lg">👥</span>
+                                    <span>Admins</span>
+                                </button>
                             </nav>
                         </div>
                     </div>
@@ -3585,10 +3619,49 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div> <!-- End Settings Section -->
 
-        </main>
+                    <!-- ADMINS Panel -->
+                    <div id="settings-panel-admins" class="settings-panel hidden">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-gradient-to-br from-violet-50 to-purple-50">
+                                        <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">Admin Management</h4>
+                                        <p class="text-xs text-gray-400">Invite and manage admin users</p>
+                                    </div>
+                                </div>
+                                <button onclick="showInviteAdminModal()"
+                                    class="px-4 py-2 text-xs font-bold rounded-lg text-white shadow-lg shadow-purple-200/50 hover:shadow-xl transition-all duration-200"
+                                    style="background: linear-gradient(135deg, #7e3af2, #9333ea);">
+                                    + Invite Admin
+                                </button>
+                            </div>
+
+                            <!-- Admin List -->
+                            <div id="admin-list-container">
+                                <div class="text-center py-8 text-gray-400">
+                                    <div
+                                        class="animate-spin w-6 h-6 border-2 border-purple-300 border-t-purple-600 rounded-full mx-auto mb-2">
+                                    </div>
+                                    Loading admins...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+    </div> <!-- End Settings Section -->
+
+    </main>
     </div>
 
     <!-- Product Modal -->
@@ -4208,6 +4281,254 @@
             });
             // Load MFA status when switching to mfa or telegram tab
             if (tabId === 'mfa' || tabId === 'telegram') loadMfaStatus();
+            if (tabId === 'admins') loadAdminList();
+        }
+
+        // --- GOOGLE SIGN-IN ---
+        const GOOGLE_CLIENT_ID = '945482813188-h03i0bvf9hg02vagh54rl2jmo1p9gpep.apps.googleusercontent.com';
+
+        function handleGoogleSignIn() {
+            const btn = document.getElementById('google-login-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full"></div><span>Connecting...</span>';
+
+            try {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleCredential,
+                    auto_select: false
+                });
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        // Fallback: use popup
+                        google.accounts.id.renderButton(
+                            document.createElement('div'),
+                            { type: 'standard' }
+                        );
+                        // Try One Tap or manual popup
+                        const tokenClient = google.accounts.oauth2.initTokenClient({
+                            client_id: GOOGLE_CLIENT_ID,
+                            scope: 'email profile',
+                            callback: () => { }
+                        });
+                        // Use code client for sign-in
+                        google.accounts.id.initialize({
+                            client_id: GOOGLE_CLIENT_ID,
+                            callback: handleGoogleCredential,
+                            ux_mode: 'popup'
+                        });
+                        google.accounts.id.prompt();
+                    }
+                });
+            } catch (err) {
+                console.error('Google Sign-In Error:', err);
+                showToast('Google Sign-In failed. Please try again.', 'red');
+                resetGoogleBtn();
+            }
+
+            // Safety timeout
+            setTimeout(resetGoogleBtn, 15000);
+        }
+
+        function resetGoogleBtn() {
+            const btn = document.getElementById('google-login-btn');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg><span>Continue with Google</span>`;
+            }
+        }
+
+        async function handleGoogleCredential(response) {
+            try {
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'googleLogin',
+                        credential: response.credential
+                    })
+                });
+                const data = await res.json();
+
+                if (data.result === 'success') {
+                    localStorage.setItem('nongor_session_token', data.sessionToken);
+                    if (data.user) {
+                        localStorage.setItem('nongor_admin_role', data.user.role);
+                        localStorage.setItem('nongor_admin_name', data.user.display_name || data.user.username);
+                    }
+                    showToast('Google login successful!', 'green');
+                    setTimeout(() => { window.location.reload(); }, 500);
+                } else {
+                    showToast(data.message || 'Google login failed', 'red');
+                    resetGoogleBtn();
+                }
+            } catch (err) {
+                console.error('Google Auth Error:', err);
+                showToast('Network error during Google login', 'red');
+                resetGoogleBtn();
+            }
+        }
+
+        // --- ADMIN MANAGEMENT ---
+        async function loadAdminList() {
+            const container = document.getElementById('admin-list-container');
+            if (!container) return;
+
+            try {
+                const sessionToken = localStorage.getItem('nongor_session_token');
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-session-token': sessionToken },
+                    body: JSON.stringify({ action: 'listAdmins' })
+                });
+                const data = await res.json();
+
+                if (data.result === 'success') {
+                    container.innerHTML = data.admins.map(admin => `
+                        <div class="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:shadow-md transition-all duration-200 mb-3 bg-gradient-to-r from-gray-50/50 to-white">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center shadow-sm">
+                                    ${admin.avatar_url ? `<img src="${admin.avatar_url}" class="w-full h-full object-cover">` : `<span class="text-lg font-bold text-purple-600">${(admin.display_name || admin.username || '?')[0].toUpperCase()}</span>`}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm text-gray-800">${admin.display_name || admin.username}</p>
+                                    <p class="text-xs text-gray-400">${admin.email || admin.username}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getRoleBadgeClass(admin.role)}">${admin.role.replace('_', ' ')}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${admin.status === 'active' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}">${admin.status}</span>
+                                ${admin.role !== 'super_admin' ? `
+                                    <select onchange="updateAdminRole(${admin.id}, this.value)" class="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white cursor-pointer">
+                                        <option value="admin" ${admin.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                        <option value="editor" ${admin.role === 'editor' ? 'selected' : ''}>Editor</option>
+                                        <option value="viewer" ${admin.role === 'viewer' ? 'selected' : ''}>Viewer</option>
+                                    </select>
+                                    <button onclick="removeAdmin(${admin.id}, '${(admin.display_name || admin.username).replace(/'/g, "\\'")}')" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Remove">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                ` : '<span class="text-[10px] text-purple-500 font-bold">YOU</span>'}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">' + (data.message || 'Failed to load admins') + '</div>';
+                }
+            } catch (err) {
+                console.error('Load admins error:', err);
+                container.innerHTML = '<div class="text-center py-8 text-red-400 text-sm">Error loading admin list</div>';
+            }
+        }
+
+        function getRoleBadgeClass(role) {
+            switch (role) {
+                case 'super_admin': return 'bg-purple-50 text-purple-600 border border-purple-100';
+                case 'admin': return 'bg-blue-50 text-blue-600';
+                case 'editor': return 'bg-amber-50 text-amber-600';
+                case 'viewer': return 'bg-gray-100 text-gray-500';
+                default: return 'bg-gray-100 text-gray-500';
+            }
+        }
+
+        function showInviteAdminModal() {
+            const modal = document.createElement('div');
+            modal.id = 'invite-admin-modal';
+            modal.className = 'fixed inset-0 z-[200] flex items-center justify-center';
+            modal.innerHTML = `
+                <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('invite-admin-modal').remove()"></div>
+                <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 mx-4 animate-enter">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="p-2 rounded-xl bg-purple-50"><svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg></span>
+                        Invite New Admin
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Name</label>
+                            <input type="text" id="invite-name" placeholder="Display name" class="w-full p-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none bg-gray-50/50">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Email *</label>
+                            <input type="email" id="invite-email" placeholder="admin@example.com" required class="w-full p-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none bg-gray-50/50">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 block">Role</label>
+                            <select id="invite-role" class="w-full p-3 rounded-xl border border-gray-200 text-sm bg-gray-50/50 outline-none">
+                                <option value="admin">Admin</option>
+                                <option value="editor">Editor</option>
+                                <option value="viewer">Viewer</option>
+                            </select>
+                        </div>
+                        <div class="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                            <span class="text-blue-500 mt-0.5">💡</span>
+                            <p class="text-[11px] text-blue-700 leading-relaxed">The invited admin can sign in using Google with this email address.</p>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="document.getElementById('invite-admin-modal').remove()" class="flex-1 px-4 py-3 text-sm font-bold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">Cancel</button>
+                            <button onclick="inviteAdmin()" class="flex-1 px-4 py-3 text-sm font-bold text-white rounded-xl shadow-lg hover:shadow-xl transition-all" style="background: linear-gradient(135deg, #7e3af2, #9333ea);">Send Invite</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function inviteAdmin() {
+            const email = document.getElementById('invite-email').value.trim();
+            const name = document.getElementById('invite-name').value.trim();
+            const role = document.getElementById('invite-role').value;
+            if (!email) { showToast('Email is required', 'red'); return; }
+
+            try {
+                const sessionToken = localStorage.getItem('nongor_session_token');
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-session-token': sessionToken },
+                    body: JSON.stringify({ action: 'inviteAdmin', inviteEmail: email, inviteName: name, inviteRole: role })
+                });
+                const data = await res.json();
+
+                if (data.result === 'success') {
+                    showToast('Admin invited successfully!', 'green');
+                    document.getElementById('invite-admin-modal')?.remove();
+                    loadAdminList();
+                } else {
+                    showToast(data.message || 'Failed to invite admin', 'red');
+                }
+            } catch (err) {
+                showToast('Network error', 'red');
+            }
+        }
+
+        async function updateAdminRole(adminId, newRole) {
+            try {
+                const sessionToken = localStorage.getItem('nongor_session_token');
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-session-token': sessionToken },
+                    body: JSON.stringify({ action: 'updateAdminRole', adminId, newRole })
+                });
+                const data = await res.json();
+                showToast(data.result === 'success' ? 'Role updated!' : (data.message || 'Failed'), data.result === 'success' ? 'green' : 'red');
+            } catch (err) { showToast('Network error', 'red'); }
+        }
+
+        async function removeAdmin(adminId, name) {
+            if (!confirm(`Remove admin "${name}"? They won't be able to login anymore.`)) return;
+            try {
+                const sessionToken = localStorage.getItem('nongor_session_token');
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-session-token': sessionToken },
+                    body: JSON.stringify({ action: 'removeAdmin', adminId })
+                });
+                const data = await res.json();
+                if (data.result === 'success') {
+                    showToast('Admin removed', 'green');
+                    loadAdminList();
+                } else {
+                    showToast(data.message || 'Failed', 'red');
+                }
+            } catch (err) { showToast('Network error', 'red'); }
         }
 
         // --- MFA LOGIC ---

@@ -1165,6 +1165,216 @@ module.exports = async (req, res) => {
             });
         }
 
+
+        // ============================================
+        // ACTION: GOOGLE LOGIN
+        // ============================================
+        if (action === 'googleLogin') {
+            const { credential } = req.body;
+            if (!credential) {
+                return res.status(400).json({ result: 'error', message: 'Missing Google credential.' });
+            }
+
+            try {
+                // Verify Google ID token using Google's tokeninfo endpoint
+                const fetch = require('node-fetch');
+                const tokenRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+                const payload = await tokenRes.json();
+
+                if (payload.error_description) {
+                    return res.status(401).json({ result: 'error', message: 'Invalid Google token.' });
+                }
+
+                const googleClientId = process.env.GOOGLE_CLIENT_ID;
+                if (payload.aud !== googleClientId) {
+                    return res.status(401).json({ result: 'error', message: 'Token audience mismatch.' });
+                }
+
+                const googleEmail = payload.email;
+                const googleId = payload.sub;
+                const googleName = payload.name || googleEmail;
+                const googleAvatar = payload.picture || '';
+
+                // Find admin by google_id or email
+                let adminUser = null;
+                const byGoogle = await client.query('SELECT * FROM admin_users WHERE google_id = $1 AND status = $2', [googleId, 'active']);
+                if (byGoogle.rows.length > 0) {
+                    adminUser = byGoogle.rows[0];
+                } else {
+                    const byEmail = await client.query('SELECT * FROM admin_users WHERE email = $1 AND status = $2', [googleEmail, 'active']);
+                    if (byEmail.rows.length > 0) {
+                        adminUser = byEmail.rows[0];
+                        // Link Google ID to existing admin
+                        await client.query('UPDATE admin_users SET google_id = $1, avatar_url = $2, display_name = COALESCE(NULLIF(display_name, \'\'), $3) WHERE id = $4',
+                            [googleId, googleAvatar, googleName, adminUser.id]);
+                    }
+                }
+
+                if (!adminUser) {
+                    return res.status(403).json({ result: 'error', message: 'No admin account found for this Google account. Ask a super admin to invite you.' });
+                }
+
+                // Update last login and avatar
+                await client.query('UPDATE admin_users SET last_login = NOW(), avatar_url = $1 WHERE id = $2', [googleAvatar, adminUser.id]);
+
+                // Create session via auth schema
+                const sessionRes = await client.query(
+                    `SELECT * FROM ${AUTH_SCHEMA}.create_session($1::TEXT, $2::TEXT, $3::TEXT)`,
+                    [adminUser.email || adminUser.username, req.ip || '0.0.0.0', req.headers['user-agent'] || 'unknown']
+                );
+
+                if (sessionRes.rows.length > 0) {
+                    return res.status(200).json({
+                        result: 'success',
+                        message: 'Google login successful',
+                        sessionToken: sessionRes.rows[0].session_token || sessionRes.rows[0].token,
+                        user: {
+                            id: adminUser.id,
+                            username: adminUser.username,
+                            email: adminUser.email,
+                            role: adminUser.role,
+                            display_name: adminUser.display_name || googleName,
+                            avatar_url: googleAvatar
+                        }
+                    });
+                } else {
+                    return res.status(500).json({ result: 'error', message: 'Failed to create session.' });
+                }
+            } catch (err) {
+                console.error('Google Login Error:', err);
+                return res.status(500).json({ result: 'error', message: 'Google login failed.' });
+            }
+        }
+
+        // ============================================
+        // ACTION: LIST ADMINS (super_admin only)
+        // ============================================
+        if (action === 'listAdmins') {
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0) {
+                return res.status(401).json({ result: 'error', message: 'Invalid session.' });
+            }
+
+            // Check if requester is super_admin
+            const requester = await client.query('SELECT role FROM admin_users WHERE username = $1 OR email = $1', [sessionRes.rows[0].user_identifier || 'admin']);
+            if (!requester.rows.length || requester.rows[0].role !== 'super_admin') {
+                return res.status(403).json({ result: 'error', message: 'Super admin access required.' });
+            }
+
+            const admins = await client.query(
+                'SELECT id, username, email, role, status, display_name, avatar_url, last_login, created_at FROM admin_users ORDER BY id'
+            );
+
+            return res.status(200).json({ result: 'success', admins: admins.rows });
+        }
+
+        // ============================================
+        // ACTION: INVITE ADMIN (super_admin only)
+        // ============================================
+        if (action === 'inviteAdmin') {
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0) {
+                return res.status(401).json({ result: 'error', message: 'Invalid session.' });
+            }
+
+            const requester = await client.query('SELECT id, role FROM admin_users WHERE username = $1 OR email = $1', [sessionRes.rows[0].user_identifier || 'admin']);
+            if (!requester.rows.length || requester.rows[0].role !== 'super_admin') {
+                return res.status(403).json({ result: 'error', message: 'Super admin access required.' });
+            }
+
+            const { inviteEmail, inviteRole, inviteName } = req.body;
+            if (!inviteEmail) {
+                return res.status(400).json({ result: 'error', message: 'Email is required.' });
+            }
+
+            const validRoles = ['admin', 'editor', 'viewer'];
+            const role = validRoles.includes(inviteRole) ? inviteRole : 'admin';
+
+            // Check if already exists
+            const existing = await client.query('SELECT id FROM admin_users WHERE email = $1', [inviteEmail]);
+            if (existing.rows.length > 0) {
+                return res.status(409).json({ result: 'error', message: 'Admin with this email already exists.' });
+            }
+
+            // Create admin (no password — they'll use Google login)
+            const username = inviteEmail.split('@')[0];
+            const result = await client.query(
+                `INSERT INTO admin_users (username, email, role, status, display_name, invited_by, created_at) 
+                 VALUES ($1, $2, $3, 'active', $4, $5, NOW()) RETURNING id, email, role, display_name`,
+                [username, inviteEmail, role, inviteName || username, requester.rows[0].id]
+            );
+
+            return res.status(201).json({ result: 'success', message: 'Admin invited successfully.', admin: result.rows[0] });
+        }
+
+        // ============================================
+        // ACTION: UPDATE ADMIN ROLE (super_admin only)
+        // ============================================
+        if (action === 'updateAdminRole') {
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0) {
+                return res.status(401).json({ result: 'error', message: 'Invalid session.' });
+            }
+
+            const requester = await client.query('SELECT id, role FROM admin_users WHERE username = $1 OR email = $1', [sessionRes.rows[0].user_identifier || 'admin']);
+            if (!requester.rows.length || requester.rows[0].role !== 'super_admin') {
+                return res.status(403).json({ result: 'error', message: 'Super admin access required.' });
+            }
+
+            const { adminId, newRole } = req.body;
+            const validRoles = ['super_admin', 'admin', 'editor', 'viewer'];
+            if (!adminId || !validRoles.includes(newRole)) {
+                return res.status(400).json({ result: 'error', message: 'Invalid admin ID or role.' });
+            }
+
+            // Can't change own role
+            if (adminId === requester.rows[0].id) {
+                return res.status(400).json({ result: 'error', message: 'Cannot change your own role.' });
+            }
+
+            await client.query('UPDATE admin_users SET role = $1 WHERE id = $2', [newRole, adminId]);
+            return res.status(200).json({ result: 'success', message: 'Role updated.' });
+        }
+
+        // ============================================
+        // ACTION: REMOVE ADMIN (super_admin only)
+        // ============================================
+        if (action === 'removeAdmin') {
+            if (!sessionToken) {
+                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+            }
+
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0) {
+                return res.status(401).json({ result: 'error', message: 'Invalid session.' });
+            }
+
+            const requester = await client.query('SELECT id, role FROM admin_users WHERE username = $1 OR email = $1', [sessionRes.rows[0].user_identifier || 'admin']);
+            if (!requester.rows.length || requester.rows[0].role !== 'super_admin') {
+                return res.status(403).json({ result: 'error', message: 'Super admin access required.' });
+            }
+
+            const { adminId } = req.body;
+            if (!adminId || adminId === requester.rows[0].id) {
+                return res.status(400).json({ result: 'error', message: 'Cannot remove yourself.' });
+            }
+
+            await client.query('UPDATE admin_users SET status = $1 WHERE id = $2', ['disabled', adminId]);
+            return res.status(200).json({ result: 'success', message: 'Admin removed.' });
+        }
+
         return res.status(400).json({ result: 'error', message: 'Invalid action' });
 
     } catch (error) {
