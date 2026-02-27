@@ -616,21 +616,46 @@ export function initPushNotifications() {
     // Listen for push messages from SW
     listenForPushMessages();
 
-    // Smart re-subscribe: if permission granted but subscription missing from server
-    if (Notification.permission === 'granted' && localStorage.getItem(PUSH_STORAGE_KEY) === 'subscribed') {
+    // Smart re-subscribe: if permission granted, ensure we're subscribed
+    if (Notification.permission === 'granted') {
         navigator.serviceWorker.ready.then(async (registration) => {
             const sub = await registration.pushManager.getSubscription();
-            if (!sub) {
+            if (sub) {
+                currentSubscription = sub;
+                // Ensure localStorage is in sync
+                if (localStorage.getItem(PUSH_STORAGE_KEY) !== 'subscribed') {
+                    // Permission granted + active subscription exists but localStorage lost — resync
+                    const topics = getStoredTopics();
+                    const serverOk = await sendSubscriptionToServer(sub, topics);
+                    if (serverOk) {
+                        localStorage.setItem(PUSH_STORAGE_KEY, 'subscribed');
+                        localStorage.setItem(PUSH_ENDPOINT_KEY, sub.endpoint);
+                        localStorage.setItem(PUSH_TOPICS_KEY, JSON.stringify(topics));
+                        const bellContainer = document.getElementById('push-bell-container');
+                        if (bellContainer) bellContainer.classList.remove('hidden');
+                        console.log('[Push] Re-synced subscription from browser state');
+                    }
+                }
+            } else if (localStorage.getItem(PUSH_STORAGE_KEY) === 'subscribed') {
+                // Had subscription but it was lost — re-subscribe silently
                 console.log('[Push] Re-subscribing (subscription lost)...');
                 await subscribeToPush();
             } else {
-                currentSubscription = sub;
+                // Permission granted but never subscribed via our system — auto-subscribe silently
+                console.log('[Push] Permission already granted, auto-subscribing...');
+                await subscribeToPush();
             }
         });
-        return; // Already subscribed, don't show banner
+        return; // Don't show banner — permission already handled
     }
 
-    // Check if user already subscribed or dismissed
+    // Permission denied — don't show banner, no point
+    if (Notification.permission === 'denied') {
+        console.log('[Push] Permission denied by user, skipping banner');
+        return;
+    }
+
+    // Permission is 'default' (never asked) — check if dismissed by user
     const pushStatus = localStorage.getItem(PUSH_STORAGE_KEY);
     const dismissed = localStorage.getItem(PUSH_DISMISSED_KEY);
 
@@ -638,7 +663,7 @@ export function initPushNotifications() {
         return;
     }
 
-    // Show banner after 8 seconds
+    // Show banner after 8 seconds (permission is 'default')
     setTimeout(() => {
         showPushBanner();
     }, 8000);
