@@ -1467,249 +1467,247 @@ module.exports = async (req, res) => {
             }
 
             // --- ORDER CREATION ---
-            // Guard: Only proceed if this looks like an order (has items array)
-            if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Unknown action or missing order items' });
-            }
+            // Guard: Proceed if this looks like an order (has items array)
+            if (data.items && Array.isArray(data.items) && data.items.length > 0) {
 
-            // Rate limit order creation to prevent spam
-            const orderIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            const orderRateLimit = checkRateLimit('order', orderIp);
-            if (!orderRateLimit.allowed) {
-                console.warn(`⚠️ Order Rate Limit Exceeded for IP: ${orderIp}`);
-                client.release();
-                return res.status(429).json({
-                    result: 'error',
-                    message: `Too many orders. Please try again in ${orderRateLimit.retryAfter} seconds.`
-                });
-            }
+                // Rate limit order creation to prevent spam
+                const orderIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+                const orderRateLimit = checkRateLimit('order', orderIp);
+                if (!orderRateLimit.allowed) {
+                    console.warn(`⚠️ Order Rate Limit Exceeded for IP: ${orderIp}`);
+                    client.release();
+                    return res.status(429).json({
+                        result: 'error',
+                        message: `Too many orders. Please try again in ${orderRateLimit.retryAfter} seconds.`
+                    });
+                }
 
-            // Validate required order fields
-            if (!data.customerName || typeof data.customerName !== 'string' || data.customerName.trim().length === 0) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Customer name is required' });
-            }
-            if (!data.customerPhone || typeof data.customerPhone !== 'string' || data.customerPhone.trim().length === 0) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Customer phone is required' });
-            }
-            if (!data.address || typeof data.address !== 'string' || data.address.trim().length === 0) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Delivery address is required' });
-            }
-            // Validate Bangladeshi phone format
-            const cleanedPhone = data.customerPhone.replace(/\D/g, '');
-            if (!/^01[3-9]\d{8}$/.test(cleanedPhone)) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Invalid phone number format' });
-            }
+                // Validate required order fields
+                if (!data.customerName || typeof data.customerName !== 'string' || data.customerName.trim().length === 0) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Customer name is required' });
+                }
+                if (!data.customerPhone || typeof data.customerPhone !== 'string' || data.customerPhone.trim().length === 0) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Customer phone is required' });
+                }
+                if (!data.address || typeof data.address !== 'string' || data.address.trim().length === 0) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Delivery address is required' });
+                }
+                // Validate Bangladeshi phone format
+                const cleanedPhone = data.customerPhone.replace(/\D/g, '');
+                if (!/^01[3-9]\d{8}$/.test(cleanedPhone)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Invalid phone number format' });
+                }
 
-            // --- SERVER-SIDE ORDER ID GENERATION ---
-            // Start Transaction for Order Creation (Ensures atomic stock updates)
-            await client.query('BEGIN');
-            const generatedOrderId = 'NG-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+                // --- SERVER-SIDE ORDER ID GENERATION ---
+                // Start Transaction for Order Creation (Ensures atomic stock updates)
+                await client.query('BEGIN');
+                const generatedOrderId = 'NG-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
 
-            let calculatedSubtotal = 0;
-            const orderItemsToInsert = [];
+                let calculatedSubtotal = 0;
+                const orderItemsToInsert = [];
 
-            // 1. Update Stock & Validate Availability (Locking Rows)
-            if (data.items && Array.isArray(data.items)) {
-                for (const item of data.items) {
-                    // Validation (Strict range check)
-                    if (item.quantity < 1 || item.quantity > 1000) {
-                        throw new Error('Invalid quantity: Must be between 1 and 1000');
-                    }
-
-                    if (item.id && item.quantity) {
-                        // LOCK ROW: Check stock availability AND Fetch Price
-                        const stockRes = await client.query('SELECT price, stock_quantity FROM products WHERE id = $1 FOR UPDATE', [item.id]);
-
-                        if (stockRes.rows.length === 0) throw new Error(`Product ${item.id} not found`);
-
-                        const product = stockRes.rows[0];
-                        const available = product.stock_quantity;
-                        const price = parseFloat(product.price);
-
-                        if (available < item.quantity) {
-                            throw new Error(`Insufficient stock for Product ID ${item.id}. Available: ${available}, Requested: ${item.quantity}`);
+                // 1. Update Stock & Validate Availability (Locking Rows)
+                if (data.items && Array.isArray(data.items)) {
+                    for (const item of data.items) {
+                        // Validation (Strict range check)
+                        if (item.quantity < 1 || item.quantity > 1000) {
+                            throw new Error('Invalid quantity: Must be between 1 and 1000');
                         }
 
-                        // DEDUCT STOCK
-                        await client.query(
-                            'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
-                            [item.quantity, item.id]
-                        );
+                        if (item.id && item.quantity) {
+                            // LOCK ROW: Check stock availability AND Fetch Price
+                            const stockRes = await client.query('SELECT price, stock_quantity FROM products WHERE id = $1 FOR UPDATE', [item.id]);
 
-                        // Calculate Line Total
-                        const lineTotal = price * item.quantity;
-                        calculatedSubtotal += lineTotal;
+                            if (stockRes.rows.length === 0) throw new Error(`Product ${item.id} not found`);
 
-                        orderItemsToInsert.push({
-                            product_id: item.id,
-                            qty: item.quantity,
-                            unit_price: price,
-                            size: item.size || 'M',
-                            line_total: lineTotal,
-                            // Custom Sizing Fields
-                            size_type: item.sizeType || 'standard',
-                            size_label: item.sizeLabel || (item.sizeType === 'custom' ? 'Custom' : item.size),
-                            measurement_unit: item.unit || 'inch',
-                            measurements: item.measurements || null,
-                            measurement_notes: item.notes || ''
-                        });
-                    }
-                }
-                // Invalidate cache as stock changed
-                invalidateProductCache();
-            }
+                            const product = stockRes.rows[0];
+                            const available = product.stock_quantity;
+                            const price = parseFloat(product.price);
 
-            // Calculate Shipping Fee Server-Side
-            // Valid zones: 'inside_dhaka' => 70, 'outside_dhaka' => 120
-            const shippingZone = data.shippingZone || 'inside_dhaka';
-            const allowedShippingFees = { 'inside_dhaka': 70, 'outside_dhaka': 120 };
-            const shippingFee = allowedShippingFees[shippingZone] || 70;
-            let finalTotal = calculatedSubtotal + shippingFee;
-
-            // --- COUPON APPLICATION ---
-            let discountAmount = 0;
-            let appliedCouponCode = null;
-
-            if (data.couponCode) {
-                // Validate Coupon (Re-check for security)
-                const couponRes = await client.query('SELECT * FROM coupons WHERE UPPER(code) = UPPER($1) AND is_active = true', [data.couponCode]);
-
-                if (couponRes.rows.length > 0) {
-                    const coupon = couponRes.rows[0];
-                    let isValid = true;
-
-                    // Check Expiry
-                    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) isValid = false;
-                    // Check Limits
-                    if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) isValid = false;
-                    // Check Min Order (on subtotal)
-                    if (coupon.min_order_value && calculatedSubtotal < parseFloat(coupon.min_order_value)) isValid = false;
-
-                    if (isValid) {
-                        if (coupon.discount_type === 'percent') {
-                            discountAmount = calculatedSubtotal * (parseFloat(coupon.discount_value) / 100);
-                            if (coupon.max_discount_amount) {
-                                discountAmount = Math.min(discountAmount, parseFloat(coupon.max_discount_amount));
+                            if (available < item.quantity) {
+                                throw new Error(`Insufficient stock for Product ID ${item.id}. Available: ${available}, Requested: ${item.quantity}`);
                             }
-                        } else {
-                            discountAmount = parseFloat(coupon.discount_value);
+
+                            // DEDUCT STOCK
+                            await client.query(
+                                'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
+                                [item.quantity, item.id]
+                            );
+
+                            // Calculate Line Total
+                            const lineTotal = price * item.quantity;
+                            calculatedSubtotal += lineTotal;
+
+                            orderItemsToInsert.push({
+                                product_id: item.id,
+                                qty: item.quantity,
+                                unit_price: price,
+                                size: item.size || 'M',
+                                line_total: lineTotal,
+                                // Custom Sizing Fields
+                                size_type: item.sizeType || 'standard',
+                                size_label: item.sizeLabel || (item.sizeType === 'custom' ? 'Custom' : item.size),
+                                measurement_unit: item.unit || 'inch',
+                                measurements: item.measurements || null,
+                                measurement_notes: item.notes || ''
+                            });
                         }
+                    }
+                    // Invalidate cache as stock changed
+                    invalidateProductCache();
+                }
 
-                        // Ensure discount doesn't exceed total
-                        discountAmount = Math.min(discountAmount, finalTotal);
+                // Calculate Shipping Fee Server-Side
+                // Valid zones: 'inside_dhaka' => 70, 'outside_dhaka' => 120
+                const shippingZone = data.shippingZone || 'inside_dhaka';
+                const allowedShippingFees = { 'inside_dhaka': 70, 'outside_dhaka': 120 };
+                const shippingFee = allowedShippingFees[shippingZone] || 70;
+                let finalTotal = calculatedSubtotal + shippingFee;
 
-                        finalTotal -= discountAmount;
-                        appliedCouponCode = coupon.code;
+                // --- COUPON APPLICATION ---
+                let discountAmount = 0;
+                let appliedCouponCode = null;
 
-                        // Increment Usage
-                        await client.query('UPDATE coupons SET usage_count = usage_count + 1 WHERE id = $1', [coupon.id]);
+                if (data.couponCode) {
+                    // Validate Coupon (Re-check for security)
+                    const couponRes = await client.query('SELECT * FROM coupons WHERE UPPER(code) = UPPER($1) AND is_active = true', [data.couponCode]);
+
+                    if (couponRes.rows.length > 0) {
+                        const coupon = couponRes.rows[0];
+                        let isValid = true;
+
+                        // Check Expiry
+                        if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) isValid = false;
+                        // Check Limits
+                        if (coupon.usage_limit && coupon.usage_count >= coupon.usage_limit) isValid = false;
+                        // Check Min Order (on subtotal)
+                        if (coupon.min_order_value && calculatedSubtotal < parseFloat(coupon.min_order_value)) isValid = false;
+
+                        if (isValid) {
+                            if (coupon.discount_type === 'percent') {
+                                discountAmount = calculatedSubtotal * (parseFloat(coupon.discount_value) / 100);
+                                if (coupon.max_discount_amount) {
+                                    discountAmount = Math.min(discountAmount, parseFloat(coupon.max_discount_amount));
+                                }
+                            } else {
+                                discountAmount = parseFloat(coupon.discount_value);
+                            }
+
+                            // Ensure discount doesn't exceed total
+                            discountAmount = Math.min(discountAmount, finalTotal);
+
+                            finalTotal -= discountAmount;
+                            appliedCouponCode = coupon.code;
+
+                            // Increment Usage
+                            await client.query('UPDATE coupons SET usage_count = usage_count + 1 WHERE id = $1', [coupon.id]);
+                        }
                     }
                 }
-            }
 
 
-            // Define defaults
-            const initialDelivery = 'Pending';
-            const initialPayment = data.paymentMethod === 'COD' ? 'Unpaid' : 'Verifying';
+                // Define defaults
+                const initialDelivery = 'Pending';
+                const initialPayment = data.paymentMethod === 'COD' ? 'Unpaid' : 'Verifying';
 
-            // 2. Insert Order
-            const trackingToken = crypto.randomBytes(32).toString('hex');
+                // 2. Insert Order
+                const trackingToken = crypto.randomBytes(32).toString('hex');
 
-            const insertQuery = `
+                const insertQuery = `
                 INSERT INTO orders 
                 (order_id, customer_name, phone, address, product_name, product_id, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
                 RETURNING *
             `;
 
-            // Extract primary product ID (from first item)
-            // If strictly single product per order in 'orders' table design, this matches.
-            // If multiple, this just serves as a reference (e.g. for main thumbnail).
-            const primaryProductId = (orderItemsToInsert.length > 0) ? orderItemsToInsert[0].product_id : null;
+                // Extract primary product ID (from first item)
+                // If strictly single product per order in 'orders' table design, this matches.
+                // If multiple, this just serves as a reference (e.g. for main thumbnail).
+                const primaryProductId = (orderItemsToInsert.length > 0) ? orderItemsToInsert[0].product_id : null;
 
-            const values = [
-                generatedOrderId, // Use server-generated ID
-                data.customerName ? String(data.customerName).substring(0, 100) : 'Guest',
-                data.customerPhone ? String(data.customerPhone).substring(0, 20) : '',
-                data.address,
-                data.productName ? String(data.productName).substring(0, 100) : 'Products',
-                primaryProductId, // Added product_id
-                finalTotal, // Use Server Calculated Total (with discount)
-                initialDelivery,
-                initialDelivery,
-                initialPayment,
-                data.trxId || '',
-                data.paymentMethod,
-                data.deliveryDate ? String(data.deliveryDate).substring(0, 50) : '',
-                data.size ? String(data.size).substring(0, 10) : 'M',
-                data.quantity,
-                data.senderNumber || '',
-                data.customerEmail || null,
-                trackingToken,
-                appliedCouponCode,
-                discountAmount
-            ];
+                const values = [
+                    generatedOrderId, // Use server-generated ID
+                    data.customerName ? String(data.customerName).substring(0, 100) : 'Guest',
+                    data.customerPhone ? String(data.customerPhone).substring(0, 20) : '',
+                    data.address,
+                    data.productName ? String(data.productName).substring(0, 100) : 'Products',
+                    primaryProductId, // Added product_id
+                    finalTotal, // Use Server Calculated Total (with discount)
+                    initialDelivery,
+                    initialDelivery,
+                    initialPayment,
+                    data.trxId || '',
+                    data.paymentMethod,
+                    data.deliveryDate ? String(data.deliveryDate).substring(0, 50) : '',
+                    data.size ? String(data.size).substring(0, 10) : 'M',
+                    data.quantity,
+                    data.senderNumber || '',
+                    data.customerEmail || null,
+                    trackingToken,
+                    appliedCouponCode,
+                    discountAmount
+                ];
 
-            const result = await client.query(insertQuery, values);
+                const result = await client.query(insertQuery, values);
 
-            // 3. Insert Order Items (New Table)
-            for (const item of orderItemsToInsert) {
-                await client.query(
-                    `INSERT INTO order_items 
+                // 3. Insert Order Items (New Table)
+                for (const item of orderItemsToInsert) {
+                    await client.query(
+                        `INSERT INTO order_items 
                     (order_id, product_id, qty, unit_price, size, line_total, size_type, size_label, measurement_unit, measurements, measurement_notes) 
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                    [
-                        generatedOrderId,
-                        item.product_id,
-                        item.qty,
-                        item.unit_price,
-                        item.size,
-                        item.line_total,
-                        item.size_type,
-                        item.size_label,
-                        item.measurement_unit,
-                        item.measurements,
-                        item.measurement_notes
-                    ]
-                );
+                        [
+                            generatedOrderId,
+                            item.product_id,
+                            item.qty,
+                            item.unit_price,
+                            item.size,
+                            item.line_total,
+                            item.size_type,
+                            item.size_label,
+                            item.measurement_unit,
+                            item.measurements,
+                            item.measurement_notes
+                        ]
+                    );
+                }
+
+                // --- TRANSACTION COMMIT ---
+                await client.query('COMMIT');
+
+                client.release();
+
+                // Send Email Confirmation (Async - don't block response)
+                if (data.customerEmail) {
+                    // Pass structured data to email helper
+                    const emailData = {
+                        orderId: generatedOrderId,
+                        customerName: data.customerName,
+                        customerEmail: data.customerEmail,
+                        products: orderItemsToInsert.map(i => ({
+                            name: data.productName, // Simplification: Usage of main product name if multiple items not fully supported in frontend yet, but structure is ready. 
+                            // Actually, let's just pass the string description for now or improve `data.items` mapping if available.
+                            // Better: Pass the aggregated items logic if available
+                            size: i.size,
+                            quantity: i.qty,
+                            price: i.unit_price
+                        })),
+                        totalPrice: finalTotal,
+                        address: data.address,
+                        deliveryDate: data.deliveryDate,
+                        trackingToken: trackingToken
+                    };
+
+                    // Fire and forget (catch errors inside the function)
+                    sendOrderConfirmation(emailData);
+                }
+
+                return res.status(200).json({ result: 'success', message: 'Order Placed', data: { order_id: generatedOrderId, tracking_token: trackingToken } });
             }
-
-            // --- TRANSACTION COMMIT ---
-            await client.query('COMMIT');
-
-            client.release();
-
-            // Send Email Confirmation (Async - don't block response)
-            if (data.customerEmail) {
-                // Pass structured data to email helper
-                const emailData = {
-                    orderId: generatedOrderId,
-                    customerName: data.customerName,
-                    customerEmail: data.customerEmail,
-                    products: orderItemsToInsert.map(i => ({
-                        name: data.productName, // Simplification: Usage of main product name if multiple items not fully supported in frontend yet, but structure is ready. 
-                        // Actually, let's just pass the string description for now or improve `data.items` mapping if available.
-                        // Better: Pass the aggregated items logic if available
-                        size: i.size,
-                        quantity: i.qty,
-                        price: i.unit_price
-                    })),
-                    totalPrice: finalTotal,
-                    address: data.address,
-                    deliveryDate: data.deliveryDate,
-                    trackingToken: trackingToken
-                };
-
-                // Fire and forget (catch errors inside the function)
-                sendOrderConfirmation(emailData);
-            }
-
-            return res.status(200).json({ result: 'success', message: 'Order Placed', data: { order_id: generatedOrderId, tracking_token: trackingToken } });
         }
 
         // --- 3. PUT REQUESTS ---
@@ -1792,109 +1790,111 @@ module.exports = async (req, res) => {
             }
 
             // --- UPDATE ORDER STATUS (Protected) ---
-            const auth = await verifySession(req, client);
-            if (!auth.valid) {
-                client.release();
-                return res.status(401).json({ error: 'Unauthorized: ' + auth.error });
-            }
-            if (auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
-            }
-
-
-            let updatedOrder;
-            let eventType = 'status_change';
-            let description = '';
-
-            if (data.type === 'delivery') {
-                const queryResult = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
-                updatedOrder = queryResult.rows[0];
-                description = `Order status changed to ${data.status}`;
-            } else if (data.type === 'payment') {
-                const queryResult = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
-                updatedOrder = queryResult.rows[0];
-                description = `Payment status updated to ${data.status}`;
-            } else {
-                const queryResult = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
-                updatedOrder = queryResult.rows[0];
-                description = `Status updated to ${data.status}`;
-            }
-
-            if (updatedOrder) {
-                // Log Event
-                await client.query(
-                    `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, $2, $3, $4)`,
-                    [data.orderId, eventType, description, 'admin']
-                );
-            }
-
-            client.release();
-
-            if (updatedOrder) {
-                // Trigger Status Email Async
-                // Only for main status updates, skipping payment-only for now unless desired
-                if (data.type !== 'payment') {
-                    sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error("Email Fail:", e));
-
-                    // --- Auto Push Notification on Order Status Change ---
-                    if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-                        (async () => {
-                            try {
-                                const pushClient = await pool.connect();
-                                const subs = await pushClient.query(
-                                    "SELECT * FROM push_subscriptions WHERE is_active = true AND 'orders' = ANY(topics)"
-                                );
-                                pushClient.release();
-
-                                const statusMessages = {
-                                    'processing': { title: '⏳ অর্ডার প্রসেস হচ্ছে', body: `আপনার অর্ডার #${data.orderId} প্রসেস করা হচ্ছে।` },
-                                    'shipped': { title: '🚚 অর্ডার শিপ হয়েছে!', body: `আপনার অর্ডার #${data.orderId} কুরিয়ারে হস্তান্তর করা হয়েছে।` },
-                                    'delivered': { title: '🎉 ডেলিভারি সম্পন্ন!', body: `আপনার অর্ডার #${data.orderId} ডেলিভারি হয়েছে!` },
-                                    'cancelled': { title: '❌ অর্ডার বাতিল', body: `অর্ডার #${data.orderId} বাতিল করা হয়েছে।` }
-                                };
-
-                                const msg = statusMessages[data.status.toLowerCase()] || {
-                                    title: 'অর্ডার আপডেট',
-                                    body: `অর্ডার #${data.orderId} স্ট্যাটাস: ${data.status}`
-                                };
-
-                                const payload = JSON.stringify({
-                                    title: msg.title,
-                                    body: msg.body,
-                                    icon: '/assets/icon-192.png',
-                                    badge: '/assets/icon-192.png',
-                                    url: `/track?token=${updatedOrder.tracking_token || data.orderId}`,
-                                    type: 'order_update',
-                                    tag: `order-${data.orderId}`
-                                });
-
-                                let delivered = 0;
-                                await Promise.allSettled(subs.rows.map(async (sub) => {
-                                    try {
-                                        await webpush.sendNotification({
-                                            endpoint: sub.endpoint,
-                                            keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
-                                        }, payload);
-                                        delivered++;
-                                    } catch (err) {
-                                        if (err.statusCode === 410 || err.statusCode === 404) {
-                                            const cleanupClient = await pool.connect();
-                                            await cleanupClient.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [sub.endpoint]);
-                                            cleanupClient.release();
-                                        }
-                                    }
-                                }));
-                                console.log(`🔔 Push: Order ${data.orderId} status → ${data.status} sent to ${delivered}/${subs.rows.length}`);
-                            } catch (pushErr) {
-                                console.error('🔔 Push Error (order status):', pushErr.message);
-                            }
-                        })();
-                    }
+            if (data.orderId && data.type) {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ error: 'Unauthorized: ' + auth.error });
                 }
-                return res.status(200).json({ result: 'success', data: updatedOrder });
-            } else {
-                return res.status(404).json({ result: 'error', message: 'Order not found' });
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
+                }
+
+
+                let updatedOrder;
+                let eventType = 'status_change';
+                let description = '';
+
+                if (data.type === 'delivery') {
+                    const queryResult = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                    updatedOrder = queryResult.rows[0];
+                    description = `Order status changed to ${data.status}`;
+                } else if (data.type === 'payment') {
+                    const queryResult = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
+                    updatedOrder = queryResult.rows[0];
+                    description = `Payment status updated to ${data.status}`;
+                } else {
+                    const queryResult = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
+                    updatedOrder = queryResult.rows[0];
+                    description = `Status updated to ${data.status}`;
+                }
+
+                if (updatedOrder) {
+                    // Log Event
+                    await client.query(
+                        `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, $2, $3, $4)`,
+                        [data.orderId, eventType, description, 'admin']
+                    );
+                }
+
+                client.release();
+
+                if (updatedOrder) {
+                    // Trigger Status Email Async
+                    // Only for main status updates, skipping payment-only for now unless desired
+                    if (data.type !== 'payment') {
+                        sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error("Email Fail:", e));
+
+                        // --- Auto Push Notification on Order Status Change ---
+                        if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+                            (async () => {
+                                try {
+                                    const pushClient = await pool.connect();
+                                    const subs = await pushClient.query(
+                                        "SELECT * FROM push_subscriptions WHERE is_active = true AND 'orders' = ANY(topics)"
+                                    );
+                                    pushClient.release();
+
+                                    const statusMessages = {
+                                        'processing': { title: '⏳ অর্ডার প্রসেস হচ্ছে', body: `আপনার অর্ডার #${data.orderId} প্রসেস করা হচ্ছে।` },
+                                        'shipped': { title: '🚚 অর্ডার শিপ হয়েছে!', body: `আপনার অর্ডার #${data.orderId} কুরিয়ারে হস্তান্তর করা হয়েছে।` },
+                                        'delivered': { title: '🎉 ডেলিভারি সম্পন্ন!', body: `আপনার অর্ডার #${data.orderId} ডেলিভারি হয়েছে!` },
+                                        'cancelled': { title: '❌ অর্ডার বাতিল', body: `অর্ডার #${data.orderId} বাতিল করা হয়েছে।` }
+                                    };
+
+                                    const msg = statusMessages[data.status.toLowerCase()] || {
+                                        title: 'অর্ডার আপডেট',
+                                        body: `অর্ডার #${data.orderId} স্ট্যাটাস: ${data.status}`
+                                    };
+
+                                    const payload = JSON.stringify({
+                                        title: msg.title,
+                                        body: msg.body,
+                                        icon: '/assets/icon-192.png',
+                                        badge: '/assets/icon-192.png',
+                                        url: `/track?token=${updatedOrder.tracking_token || data.orderId}`,
+                                        type: 'order_update',
+                                        tag: `order-${data.orderId}`
+                                    });
+
+                                    let delivered = 0;
+                                    await Promise.allSettled(subs.rows.map(async (sub) => {
+                                        try {
+                                            await webpush.sendNotification({
+                                                endpoint: sub.endpoint,
+                                                keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
+                                            }, payload);
+                                            delivered++;
+                                        } catch (err) {
+                                            if (err.statusCode === 410 || err.statusCode === 404) {
+                                                const cleanupClient = await pool.connect();
+                                                await cleanupClient.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [sub.endpoint]);
+                                                cleanupClient.release();
+                                            }
+                                        }
+                                    }));
+                                    console.log(`🔔 Push: Order ${data.orderId} status → ${data.status} sent to ${delivered}/${subs.rows.length}`);
+                                } catch (pushErr) {
+                                    console.error('🔔 Push Error (order status):', pushErr.message);
+                                }
+                            })();
+                        }
+                    }
+                    return res.status(200).json({ result: 'success', data: updatedOrder });
+                } else {
+                    return res.status(404).json({ result: 'error', message: 'Order not found' });
+                }
             }
         }
 
@@ -1925,23 +1925,26 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', message: 'Coupon deleted' });
             }
 
-            const productId = parseInt(query.id);
-            if (!productId || isNaN(productId)) {
+            // --- DELETE PRODUCT ---
+            if (query.action === 'deleteProduct') {
+                const productId = parseInt(query.id);
+                if (!productId || isNaN(productId)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Valid Product ID required' });
+                }
+
+                // Soft delete by setting is_active to false
+                const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
                 client.release();
-                return res.status(400).json({ result: 'error', message: 'Valid Product ID required' });
-            }
 
-            // Soft delete by setting is_active to false
-            const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
-            client.release();
+                // Invalidate cache
+                invalidateProductCache();
 
-            // Invalidate cache
-            invalidateProductCache();
-
-            if (result.rows.length > 0) {
-                return res.status(200).json({ result: 'success', message: 'Product deleted' });
-            } else {
-                return res.status(404).json({ result: 'error', message: 'Product not found' });
+                if (result.rows.length > 0) {
+                    return res.status(200).json({ result: 'success', message: 'Product deleted' });
+                } else {
+                    return res.status(404).json({ result: 'error', message: 'Product not found' });
+                }
             }
         }
 
@@ -1992,6 +1995,11 @@ module.exports = async (req, res) => {
 
             // --- Delete blog post ---
             if (blogAction === 'deletePost') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
                 const { id } = body;
                 if (!id) {
                     client.release();
@@ -1999,7 +2007,7 @@ module.exports = async (req, res) => {
                 }
                 await client.query('DELETE FROM blog_posts WHERE id = $1', [id]);
                 client.release();
-                return res.status(200).json({ result: 'success', message: 'Post deleted' });
+                return res.status(200).json({ result: 'success' });
             }
 
             // ═══════════════════════════════════════════════════════════
