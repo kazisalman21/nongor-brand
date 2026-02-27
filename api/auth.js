@@ -1304,11 +1304,12 @@ module.exports = async (req, res) => {
             }
 
             // Create admin (no password — they'll use Google login)
-            const username = inviteEmail.split('@')[0];
+            const baseUsername = inviteEmail.split('@')[0];
+            const username = baseUsername + '_' + Date.now().toString(36);
             const result = await client.query(
-                `INSERT INTO admin_users (username, email, role, status, display_name, invited_by, created_at) 
-                 VALUES ($1, $2, $3, 'active', $4, $5, NOW()) RETURNING id, email, role, display_name`,
-                [username, inviteEmail, role, inviteName || username, requester.rows[0].id]
+                `INSERT INTO admin_users (username, email, role, status, display_name, invited_by, totp_enabled, telegram_enabled) 
+                 VALUES ($1, $2, $3, 'active', $4, $5, false, false) RETURNING id, email, role, display_name`,
+                [username, inviteEmail, role, inviteName || baseUsername, requester.rows[0].id]
             );
 
             return res.status(201).json({ result: 'success', message: 'Admin invited successfully.', admin: result.rows[0] });
