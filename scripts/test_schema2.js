@@ -1,11 +1,9 @@
-const { Pool } = require('pg');
-
-const connectionString = 'postgresql://neondb_owner:npg_aXlrxhuS9GR8@ep-plain-art-aez29oyf-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
-
-const pool = new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
-});
+/**
+ * Test Schema - Order Items Table
+ * Uses the shared db pool (respects ACTIVE_DB_PROVIDER)
+ */
+require('dotenv').config();
+const pool = require('../api/db');
 
 async function check() {
     try {

@@ -1,32 +1,57 @@
 /**
  * Database Connection Pool
- * Reusable connections for better performance
+ * Supports multiple providers: Neon, Supabase, Aiven
+ * Set ACTIVE_DB_PROVIDER in .env to switch ("neon" | "supabase" | "aiven")
  */
 require('dotenv').config();
 const { Pool } = require('pg');
 
-const connectionString = process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL;
+// --- Provider resolution ---
+const PROVIDER_MAP = {
+    neon: 'NEON_DATABASE_URL',
+    supabase: 'SUPABASE_DATABASE_URL',
+    aiven: 'AIVEN_DATABASE_URL',
+};
 
-if (!connectionString) {
-    console.error('❌ ERROR: DATABASE_URL environment variable is not set!');
+const provider = (process.env.ACTIVE_DB_PROVIDER || 'supabase').toLowerCase();
+const envKey = PROVIDER_MAP[provider];
+
+if (!envKey) {
+    console.error(`❌ ERROR: Unknown ACTIVE_DB_PROVIDER "${provider}". Use one of: ${Object.keys(PROVIDER_MAP).join(', ')}`);
 }
 
-// Create connection pool (REUSABLE!)
-// Fix for PG SSL warning: Append strict mode or compatibility mode
-// We use 'require' because Vercel/Neon certs are self-signed/managed differently
+// Resolve connection string: provider-specific → legacy fallbacks
+const connectionString = (envKey && process.env[envKey])
+    || process.env.DATABASE_URL
+    || process.env.NETLIFY_DATABASE_URL;
+
+if (!connectionString) {
+    console.error(`❌ ERROR: No database URL found for provider "${provider}" (env var: ${envKey})`);
+} else {
+    // Log provider + host (mask password)
+    const safeUrl = connectionString.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@');
+    console.log(`🗄️  Database provider: ${provider.toUpperCase()} → ${safeUrl}`);
+}
+
+// --- Build pool ---
+// Strip SSL-related params from connection string; SSL is enforced via Pool ssl option.
 let finalConnectionString = connectionString;
-if (connectionString && !connectionString.includes('sslmode=')) {
-    const separator = connectionString.includes('?') ? '&' : '?';
-    finalConnectionString += `${separator}sslmode=require`;
+if (connectionString) {
+    try {
+        const parsed = new URL(connectionString);
+        parsed.searchParams.delete('sslmode');
+        parsed.searchParams.delete('channel_binding');
+        finalConnectionString = parsed.toString();
+    } catch (e) {
+        // If URL parsing fails, use as-is
+    }
 }
 
 const pool = new Pool({
     connectionString: finalConnectionString,
     ssl: {
-        // SECURITY NOTE: rejectUnauthorized is set to false because Vercel/Neon use
-        // managed SSL certificates that may not be verifiable by the default CA bundle.
-        // This is acceptable in this context because the connection is already encrypted
-        // and Neon handles certificate management. For self-hosted PostgreSQL, set to true.
+        // All three providers (Neon, Supabase, Aiven) use managed SSL certs.
+        // rejectUnauthorized: false is acceptable here; the connection is still encrypted.
         rejectUnauthorized: false
     },
     max: 20,
@@ -37,11 +62,11 @@ const pool = new Pool({
 
 // Log connection events
 pool.on('connect', () => {
-    console.log('✅ Database pool: New connection established');
+    console.log(`✅ Database pool [${provider.toUpperCase()}]: New connection established`);
 });
 
 pool.on('error', (err) => {
-    console.error('❌ Database pool error:', err.message);
+    console.error(`❌ Database pool [${provider.toUpperCase()}] error:`, err.message);
 });
 
 module.exports = pool;

@@ -1,16 +1,12 @@
+/**
+ * Verify Production Database
+ * Uses the shared db pool (respects ACTIVE_DB_PROVIDER)
+ */
+require('dotenv').config();
 const fs = require('fs');
-const { Pool } = require('pg');
-
-// Hardcoded for verification only - DELETE AFTER USE
-const connectionString = 'postgresql://neondb_owner:npg_aXlrxhuS9GR8@ep-plain-art-aez29oyf-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const pool = require('../api/db');
 
 console.log('Checking DB...');
-
-const pool = new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
-    connectionTimeoutMillis: 10000, // 10s timeout
-});
 
 async function check() {
     try {
