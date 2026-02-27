@@ -61,6 +61,10 @@ const pool = new Pool({
     allowExitOnIdle: true
 });
 
+// Auth schema name: Supabase reserves 'auth', so we use 'app_auth' on non-Neon providers
+const AUTH_SCHEMA = process.env.AUTH_SCHEMA || (provider === 'neon' ? 'auth' : 'app_auth');
+console.log(`🔐 Auth schema: ${AUTH_SCHEMA}`);
+
 // Log connection events
 pool.on('connect', () => {
     console.log(`✅ Database pool [${provider.toUpperCase()}]: New connection established`);
@@ -70,4 +74,6 @@ pool.on('error', (err) => {
     console.error(`❌ Database pool [${provider.toUpperCase()}] error:`, err.message);
 });
 
+// Export pool (default) + AUTH_SCHEMA as properties
+pool.AUTH_SCHEMA = AUTH_SCHEMA;
 module.exports = pool;

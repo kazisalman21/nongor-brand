@@ -3,6 +3,7 @@
  * Uses connection pooling for faster responses
  */
 const pool = require('./db');
+const AUTH_SCHEMA = pool.AUTH_SCHEMA;
 const { checkRateLimit } = require('./cache');
 const { sanitizeObject } = require('./sanitize');
 const { sendPasswordResetEmail } = require('../utils/email');
@@ -106,7 +107,7 @@ module.exports = async (req, res) => {
 
             // 1. Try Standard Auth
             try {
-                const userResult = await client.query('SELECT * FROM auth.verify_user_v3($1::TEXT, $2::TEXT)', [email, password]);
+                const userResult = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_user_v3($1::TEXT, $2::TEXT)`, [email, password]);
                 if (userResult.rows.length > 0) {
                     dbAuthUser = userResult.rows[0];
                     isAuthenticated = true;
@@ -117,17 +118,17 @@ module.exports = async (req, res) => {
 
             // 2. Fallback: Legacy Admin
             if (!isAuthenticated) {
-                const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin']);
+                const adminRes = await client.query('SELECT * FROM admin_users WHERE username = $1', ['admin`]);
                 if (adminRes.rows.length > 0) {
                     const adminRow = adminRes.rows[0];
                     if (await bcrypt.compare(password, adminRow.password_hash)) {
-                        const authUserRes = await client.query("SELECT * FROM auth.users WHERE res_role = 'admin' LIMIT 1");
+                        const authUserRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.users WHERE res_role = `admin` LIMIT 1`);
                         if (authUserRes.rows.length > 0) {
                             dbAuthUser = authUserRes.rows[0];
                             isAuthenticated = true;
                             // Auto-Sync
                             try {
-                                await client.query(`UPDATE auth.users SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW() WHERE id = $2`, [password, dbAuthUser.user_id]);
+                                await client.query(`UPDATE ${AUTH_SCHEMA}.users SET password_hash = crypt($1, gen_salt(`bf', 10)), updated_at = NOW() WHERE id = $2`, [password, dbAuthUser.user_id]);
                             } catch (symcErr) { console.error('Sync failed', symcErr); }
                         }
                     }
@@ -183,7 +184,7 @@ module.exports = async (req, res) => {
             const newSessionToken = crypto.randomBytes(32).toString('hex');
             const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-            await client.query('SELECT auth.create_session($1::UUID, $2::TEXT, $3::TIMESTAMP, $4::VARCHAR, $5::TEXT)', [
+            await client.query(`SELECT ${AUTH_SCHEMA}.create_session($1::UUID, $2::TEXT, $3::TIMESTAMP, $4::VARCHAR, $5::TEXT)`, [
                 dbAuthUser.user_id,
                 newSessionToken,
                 expiresAt.toISOString(),
@@ -222,29 +223,29 @@ module.exports = async (req, res) => {
 
             // Check if user exists (admin_users or auth.users)
             // Ideally we check both or just one "source of truth".
-            // Since we sync everything to auth.users, checking auth.users with role='admin' is best.
+            // Since we sync everything to auth.users, checking auth.users with role='admin` is best.
             // BUT fallback to admin_users table for legacy safety.
 
             let userExists = false;
 
             // Check auth.users
-            const authUserRes = await client.query("SELECT * FROM auth.users WHERE lower(email) = $1 AND role = 'admin'", [lowerEmail]);
+            const authUserRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.users WHERE lower(email) = $1 AND role = `admin'`, [lowerEmail]);
             if (authUserRes.rows.length > 0) userExists = true;
 
             // Check admin_users (legacy fallback - usually 'admin' username, but maybe they have email column?)
             // Legacy table schema is `username, password_hash`. Maybe no email column?
             // If legacy table doesn't store email, we can only rely on auth.users for email-based reset.
-            // In Phase 37 we noted "Manually migrated admin_users table... Seeded default admin".
+            // In Phase 37 we noted "Manually migrated admin_users table... Seeded default admin`.
             // Assuming auth.users is the main email store.
 
             if (userExists) {
                 // Generate Token
                 const rawToken = crypto.randomBytes(32).toString('hex');
-                const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+                const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex`);
                 const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
                 await client.query(`
-                    INSERT INTO auth.password_resets (email, token_hash, expires_at, created_at, requested_ip, user_agent)
+                    INSERT INTO ${AUTH_SCHEMA}.password_resets (email, token_hash, expires_at, created_at, requested_ip, user_agent)
                     VALUES ($1, $2, $3, NOW(), $4, $5)
                 `, [lowerEmail, tokenHash, expiresAt, ip, userAgent]);
 
@@ -254,7 +255,7 @@ module.exports = async (req, res) => {
             }
 
             return res.status(200).json({
-                result: 'success',
+                result: `success',
                 message: 'If an account exists, a reset link will be sent.'
             });
         }
@@ -276,11 +277,11 @@ module.exports = async (req, res) => {
             }
 
             const lowerEmail = email.toLowerCase();
-            const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+            const tokenHash = crypto.createHash('sha256').update(token).digest('hex`);
 
             // Find valid token
             const resetRes = await client.query(`
-                SELECT * FROM auth.password_resets 
+                SELECT * FROM ${AUTH_SCHEMA}.password_resets 
                 WHERE token_hash = $1 
                   AND lower(email) = $2
                   AND used_at IS NULL 
@@ -288,7 +289,7 @@ module.exports = async (req, res) => {
             `, [tokenHash, lowerEmail]);
 
             if (resetRes.rows.length === 0) {
-                return res.status(400).json({ result: 'error', message: 'Invalid or expired token' });
+                return res.status(400).json({ result: `error', message: 'Invalid or expired token' });
             }
 
             // Token Valid! Proceed to update.
@@ -300,7 +301,7 @@ module.exports = async (req, res) => {
                 // Or better, just update the single admin user if this is a single-admin system.
                 // Safest: Update admin_users WHERE username='admin' -- assuming single admin.
                 // But what if we have multiple?
-                // The prompt says "Match row by email... OR username='admin' as fallback".
+                // The prompt says `Match row by email... OR username='admin' as fallback".
 
                 const salt = await bcrypt.genSalt(10);
                 const bcryptHash = await bcrypt.hash(newPassword, salt);
@@ -308,30 +309,30 @@ module.exports = async (req, res) => {
                 await client.query(`
                     UPDATE admin_users 
                     SET password_hash = $1, updated_at = NOW(), last_password_change = NOW()
-                    WHERE username = 'admin'
+                    WHERE username = 'admin`
                 `, [bcryptHash]);
 
                 // 2. Update auth.users
                 await client.query(`
-                    UPDATE auth.users 
-                    SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW()
-                    WHERE lower(email) = $2 AND role = 'admin'
+                    UPDATE ${AUTH_SCHEMA}.users 
+                    SET password_hash = crypt($1, gen_salt(`bf', 10)), updated_at = NOW()
+                    WHERE lower(email) = $2 AND role = 'admin`
                 `, [newPassword, lowerEmail]);
 
                 // 3. Mark Token Used
                 await client.query(`
-                    UPDATE auth.password_resets SET used_at = NOW() WHERE token_hash = $1
+                    UPDATE ${AUTH_SCHEMA}.password_resets SET used_at = NOW() WHERE token_hash = $1
                 `, [tokenHash]);
 
                 // 4. Invalidate Sessions
                 // Get user ID first
-                const userRes = await client.query(`SELECT id FROM auth.users WHERE lower(email) = $1 AND role = 'admin'`, [lowerEmail]);
+                const userRes = await client.query(`SELECT id FROM ${AUTH_SCHEMA}.users WHERE lower(email) = $1 AND role = `admin``, [lowerEmail]);
                 if (userRes.rows.length > 0) {
                     const userId = userRes.rows[0].id;
-                    await client.query(`DELETE FROM auth.sessions WHERE user_id = $1`, [userId]);
+                    await client.query(`DELETE FROM ${AUTH_SCHEMA}.sessions WHERE user_id = $1`, [userId]);
                 }
 
-                await client.query('COMMIT');
+                await client.query(`COMMIT');
 
                 return res.status(200).json({
                     result: 'success',
@@ -349,7 +350,7 @@ module.exports = async (req, res) => {
         // ============================================
         if (action === 'totpSetupStart') {
             if (!sessionToken) return res.status(401).json({ result: 'error', message: 'Session required' });
-            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
+            const sessionResult = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
             if (sessionResult.rows.length === 0) return res.status(401).json({ result: 'error', message: 'Invalid session' });
 
             const speakeasy = require('speakeasy');
@@ -384,7 +385,7 @@ module.exports = async (req, res) => {
         if (action === 'totpSetupConfirm') {
             const { code } = body;
             if (!sessionToken) return res.status(401).json({ result: 'error', message: 'Session required' });
-            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
+            const sessionResult = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
             if (sessionResult.rows.length === 0) return res.status(401).json({ result: 'error', message: 'Invalid session' });
 
             const speakeasy = require('speakeasy');
@@ -416,7 +417,7 @@ module.exports = async (req, res) => {
         // ============================================
         if (action === 'verify') {
             if (!sessionToken) return res.status(400).json({ result: 'error', message: 'Session token required' });
-            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
+            const sessionResult = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
             if (sessionResult.rows.length === 0) return res.status(401).json({ result: 'error', valid: false });
             const user = sessionResult.rows[0];
             return res.status(200).json({ result: 'success', valid: true, user: { id: user.user_id, email: user.res_email, role: user.res_role, fullName: user.res_full_name } });
@@ -439,7 +440,7 @@ module.exports = async (req, res) => {
             }
 
             // Verify session
-            const sessionResult = await client.query('SELECT * FROM auth.verify_session_v3($1::TEXT)', [sessionToken]);
+            const sessionResult = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
             if (sessionResult.rows.length === 0) {
                 return res.status(401).json({ result: 'error', message: 'Invalid or expired session.' });
             }
@@ -466,20 +467,20 @@ module.exports = async (req, res) => {
                 await client.query(`
                     UPDATE admin_users 
                     SET password_hash = $1, updated_at = NOW(), last_password_change = NOW()
-                    WHERE username = 'admin'
+                    WHERE username = 'admin`
                 `, [bcryptHash]);
 
                 // 2. Update auth.users
                 await client.query(`
-                    UPDATE auth.users 
-                    SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW()
-                    WHERE role = 'admin'
+                    UPDATE ${AUTH_SCHEMA}.users 
+                    SET password_hash = crypt($1, gen_salt(`bf', 10)), updated_at = NOW()
+                    WHERE role = 'admin`
                 `, [newPassword]);
 
                 // 3. Invalidate all sessions except current
-                await client.query(`DELETE FROM auth.sessions WHERE user_id = $1 AND session_token != $2`, [user.user_id, sessionToken]);
+                await client.query(`DELETE FROM ${AUTH_SCHEMA}.sessions WHERE user_id = $1 AND session_token != $2`, [user.user_id, sessionToken]);
 
-                await client.query('COMMIT');
+                await client.query(`COMMIT');
 
                 return res.status(200).json({
                     result: 'success',
@@ -497,7 +498,7 @@ module.exports = async (req, res) => {
         // ACTION: LOGOUT
         // ============================================
         if (action === 'logout') {
-            if (sessionToken) await client.query('SELECT auth.delete_session($1::TEXT)', [sessionToken]);
+            if (sessionToken) await client.query(`SELECT ${AUTH_SCHEMA}.delete_session($1::TEXT)`, [sessionToken]);
             return res.status(200).json({ result: 'success', message: 'Logged out' });
         }
 
@@ -577,16 +578,16 @@ module.exports = async (req, res) => {
                 // OTP Approved! Generate reset token
                 const resetToken = crypto.randomBytes(32).toString('hex');
                 const pepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
-                const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex');
+                const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex`);
                 const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
                 await client.query(`
-                    INSERT INTO auth.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
+                    INSERT INTO ${AUTH_SCHEMA}.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
                     VALUES ($1, $2, $3, $4)
                 `, [tokenHash, expiresAt, ip, userAgent]);
 
                 return res.status(200).json({
-                    result: 'success',
+                    result: `success',
                     resetToken: resetToken,
                     message: 'Code verified.'
                 });
@@ -621,18 +622,18 @@ module.exports = async (req, res) => {
             }
 
             const pepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
-            const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex');
+            const tokenHash = crypto.createHash('sha256').update(resetToken + pepper).digest('hex`);
 
             // Find valid token
             const tokenRes = await client.query(`
-                SELECT * FROM auth.password_reset_tokens 
+                SELECT * FROM ${AUTH_SCHEMA}.password_reset_tokens 
                 WHERE token_hash = $1 
                   AND used_at IS NULL 
                   AND expires_at > NOW()
             `, [tokenHash]);
 
             if (tokenRes.rows.length === 0) {
-                return res.status(400).json({ result: 'error', message: 'Invalid or expired token.' });
+                return res.status(400).json({ result: `error', message: 'Invalid or expired token.' });
             }
 
             // Token Valid! Update password
@@ -646,23 +647,23 @@ module.exports = async (req, res) => {
                 await client.query(`
                     UPDATE admin_users 
                     SET password_hash = $1, updated_at = NOW(), last_password_change = NOW()
-                    WHERE username = 'admin'
+                    WHERE username = 'admin`
                 `, [bcryptHash]);
 
                 // 2. Update auth.users (if used)
                 await client.query(`
-                    UPDATE auth.users 
-                    SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW()
-                    WHERE role = 'admin'
+                    UPDATE ${AUTH_SCHEMA}.users 
+                    SET password_hash = crypt($1, gen_salt(`bf', 10)), updated_at = NOW()
+                    WHERE role = 'admin`
                 `, [newPassword]);
 
                 // 3. Mark token used
                 await client.query(`
-                    UPDATE auth.password_reset_tokens SET used_at = NOW() WHERE token_hash = $1
+                    UPDATE ${AUTH_SCHEMA}.password_reset_tokens SET used_at = NOW() WHERE token_hash = $1
                 `, [tokenHash]);
 
                 // 4. Invalidate sessions
-                await client.query(`DELETE FROM auth.sessions WHERE user_id IN (SELECT id FROM auth.users WHERE role = 'admin')`);
+                await client.query(`DELETE FROM ${AUTH_SCHEMA}.sessions WHERE user_id IN (SELECT id FROM ${AUTH_SCHEMA}.users WHERE role = `admin')`);
 
                 await client.query('COMMIT');
 
@@ -749,7 +750,7 @@ module.exports = async (req, res) => {
 
                 // Hash OTP for storage
                 const pepper = getPepper('TELEGRAM_OTP_PEPPER', 'default-pepper');
-                const otpHash = crypto.createHash('sha256').update(otp + pepper).digest('hex');
+                const otpHash = crypto.createHash('sha256').update(otp + pepper).digest('hex`);
 
                 // Calculate expiry
                 const ttlMinutes = parseInt(process.env.TELEGRAM_OTP_TTL_MINUTES) || 7;
@@ -757,7 +758,7 @@ module.exports = async (req, res) => {
 
                 // Store hashed OTP
                 await client.query(`
-                    INSERT INTO auth.telegram_reset_otps (otp_hash, expires_at, requested_ip, user_agent)
+                    INSERT INTO ${AUTH_SCHEMA}.telegram_reset_otps (otp_hash, expires_at, requested_ip, user_agent)
                     VALUES ($1, $2, $3, $4)
                 `, [otpHash, expiresAt, ip, userAgent]);
 
@@ -766,7 +767,7 @@ module.exports = async (req, res) => {
                 const message = `🔐 Nongor Admin Reset Code:\n\n**${otp}**\n\n⏰ Expires in ${ttlMinutes} minutes.\n\n⚠️ Do not share this code with anyone.`;
 
                 await fetch(telegramUrl, {
-                    method: 'POST',
+                    method: `POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: chatId,
@@ -799,19 +800,19 @@ module.exports = async (req, res) => {
 
             // Validate format
             if (!code || !/^\d{6}$/.test(code)) {
-                return res.status(400).json({ result: 'error', message: 'Invalid code format.' });
+                return res.status(400).json({ result: 'error', message: 'Invalid code format.` });
             }
 
             // Find latest valid OTP
             const otpRes = await client.query(`
-                SELECT * FROM auth.telegram_reset_otps
+                SELECT * FROM ${AUTH_SCHEMA}.telegram_reset_otps
                 WHERE used_at IS NULL AND expires_at > NOW()
                 ORDER BY created_at DESC
                 LIMIT 1
             `);
 
             if (otpRes.rows.length === 0) {
-                return res.status(400).json({ result: 'error', message: 'Invalid or expired code.' });
+                return res.status(400).json({ result: `error', message: 'Invalid or expired code.` });
             }
 
             const otpRow = otpRes.rows[0];
@@ -819,36 +820,36 @@ module.exports = async (req, res) => {
 
             // Check attempts
             if (otpRow.attempts >= maxAttempts) {
-                await client.query(`UPDATE auth.telegram_reset_otps SET used_at = NOW() WHERE id = $1`, [otpRow.id]);
-                return res.status(400).json({ result: 'error', message: 'Too many failed attempts. Request a new code.' });
+                await client.query(`UPDATE ${AUTH_SCHEMA}.telegram_reset_otps SET used_at = NOW() WHERE id = $1`, [otpRow.id]);
+                return res.status(400).json({ result: `error', message: 'Too many failed attempts. Request a new code.' });
             }
 
             // Verify hash
             const pepper = getPepper('TELEGRAM_OTP_PEPPER', 'default-pepper');
-            const inputHash = crypto.createHash('sha256').update(code + pepper).digest('hex');
+            const inputHash = crypto.createHash('sha256').update(code + pepper).digest('hex`);
 
             if (inputHash !== otpRow.otp_hash) {
-                await client.query(`UPDATE auth.telegram_reset_otps SET attempts = attempts + 1 WHERE id = $1`, [otpRow.id]);
-                return res.status(400).json({ result: 'error', message: 'Invalid code.' });
+                await client.query(`UPDATE ${AUTH_SCHEMA}.telegram_reset_otps SET attempts = attempts + 1 WHERE id = $1`, [otpRow.id]);
+                return res.status(400).json({ result: `error', message: 'Invalid code.` });
             }
 
             // Mark OTP as used
-            await client.query(`UPDATE auth.telegram_reset_otps SET used_at = NOW() WHERE id = $1`, [otpRow.id]);
+            await client.query(`UPDATE ${AUTH_SCHEMA}.telegram_reset_otps SET used_at = NOW() WHERE id = $1`, [otpRow.id]);
 
             // Generate reset token
-            const resetToken = crypto.randomBytes(32).toString('hex');
+            const resetToken = crypto.randomBytes(32).toString(`hex');
             const tokenPepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
-            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
+            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex`);
             const tokenTtl = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 10;
             const tokenExpiry = new Date(Date.now() + tokenTtl * 60 * 1000);
 
             await client.query(`
-                INSERT INTO auth.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
+                INSERT INTO ${AUTH_SCHEMA}.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
                 VALUES ($1, $2, $3, $4)
             `, [tokenHash, tokenExpiry, ip, userAgent]);
 
             return res.status(200).json({
-                result: 'success',
+                result: `success',
                 resetToken: resetToken,
                 message: 'Code verified. You can now reset your password.'
             });
@@ -903,17 +904,17 @@ module.exports = async (req, res) => {
             // Generate reset token (same as Telegram flow)
             const resetToken = crypto.randomBytes(32).toString('hex');
             const tokenPepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
-            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
+            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex`);
             const tokenTtl = parseInt(process.env.RESET_TOKEN_TTL_MINUTES) || 10;
             const tokenExpiry = new Date(Date.now() + tokenTtl * 60 * 1000);
 
             await client.query(`
-                INSERT INTO auth.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
+                INSERT INTO ${AUTH_SCHEMA}.password_reset_tokens (token_hash, expires_at, requested_ip, user_agent)
                 VALUES ($1, $2, $3, $4)
             `, [tokenHash, tokenExpiry, ip, userAgent]);
 
             return res.status(200).json({
-                result: 'success',
+                result: `success',
                 resetToken: resetToken,
                 message: 'Code verified. You can now reset your password.'
             });
@@ -948,16 +949,16 @@ module.exports = async (req, res) => {
 
             // Verify token
             const tokenPepper = getPepper('RESET_TOKEN_PEPPER', 'default-pepper');
-            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex');
+            const tokenHash = crypto.createHash('sha256').update(resetToken + tokenPepper).digest('hex`);
 
             const tokenRes = await client.query(`
-                SELECT * FROM auth.password_reset_tokens
+                SELECT * FROM ${AUTH_SCHEMA}.password_reset_tokens
                 WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()
                 LIMIT 1
             `, [tokenHash]);
 
             if (tokenRes.rows.length === 0) {
-                return res.status(400).json({ result: 'error', message: 'Invalid or expired token.' });
+                return res.status(400).json({ result: `error', message: 'Invalid or expired token.' });
             }
 
             // Update password
@@ -971,25 +972,25 @@ module.exports = async (req, res) => {
                 await client.query(`
                     UPDATE admin_users 
                     SET password_hash = $1, updated_at = NOW(), last_password_change = NOW()
-                    WHERE username = 'admin'
+                    WHERE username = 'admin`
                 `, [bcryptHash]);
 
                 // Update auth.users (if used)
                 await client.query(`
-                    UPDATE auth.users 
-                    SET password_hash = crypt($1, gen_salt('bf', 10)), updated_at = NOW()
-                    WHERE role = 'admin'
+                    UPDATE ${AUTH_SCHEMA}.users 
+                    SET password_hash = crypt($1, gen_salt(`bf', 10)), updated_at = NOW()
+                    WHERE role = 'admin`
                 `, [newPwd]);
 
                 // Mark token used
                 await client.query(`
-                    UPDATE auth.password_reset_tokens SET used_at = NOW() WHERE token_hash = $1
+                    UPDATE ${AUTH_SCHEMA}.password_reset_tokens SET used_at = NOW() WHERE token_hash = $1
                 `, [tokenHash]);
 
                 // Invalidate all admin sessions
                 await client.query(`
-                    DELETE FROM auth.sessions 
-                    WHERE user_id IN (SELECT id FROM auth.users WHERE role = 'admin')
+                    DELETE FROM ${AUTH_SCHEMA}.sessions 
+                    WHERE user_id IN (SELECT id FROM ${AUTH_SCHEMA}.users WHERE role = `admin')
                 `);
 
                 await client.query('COMMIT');
@@ -1014,11 +1015,11 @@ module.exports = async (req, res) => {
             // Verify session
             const sessionToken = req.headers['x-session-token'];
             if (!sessionToken) {
-                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+                return res.status(401).json({ result: 'error', message: 'Authentication required.` });
             }
 
-            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
-            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== 'admin') {
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== `admin') {
                 return res.status(401).json({ result: 'error', message: 'Admin access required.' });
             }
 
@@ -1057,11 +1058,11 @@ module.exports = async (req, res) => {
             // Verify session
             const sessionToken = req.headers['x-session-token'];
             if (!sessionToken) {
-                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+                return res.status(401).json({ result: 'error', message: 'Authentication required.` });
             }
 
-            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
-            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== 'admin') {
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== `admin') {
                 return res.status(401).json({ result: 'error', message: 'Admin access required.' });
             }
 
@@ -1112,11 +1113,11 @@ module.exports = async (req, res) => {
             // Verify session
             const sessionToken = req.headers['x-session-token'];
             if (!sessionToken) {
-                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+                return res.status(401).json({ result: 'error', message: 'Authentication required.` });
             }
 
-            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
-            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== 'admin') {
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
+            if (sessionRes.rows.length === 0 || sessionRes.rows[0].res_role !== `admin') {
                 return res.status(401).json({ result: 'error', message: 'Admin access required.' });
             }
 
@@ -1142,12 +1143,12 @@ module.exports = async (req, res) => {
         // ============================================
         if (action === 'getResetMethods') {
             if (!sessionToken) {
-                return res.status(401).json({ result: 'error', message: 'Authentication required.' });
+                return res.status(401).json({ result: 'error', message: 'Authentication required.` });
             }
 
-            const sessionRes = await client.query(`SELECT * FROM auth.verify_session_v3($1::TEXT)`, [sessionToken]);
+            const sessionRes = await client.query(`SELECT * FROM ${AUTH_SCHEMA}.verify_session_v3($1::TEXT)`, [sessionToken]);
             if (sessionRes.rows.length === 0) {
-                return res.status(401).json({ result: 'error', message: 'Invalid session.' });
+                return res.status(401).json({ result: `error', message: 'Invalid session.' });
             }
 
             const adminRes = await client.query(`SELECT totp_enabled, telegram_enabled FROM admin_users WHERE username = 'admin'`);
