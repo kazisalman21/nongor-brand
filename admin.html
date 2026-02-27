@@ -4292,32 +4292,31 @@
             btn.disabled = true;
             btn.innerHTML = '<div class="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full"></div><span>Connecting...</span>';
 
+            // Check if Google Identity Services library is loaded
+            if (typeof google === 'undefined' || !google.accounts) {
+                showToast('Google Sign-In is loading, please wait...', 'blue');
+                setTimeout(() => {
+                    resetGoogleBtn();
+                    if (typeof google !== 'undefined' && google.accounts) {
+                        handleGoogleSignIn();
+                    } else {
+                        showToast('Google Sign-In unavailable. Check your connection.', 'red');
+                    }
+                }, 2000);
+                return;
+            }
+
             try {
                 google.accounts.id.initialize({
                     client_id: GOOGLE_CLIENT_ID,
                     callback: handleGoogleCredential,
-                    auto_select: false
+                    auto_select: false,
+                    cancel_on_tap_outside: true
                 });
                 google.accounts.id.prompt((notification) => {
                     if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        // Fallback: use popup
-                        google.accounts.id.renderButton(
-                            document.createElement('div'),
-                            { type: 'standard' }
-                        );
-                        // Try One Tap or manual popup
-                        const tokenClient = google.accounts.oauth2.initTokenClient({
-                            client_id: GOOGLE_CLIENT_ID,
-                            scope: 'email profile',
-                            callback: () => { }
-                        });
-                        // Use code client for sign-in
-                        google.accounts.id.initialize({
-                            client_id: GOOGLE_CLIENT_ID,
-                            callback: handleGoogleCredential,
-                            ux_mode: 'popup'
-                        });
-                        google.accounts.id.prompt();
+                        showToast('Please allow the Google popup or disable popup blocker', 'blue');
+                        resetGoogleBtn();
                     }
                 });
             } catch (err) {

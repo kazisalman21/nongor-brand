@@ -1177,8 +1177,7 @@ module.exports = async (req, res) => {
 
             try {
                 // Verify Google ID token using Google's tokeninfo endpoint
-                const fetch = require('node-fetch');
-                const tokenRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+                const tokenRes = await globalThis.fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
                 const payload = await tokenRes.json();
 
                 if (payload.error_description) {
