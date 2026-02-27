@@ -16,7 +16,8 @@
     "regenerator-runtime": "^0.14.1",
     "resend": "^3.0.0",
     "speakeasy": "^2.0.0",
-    "twilio": "^5.4.0"
+    "twilio": "^5.4.0",
+    "web-push": "^3.6.7"
   },
   "scripts": {
     "dev": "vite",
@@ -35,7 +36,8 @@
     "db:migrate:images": "node scripts/migrate_images_to_jsonb.js",
     "db:migrate:coupons": "node scripts/create_coupons_table.js",
     "db:migrate:blog": "node scripts/create_blog_table.js",
-    "db:setup:all": "npm run db:migrate:tracking && npm run db:migrate:order-items && npm run db:migrate:images && npm run db:migrate:coupons && npm run db:migrate:blog"
+    "db:migrate:push": "node scripts/create_push_tables.js",
+    "db:setup:all": "npm run db:migrate:tracking && npm run db:migrate:order-items && npm run db:migrate:images && npm run db:migrate:coupons && npm run db:migrate:blog && npm run db:migrate:push"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.18",

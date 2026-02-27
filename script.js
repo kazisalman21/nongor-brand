@@ -71,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const loader = document.getElementById('app-loading-overlay');
         if (loader) loader.remove();
     }
+
+    // 7. Push Notifications
+    initPushNotifications();
 });
 
 // Failsafe: If DOMContentLoaded already fired or modules load late, use window.onload
@@ -123,6 +126,5 @@ function initScrollReveal() {
         allRevealEls.forEach(el => el.classList.add('visible'));
     }
 
-    // 7. Push Notifications
-    initPushNotifications();
+    // 7. Push Notifications — moved to DOMContentLoaded for proper lifecycle
 }

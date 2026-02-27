@@ -1,63 +1,219 @@
 /**
  * @module push-notifications
- * @description Web Push Notification manager for Nongorr.
- * Registers the service worker, handles subscription,
- * and shows a non-intrusive "Enable Notifications" banner
- * on first visit. Stores preference in localStorage.
+ * @description Enterprise-grade Web Push Notification manager for Nongorr.
+ * Features: VAPID-based subscription, topic preferences, in-app notification
+ * center, engagement tracking, smart re-subscribe, post-order prompts.
  */
 
-const PUSH_STORAGE_KEY = 'nongorr_push_status';
-const PUSH_DISMISSED_KEY = 'nongorr_push_dismissed';
+// ─── Constants ───────────────────────────────────────────────
+const PUSH_STORAGE_KEY = 'nongorr_push_status';       // 'subscribed' | null
+const PUSH_DISMISSED_KEY = 'nongorr_push_dismissed';   // 'true' | null
+const PUSH_TOPICS_KEY = 'nongorr_push_topics';         // JSON array
+const PUSH_ENDPOINT_KEY = 'nongorr_push_endpoint';     // subscription endpoint
+const PUSH_NOTIF_CENTER_KEY = 'nongorr_notifications'; // JSON array of recent notifs
+const API_BASE = '/api';
 
-/**
- * Initialize push notifications — call after DOMContentLoaded.
- * Only shows the banner if:
- * 1. Browser supports push
- * 2. User hasn't already subscribed or dismissed
- * 3. Page is served over HTTPS
- */
-export function initPushNotifications() {
-    // Check browser support
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        console.log('[Push] Browser does not support push notifications');
-        return;
+// ─── State ───────────────────────────────────────────────────
+let vapidPublicKey = null;
+let swRegistration = null;
+let currentSubscription = null;
+
+// ─── Helpers ─────────────────────────────────────────────────
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
     }
-
-    // Don't show on localhost (push needs HTTPS)
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-        console.log('[Push] Skipping push on localhost');
-        return;
-    }
-
-    // Register service worker
-    navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-            console.log('[SW] Registered:', registration.scope);
-            window.__swRegistration = registration;
-        })
-        .catch((err) => {
-            console.error('[SW] Registration failed:', err);
-        });
-
-    // Check if user already subscribed or dismissed
-    const pushStatus = localStorage.getItem(PUSH_STORAGE_KEY);
-    const dismissed = localStorage.getItem(PUSH_DISMISSED_KEY);
-
-    if (pushStatus === 'subscribed' || dismissed === 'true') {
-        return; // Don't show banner again
-    }
-
-    // Show banner after 5 seconds (non-intrusive)
-    setTimeout(() => {
-        showPushBanner();
-    }, 5000);
+    return outputArray;
 }
 
-/**
- * Show the push notification opt-in banner
- */
+function getStoredTopics() {
+    try {
+        const stored = localStorage.getItem(PUSH_TOPICS_KEY);
+        return stored ? JSON.parse(stored) : ['orders', 'arrivals', 'offers'];
+    } catch { return ['orders', 'arrivals', 'offers']; }
+}
+
+function storeNotification(notif) {
+    try {
+        const list = JSON.parse(localStorage.getItem(PUSH_NOTIF_CENTER_KEY) || '[]');
+        list.unshift({ ...notif, read: false, time: Date.now() });
+        // Keep only last 20
+        localStorage.setItem(PUSH_NOTIF_CENTER_KEY, JSON.stringify(list.slice(0, 20)));
+        updateBellBadge();
+    } catch (e) { console.error('[Push] Store notification error:', e); }
+}
+
+function getNotifications() {
+    try {
+        return JSON.parse(localStorage.getItem(PUSH_NOTIF_CENTER_KEY) || '[]');
+    } catch { return []; }
+}
+
+function getUnreadCount() {
+    return getNotifications().filter(n => !n.read).length;
+}
+
+function markAllRead() {
+    try {
+        const list = getNotifications().map(n => ({ ...n, read: true }));
+        localStorage.setItem(PUSH_NOTIF_CENTER_KEY, JSON.stringify(list));
+        updateBellBadge();
+    } catch (e) { /* ignore */ }
+}
+
+// ─── Bell Badge ──────────────────────────────────────────────
+function updateBellBadge() {
+    const badge = document.getElementById('push-bell-badge');
+    const count = getUnreadCount();
+    if (badge) {
+        if (count > 0) {
+            badge.textContent = count > 9 ? '9+' : count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+}
+
+// ─── API Calls ───────────────────────────────────────────────
+async function fetchVapidKey() {
+    try {
+        const res = await fetch(`${API_BASE}?action=pushVapidKey`);
+        const data = await res.json();
+        if (data.result === 'success' && data.vapidPublicKey) {
+            vapidPublicKey = data.vapidPublicKey;
+            return true;
+        }
+    } catch (e) {
+        console.error('[Push] Failed to fetch VAPID key:', e);
+    }
+    return false;
+}
+
+async function sendSubscriptionToServer(subscription, topics) {
+    try {
+        const res = await fetch(`${API_BASE}?action=subscribePush`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subscription, topics })
+        });
+        return (await res.json()).result === 'success';
+    } catch (e) {
+        console.error('[Push] Server subscribe error:', e);
+        return false;
+    }
+}
+
+async function removeSubscriptionFromServer(endpoint) {
+    try {
+        await fetch(`${API_BASE}?action=unsubscribePush`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint })
+        });
+    } catch (e) { /* silent */ }
+}
+
+async function updateTopicsOnServer(endpoint, topics) {
+    try {
+        await fetch(`${API_BASE}?action=updatePushTopics`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint, topics })
+        });
+    } catch (e) { /* silent */ }
+}
+
+// ─── Core Subscribe ──────────────────────────────────────────
+async function subscribeToPush(topics) {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            console.log('[Push] Permission denied');
+            return false;
+        }
+
+        if (!vapidPublicKey) {
+            const fetched = await fetchVapidKey();
+            if (!fetched) return false;
+        }
+
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+            });
+        }
+
+        const selectedTopics = topics || getStoredTopics();
+        const success = await sendSubscriptionToServer(subscription, selectedTopics);
+
+        if (success) {
+            currentSubscription = subscription;
+            localStorage.setItem(PUSH_STORAGE_KEY, 'subscribed');
+            localStorage.setItem(PUSH_TOPICS_KEY, JSON.stringify(selectedTopics));
+            localStorage.setItem(PUSH_ENDPOINT_KEY, subscription.endpoint);
+
+            // Show bell icon
+            const bellContainer = document.getElementById('push-bell-container');
+            if (bellContainer) bellContainer.classList.remove('hidden');
+
+            // Store welcome notification locally
+            storeNotification({
+                title: '🎉 স্বাগতম!',
+                body: 'নোটিফিকেশন চালু হয়েছে। অর্ডার আপডেট ও নতুন কালেকশনের খবর পাবেন!',
+                type: 'welcome'
+            });
+
+            if (window.showToast) {
+                window.showToast('🔔 নোটিফিকেশন চালু হয়েছে!');
+            }
+            console.log('[Push] Subscribed successfully');
+        }
+
+        return success;
+    } catch (err) {
+        console.error('[Push] Subscribe error:', err);
+        return false;
+    }
+}
+
+// ─── Unsubscribe ─────────────────────────────────────────────
+async function unsubscribeFromPush() {
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+            await removeSubscriptionFromServer(subscription.endpoint);
+            await subscription.unsubscribe();
+        }
+        localStorage.removeItem(PUSH_STORAGE_KEY);
+        localStorage.removeItem(PUSH_ENDPOINT_KEY);
+        localStorage.removeItem(PUSH_TOPICS_KEY);
+        currentSubscription = null;
+
+        // Hide bell icon
+        const bellContainer = document.getElementById('push-bell-container');
+        if (bellContainer) bellContainer.classList.add('hidden');
+
+        if (window.showToast) {
+            window.showToast('🔕 নোটিফিকেশন বন্ধ হয়েছে');
+        }
+        console.log('[Push] Unsubscribed');
+    } catch (e) {
+        console.error('[Push] Unsubscribe error:', e);
+    }
+}
+
+// ─── Premium Opt-in Banner ───────────────────────────────────
 function showPushBanner() {
-    // Don't show if already exists
     if (document.getElementById('push-banner')) return;
 
     const banner = document.createElement('div');
@@ -65,13 +221,32 @@ function showPushBanner() {
     banner.className = 'push-banner';
     banner.innerHTML = `
         <div class="push-banner-content">
-            <div class="push-banner-icon">🔔</div>
-            <div class="push-banner-text">
-                <strong>অর্ডার আপডেট পেতে চান?</strong>
-                <p>নোটিফিকেশন চালু করুন — অর্ডার ও নতুন কালেকশনের খবর পাবেন!</p>
+            <button id="push-close-btn" class="push-close-btn" aria-label="Close">&times;</button>
+            <div class="push-banner-header">
+                <div class="push-banner-icon">🔔</div>
+                <div class="push-banner-text">
+                    <strong>নোটিফিকেশন চালু করুন</strong>
+                    <p>অর্ডার আপডেট, নতুন কালেকশন ও অফারের খবর পান</p>
+                </div>
+            </div>
+            <div class="push-topics-selector">
+                <button class="push-topic-chip active" data-topic="orders">
+                    <span class="push-topic-emoji">📦</span> অর্ডার আপডেট
+                </button>
+                <button class="push-topic-chip active" data-topic="arrivals">
+                    <span class="push-topic-emoji">✨</span> নতুন কালেকশন
+                </button>
+                <button class="push-topic-chip active" data-topic="offers">
+                    <span class="push-topic-emoji">🏷️</span> অফার
+                </button>
             </div>
             <div class="push-banner-actions">
-                <button id="push-enable-btn" class="push-btn-enable">চালু করুন</button>
+                <button id="push-enable-btn" class="push-btn-enable">
+                    <svg class="push-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    চালু করুন
+                </button>
                 <button id="push-dismiss-btn" class="push-btn-dismiss">পরে</button>
             </div>
         </div>
@@ -81,13 +256,40 @@ function showPushBanner() {
 
     // Animate in
     requestAnimationFrame(() => {
-        banner.classList.add('push-banner-visible');
+        requestAnimationFrame(() => {
+            banner.classList.add('push-banner-visible');
+        });
+    });
+
+    // Topic chip toggles
+    banner.querySelectorAll('.push-topic-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            chip.classList.toggle('active');
+        });
+    });
+
+    // Close button
+    document.getElementById('push-close-btn').addEventListener('click', () => {
+        localStorage.setItem(PUSH_DISMISSED_KEY, 'true');
+        removeBanner();
     });
 
     // Enable button
     document.getElementById('push-enable-btn').addEventListener('click', async () => {
-        await subscribeToPush();
-        removeBanner();
+        const btn = document.getElementById('push-enable-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="push-spinner"></span> সংযুক্ত হচ্ছে...';
+
+        const selectedTopics = Array.from(banner.querySelectorAll('.push-topic-chip.active'))
+            .map(c => c.dataset.topic);
+
+        const success = await subscribeToPush(selectedTopics.length > 0 ? selectedTopics : undefined);
+        if (success) {
+            removeBanner();
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'আবার চেষ্টা করুন';
+        }
     });
 
     // Dismiss button
@@ -96,72 +298,276 @@ function showPushBanner() {
         removeBanner();
     });
 
-    // Auto-dismiss after 15 seconds
-    setTimeout(() => {
-        removeBanner();
-    }, 15000);
+    // Auto-dismiss after 20 seconds
+    setTimeout(() => { removeBanner(); }, 20000);
 }
 
-/**
- * Remove the push banner with animation
- */
 function removeBanner() {
     const banner = document.getElementById('push-banner');
     if (!banner) return;
-
     banner.classList.remove('push-banner-visible');
     banner.classList.add('push-banner-hiding');
-    setTimeout(() => {
-        banner.remove();
-    }, 400);
+    setTimeout(() => { banner.remove(); }, 400);
 }
 
-/**
- * Subscribe the user to push notifications
- */
-async function subscribeToPush() {
-    try {
-        const permission = await Notification.requestPermission();
+// ─── Notification Center ─────────────────────────────────────
+function createNotificationCenter() {
+    // Bell icon in navbar (insert next to cart)
+    const cartBtn = document.querySelector('.nav-cart');
+    if (!cartBtn || document.getElementById('push-bell-container')) return;
 
-        if (permission !== 'granted') {
-            console.log('[Push] Permission denied');
-            return;
+    const isSubscribed = localStorage.getItem(PUSH_STORAGE_KEY) === 'subscribed';
+
+    const bellContainer = document.createElement('div');
+    bellContainer.id = 'push-bell-container';
+    bellContainer.className = `push-bell-container ${isSubscribed ? '' : 'hidden'}`;
+    bellContainer.innerHTML = `
+        <button id="push-bell-btn" class="push-bell-btn" aria-label="Notifications">
+            <svg class="push-bell-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span id="push-bell-badge" class="push-bell-badge hidden">0</span>
+        </button>
+        <div id="push-notif-panel" class="push-notif-panel hidden">
+            <div class="push-notif-header">
+                <strong>নোটিফিকেশন</strong>
+                <button id="push-notif-settings" class="push-notif-settings" aria-label="Settings">⚙️</button>
+            </div>
+            <div id="push-notif-list" class="push-notif-list"></div>
+            <div id="push-notif-empty" class="push-notif-empty">
+                <span class="push-notif-empty-icon">⚓</span>
+                <p>কোনো নোটিফিকেশন নেই</p>
+            </div>
+            <div id="push-notif-settings-panel" class="push-notif-settings-panel hidden">
+                <div class="push-settings-topics">
+                    <label class="push-settings-topic"><input type="checkbox" value="orders" checked> 📦 অর্ডার আপডেট</label>
+                    <label class="push-settings-topic"><input type="checkbox" value="arrivals" checked> ✨ নতুন কালেকশন</label>
+                    <label class="push-settings-topic"><input type="checkbox" value="offers" checked> 🏷️ অফার</label>
+                </div>
+                <button id="push-save-topics" class="push-save-topics">সেভ করুন</button>
+                <button id="push-unsubscribe-btn" class="push-unsubscribe-btn">নোটিফিকেশন বন্ধ করুন</button>
+            </div>
+        </div>
+    `;
+
+    cartBtn.parentNode.insertBefore(bellContainer, cartBtn);
+
+    // Toggle notification panel
+    document.getElementById('push-bell-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const panel = document.getElementById('push-notif-panel');
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) {
+            renderNotifications();
+            markAllRead();
         }
+    });
 
-        // Wait for service worker to be ready
-        const registration = await navigator.serviceWorker.ready;
+    // Close panel on outside click
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('push-notif-panel');
+        const container = document.getElementById('push-bell-container');
+        if (panel && container && !container.contains(e.target)) {
+            panel.classList.add('hidden');
+        }
+    });
 
-        // Check for existing subscription
-        let subscription = await registration.pushManager.getSubscription();
+    // Settings toggle
+    document.getElementById('push-notif-settings').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const settingsPanel = document.getElementById('push-notif-settings-panel');
+        settingsPanel.classList.toggle('hidden');
 
-        if (!subscription) {
-            // For now, create a subscription without a VAPID key (local-only)
-            // When you add a push server, replace with your VAPID public key
-            subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                // applicationServerKey will be needed when you set up a push server
-            }).catch(() => {
-                // If VAPID key is required, just mark as subscribed locally
-                console.log('[Push] Subscription created (local mode)');
-                return null;
+        // Load current topics
+        if (!settingsPanel.classList.contains('hidden')) {
+            const currentTopics = getStoredTopics();
+            settingsPanel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = currentTopics.includes(cb.value);
             });
         }
+    });
 
-        // Mark as subscribed
-        localStorage.setItem(PUSH_STORAGE_KEY, 'subscribed');
+    // Save topics
+    document.getElementById('push-save-topics').addEventListener('click', async () => {
+        const newTopics = Array.from(
+            document.querySelectorAll('#push-notif-settings-panel input:checked')
+        ).map(cb => cb.value);
 
-        // Show success toast
-        if (window.showToast) {
-            window.showToast('🔔 নোটিফিকেশন চালু হয়েছে!');
+        localStorage.setItem(PUSH_TOPICS_KEY, JSON.stringify(newTopics));
+        const endpoint = localStorage.getItem(PUSH_ENDPOINT_KEY);
+        if (endpoint) {
+            await updateTopicsOnServer(endpoint, newTopics);
         }
+        document.getElementById('push-notif-settings-panel').classList.add('hidden');
+        if (window.showToast) window.showToast('✅ সেটিংস সেভ হয়েছে');
+    });
 
-        console.log('[Push] Subscribed successfully');
+    // Unsubscribe
+    document.getElementById('push-unsubscribe-btn').addEventListener('click', async () => {
+        await unsubscribeFromPush();
+        document.getElementById('push-notif-panel').classList.add('hidden');
+    });
 
-    } catch (err) {
-        console.error('[Push] Subscribe error:', err);
-        // Still mark as subscribed if permission was granted
-        if (Notification.permission === 'granted') {
-            localStorage.setItem(PUSH_STORAGE_KEY, 'subscribed');
-        }
+    updateBellBadge();
+}
+
+function renderNotifications() {
+    const list = document.getElementById('push-notif-list');
+    const empty = document.getElementById('push-notif-empty');
+    const notifications = getNotifications();
+
+    if (notifications.length === 0) {
+        list.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
     }
+
+    list.classList.remove('hidden');
+    empty.classList.add('hidden');
+
+    list.innerHTML = notifications.map(n => {
+        const timeAgo = getTimeAgo(n.time);
+        const typeIcons = {
+            welcome: '🎉', order_update: '📦', broadcast: '📢',
+            arrivals: '✨', offers: '🏷️', price_drop: '📉'
+        };
+        const icon = typeIcons[n.type] || '🔔';
+        return `
+            <div class="push-notif-item ${n.read ? '' : 'unread'}">
+                <span class="push-notif-icon">${icon}</span>
+                <div class="push-notif-body">
+                    <strong>${escapeHtml(n.title)}</strong>
+                    <p>${escapeHtml(n.body)}</p>
+                    <span class="push-notif-time">${timeAgo}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function getTimeAgo(timestamp) {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return 'এইমাত্র';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} মিনিট আগে`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} ঘণ্টা আগে`;
+    return `${Math.floor(seconds / 86400)} দিন আগে`;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ─── Post-Order Push Prompt ──────────────────────────────────
+export function promptPushAfterOrder() {
+    // Only prompt if not already subscribed
+    if (localStorage.getItem(PUSH_STORAGE_KEY) === 'subscribed') return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    // Show a mini prompt after a short delay
+    setTimeout(() => {
+        const prompt = document.createElement('div');
+        prompt.id = 'push-order-prompt';
+        prompt.className = 'push-order-prompt';
+        prompt.innerHTML = `
+            <div class="push-order-prompt-content">
+                <span class="push-order-prompt-icon">🔔</span>
+                <p>অর্ডার আপডেট পেতে নোটিফিকেশন চালু করুন</p>
+                <button id="push-order-enable" class="push-order-enable">চালু করুন</button>
+                <button id="push-order-skip" class="push-order-skip">&times;</button>
+            </div>
+        `;
+        document.body.appendChild(prompt);
+
+        requestAnimationFrame(() => {
+            prompt.classList.add('push-order-prompt-visible');
+        });
+
+        document.getElementById('push-order-enable').addEventListener('click', async () => {
+            await subscribeToPush(['orders']);
+            prompt.remove();
+        });
+
+        document.getElementById('push-order-skip').addEventListener('click', () => {
+            prompt.classList.remove('push-order-prompt-visible');
+            setTimeout(() => prompt.remove(), 300);
+        });
+
+        // Auto-dismiss after 12 seconds
+        setTimeout(() => {
+            if (document.getElementById('push-order-prompt')) {
+                prompt.classList.remove('push-order-prompt-visible');
+                setTimeout(() => prompt.remove(), 300);
+            }
+        }, 12000);
+    }, 2000);
+}
+
+// ─── Listen for SW Messages (notification received) ──────────
+function listenForPushMessages() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'PUSH_RECEIVED') {
+                storeNotification(event.data.notification);
+            }
+        });
+    }
+}
+
+// ─── Main Init ───────────────────────────────────────────────
+export function initPushNotifications() {
+    // Check browser support
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.log('[Push] Browser does not support push notifications');
+        return;
+    }
+
+    // Don't run on localhost
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        console.log('[Push] Skipping on localhost');
+        return;
+    }
+
+    // Register service worker
+    navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+            console.log('[SW] Registered:', registration.scope);
+            swRegistration = registration;
+        })
+        .catch((err) => {
+            console.error('[SW] Registration failed:', err);
+        });
+
+    // Create notification center in navbar
+    createNotificationCenter();
+
+    // Listen for push messages from SW
+    listenForPushMessages();
+
+    // Smart re-subscribe: if permission granted but subscription missing from server
+    if (Notification.permission === 'granted' && localStorage.getItem(PUSH_STORAGE_KEY) === 'subscribed') {
+        navigator.serviceWorker.ready.then(async (registration) => {
+            const sub = await registration.pushManager.getSubscription();
+            if (!sub) {
+                console.log('[Push] Re-subscribing (subscription lost)...');
+                await subscribeToPush();
+            } else {
+                currentSubscription = sub;
+            }
+        });
+        return; // Already subscribed, don't show banner
+    }
+
+    // Check if user already subscribed or dismissed
+    const pushStatus = localStorage.getItem(PUSH_STORAGE_KEY);
+    const dismissed = localStorage.getItem(PUSH_DISMISSED_KEY);
+
+    if (pushStatus === 'subscribed' || dismissed === 'true') {
+        return;
+    }
+
+    // Show banner after 8 seconds
+    setTimeout(() => {
+        showPushBanner();
+    }, 8000);
 }

@@ -10,6 +10,8 @@
  * @see {@link module:config} — shared state (currentProductId, selectedSize)
  */
 
+import { promptPushAfterOrder } from './push-notifications.js';
+
 // ==============================================
 // CHECKOUT — Order placement, coupons, tracking
 // ==============================================
@@ -333,6 +335,9 @@ window.confirmOrderFromPage = async function () {
             setWhatsAppOrderLink(serverOrderId);
 
             localStorage.removeItem('nongor_cart');
+
+            // Prompt push notification for order updates
+            promptPushAfterOrder();
         } else {
             throw new Error(result.error || result.message || "Failed");
         }
@@ -487,6 +492,9 @@ window.confirmOrder = async function () {
 
             showToast("✅ অর্ডার সফল হয়েছে!");
             setWhatsAppOrderLink(serverOrderId);
+
+            // Prompt push notification for order updates
+            promptPushAfterOrder();
         } else {
             throw new Error(result.message || "Unknown Error");
         }

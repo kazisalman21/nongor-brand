@@ -2257,6 +2257,14 @@
                 </svg>
                 Blog
             </button>
+            <button onclick="switchTab('push')" class="mobile-tab-btn" id="mob-tab-push">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                    </path>
+                </svg>
+                Push
+            </button>
             <button onclick="switchTab('settings')" class="mobile-tab-btn" id="mob-tab-settings">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -2363,6 +2371,10 @@
                 <button onclick="switchTab('blog')" id="tab-blog-main"
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
                     📝 Blog
+                </button>
+                <button onclick="switchTab('push')" id="tab-push-main"
+                    class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
+                    🔔 Push
                 </button>
             </div>
 
@@ -2753,6 +2765,151 @@
                     </div>
                 </div>
             </div> <!-- End Blog Section -->
+
+            <!-- Push Notifications Section (Hidden by default) -->
+            <div id="push-section" class="hidden">
+                <!-- Push Header -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">🔔 Push Notifications</h2>
+                        <p class="text-gray-500 text-sm">Broadcast notifications & view analytics</p>
+                    </div>
+                    <button onclick="loadPushAnalytics()"
+                        class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Active Subs</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="push-stat-total">-</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <p class="text-xs font-semibold text-gray-400 uppercase">📦 Orders</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="push-stat-orders">-</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <p class="text-xs font-semibold text-gray-400 uppercase">✨ Arrivals</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="push-stat-arrivals">-</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <p class="text-xs font-semibold text-gray-400 uppercase">🏷️ Offers</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="push-stat-offers">-</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                        <p class="text-xs font-semibold text-gray-400 uppercase">📊 Engagement</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="push-stat-engagement">-</h3>
+                    </div>
+                </div>
+
+                <!-- Compose Notification -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Compose Notification</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Title *</label>
+                            <input type="text" id="push-compose-title" placeholder="নতুন কালেকশন এসেছে!" maxlength="100"
+                                class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Body</label>
+                            <textarea id="push-compose-body" placeholder="আমাদের নতুন সম্ভার দেখুন" rows="2"
+                                class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none resize-none"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Image
+                                    URL</label>
+                                <input type="url" id="push-compose-image" placeholder="https://..."
+                                    class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Action
+                                    URL</label>
+                                <input type="text" id="push-compose-url" placeholder="/" value="/"
+                                    class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Target
+                                    Topic</label>
+                                <select id="push-compose-topic"
+                                    class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none text-sm bg-white">
+                                    <option value="all">All Subscribers</option>
+                                    <option value="orders">📦 Orders</option>
+                                    <option value="arrivals">✨ New Arrivals</option>
+                                    <option value="offers">🏷️ Offers</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p class="text-xs font-semibold text-gray-400 uppercase mb-2">Preview</p>
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center text-lg">
+                                    🔔</div>
+                                <div>
+                                    <p class="font-bold text-sm text-gray-800" id="push-preview-title">Notification
+                                        Title</p>
+                                    <p class="text-xs text-gray-500" id="push-preview-body">Notification body text</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="sendPushBroadcast()" id="push-send-btn"
+                            class="bg-brand-accent text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            Send Notification
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notification History -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-800">Notification History</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-100">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Title
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Topic
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Sent
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                        Delivered</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                        Clicked</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">CTR
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="push-history-body" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="push-history-empty" class="py-8 text-center text-gray-400 hidden">
+                        <p class="text-2xl mb-2">🔔</p>
+                        <p class="font-medium">No notifications sent yet</p>
+                    </div>
+                </div>
+            </div> <!-- End Push Section -->
 
             <!-- Blog Post Modal -->
             <div id="blog-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -4667,11 +4824,15 @@
                 if (s) s.classList.add('hidden');
             });
 
-            // Also hide blog section
+            // Also hide blog and push sections
             const blogSection = document.getElementById('blog-section');
             const blogTab = document.getElementById('tab-blog-main');
+            const pushSection = document.getElementById('push-section');
+            const pushTab = document.getElementById('tab-push-main');
             if (blogSection) blogSection.classList.add('hidden');
             if (blogTab) blogTab.className = 'px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors';
+            if (pushSection) pushSection.classList.add('hidden');
+            if (pushTab) pushTab.className = 'px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors';
 
             if (tab === 'orders') {
                 if (ordersSection) ordersSection.classList.remove('hidden');
@@ -4691,6 +4852,12 @@
                 if (blogSection) blogSection.classList.remove('hidden');
                 if (blogTab) blogTab.className = 'px-6 py-3 font-semibold text-brand-accent border-b-2 border-brand-accent transition-colors';
                 loadBlogPosts();
+            } else if (tab === 'push') {
+                const pushSection = document.getElementById('push-section');
+                const pushTab = document.getElementById('tab-push-main');
+                if (pushSection) pushSection.classList.remove('hidden');
+                if (pushTab) pushTab.className = 'px-6 py-3 font-semibold text-brand-accent border-b-2 border-brand-accent transition-colors';
+                loadPushAnalytics();
             }
         }
 
@@ -6869,6 +7036,134 @@
         // ==========================================
         // BLOG MANAGEMENT FUNCTIONS
         // ==========================================
+
+        // ═══════════════════════════════════════
+        // PUSH NOTIFICATIONS ADMIN
+        // ═══════════════════════════════════════
+
+        // Live preview update
+        document.addEventListener('DOMContentLoaded', () => {
+            const titleEl = document.getElementById('push-compose-title');
+            const bodyEl = document.getElementById('push-compose-body');
+            if (titleEl) titleEl.addEventListener('input', () => {
+                const previewTitle = document.getElementById('push-preview-title');
+                if (previewTitle) previewTitle.textContent = titleEl.value || 'Notification Title';
+            });
+            if (bodyEl) bodyEl.addEventListener('input', () => {
+                const previewBody = document.getElementById('push-preview-body');
+                if (previewBody) previewBody.textContent = bodyEl.value || 'Notification body text';
+            });
+        });
+
+        async function loadPushAnalytics() {
+            try {
+                const response = await authenticatedFetch(`${API_URL}?action=getPushAnalytics&_t=${Date.now()}`);
+                const result = await response.json();
+
+                if (result.result === 'success') {
+                    // Update stats
+                    const s = result.subscribers;
+                    document.getElementById('push-stat-total').textContent = s.total_active || '0';
+                    document.getElementById('push-stat-orders').textContent = s.topic_orders || '0';
+                    document.getElementById('push-stat-arrivals').textContent = s.topic_arrivals || '0';
+                    document.getElementById('push-stat-offers').textContent = s.topic_offers || '0';
+                    document.getElementById('push-stat-engagement').textContent = Math.round(s.avg_engagement || 0) + '%';
+
+                    // Render notification history
+                    const tbody = document.getElementById('push-history-body');
+                    const emptyEl = document.getElementById('push-history-empty');
+                    const notifications = result.notifications || [];
+
+                    if (notifications.length === 0) {
+                        tbody.innerHTML = '';
+                        emptyEl.classList.remove('hidden');
+                    } else {
+                        emptyEl.classList.add('hidden');
+                        tbody.innerHTML = notifications.map(n => {
+                            const date = new Date(n.created_at).toLocaleDateString('en-GB', {
+                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                            });
+                            const ctr = n.total_delivered > 0
+                                ? ((n.total_clicked / n.total_delivered) * 100).toFixed(1) + '%'
+                                : '—';
+                            const topicBadge = {
+                                'all': '<span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs">All</span>',
+                                'orders': '<span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-xs">📦 Orders</span>',
+                                'arrivals': '<span class="px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 text-xs">✨ Arrivals</span>',
+                                'offers': '<span class="px-2 py-0.5 rounded-full bg-green-50 text-green-600 text-xs">🏷️ Offers</span>'
+                            };
+                            return `<tr class="hover:bg-gray-50">
+                                <td class="px-6 py-3 text-sm text-gray-500">${date}</td>
+                                <td class="px-6 py-3 text-sm font-medium text-gray-800">${escapeHtml(n.title)}</td>
+                                <td class="px-6 py-3">${topicBadge[n.topic] || topicBadge['all']}</td>
+                                <td class="px-6 py-3 text-sm text-gray-600">${n.total_sent}</td>
+                                <td class="px-6 py-3 text-sm text-green-600 font-medium">${n.total_delivered}</td>
+                                <td class="px-6 py-3 text-sm text-blue-600 font-medium">${n.total_clicked}</td>
+                                <td class="px-6 py-3 text-sm font-semibold text-gray-700">${ctr}</td>
+                            </tr>`;
+                        }).join('');
+                    }
+                } else {
+                    showToast('Failed to load push analytics', 'red');
+                }
+            } catch (error) {
+                console.error('Push analytics error:', error);
+                showToast('Error loading push analytics', 'red');
+            }
+        }
+
+        async function sendPushBroadcast() {
+            const title = document.getElementById('push-compose-title').value.trim();
+            const body = document.getElementById('push-compose-body').value.trim();
+            const imageUrl = document.getElementById('push-compose-image').value.trim();
+            const actionUrl = document.getElementById('push-compose-url').value.trim() || '/';
+            const topic = document.getElementById('push-compose-topic').value;
+            const sendBtn = document.getElementById('push-send-btn');
+
+            if (!title) {
+                showToast('Title is required', 'red');
+                return;
+            }
+
+            if (!confirm(`Send "${title}" to ${topic === 'all' ? 'all subscribers' : topic + ' subscribers'}?`)) return;
+
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+
+            try {
+                const response = await authenticatedFetch(API_URL + '?action=sendPushNotification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body, imageUrl, actionUrl, topic })
+                });
+                const result = await response.json();
+
+                if (result.result === 'success') {
+                    showToast(`🔔 Sent! ${result.delivered}/${result.totalSent} delivered`);
+                    // Clear form
+                    document.getElementById('push-compose-title').value = '';
+                    document.getElementById('push-compose-body').value = '';
+                    document.getElementById('push-compose-image').value = '';
+                    document.getElementById('push-compose-url').value = '/';
+                    document.getElementById('push-preview-title').textContent = 'Notification Title';
+                    document.getElementById('push-preview-body').textContent = 'Notification body text';
+                    // Refresh analytics
+                    loadPushAnalytics();
+                } else {
+                    showToast(result.message || 'Failed to send', 'red');
+                }
+            } catch (error) {
+                console.error('Push send error:', error);
+                showToast('Error sending notification', 'red');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg> Send Notification`;
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // BLOG ADMIN
+        // ═══════════════════════════════════════
 
         let allBlogPosts = [];
 

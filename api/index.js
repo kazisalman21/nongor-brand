@@ -38,6 +38,19 @@ const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const fontkit = require('@pdf-lib/fontkit');
 const fs = require('fs');
 const path = require('path');
+const webpush = require('web-push');
+
+// --- Web Push VAPID Configuration ---
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        process.env.VAPID_SUBJECT || 'mailto:nongorr.anika@gmail.com',
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+    );
+    console.log('🔔 Web Push: VAPID configured');
+} else {
+    console.warn('⚠️ Web Push: VAPID keys not set. Push notifications disabled.');
+}
 
 module.exports = async (req, res) => {
     // --- SECURITY: CORS & HEADERS ---
@@ -1026,6 +1039,54 @@ module.exports = async (req, res) => {
                 return res.status(200).json({ result: 'success', data: result.rows });
             }
 
+            // --- GET VAPID PUBLIC KEY (Public) ---
+            if (query.action === 'pushVapidKey') {
+                client.release();
+                if (!process.env.VAPID_PUBLIC_KEY) {
+                    return res.status(503).json({ result: 'error', message: 'Push notifications not configured' });
+                }
+                return res.status(200).json({ result: 'success', vapidPublicKey: process.env.VAPID_PUBLIC_KEY });
+            }
+
+            // --- GET PUSH ANALYTICS (Admin) ---
+            if (query.action === 'getPushAnalytics') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                // Subscriber stats
+                const subsResult = await client.query(`
+                    SELECT 
+                        COUNT(*) FILTER (WHERE is_active = true) AS total_active,
+                        COUNT(*) FILTER (WHERE 'orders' = ANY(topics) AND is_active = true) AS topic_orders,
+                        COUNT(*) FILTER (WHERE 'arrivals' = ANY(topics) AND is_active = true) AS topic_arrivals,
+                        COUNT(*) FILTER (WHERE 'offers' = ANY(topics) AND is_active = true) AS topic_offers,
+                        COALESCE(AVG(engagement_score) FILTER (WHERE is_active = true), 0) AS avg_engagement
+                    FROM push_subscriptions
+                `);
+
+                // Recent notifications
+                const logsResult = await client.query(`
+                    SELECT id, type, title, body, topic, total_sent, total_delivered, total_clicked, sent_by, created_at
+                    FROM notification_log
+                    ORDER BY created_at DESC
+                    LIMIT 20
+                `);
+
+                client.release();
+                return res.status(200).json({
+                    result: 'success',
+                    subscribers: subsResult.rows[0],
+                    notifications: logsResult.rows
+                });
+            }
+
             client.release();
             return res.status(200).json({ message: 'API Ready' });
         }
@@ -1751,6 +1812,61 @@ module.exports = async (req, res) => {
                 // Only for main status updates, skipping payment-only for now unless desired
                 if (data.type !== 'payment') {
                     sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error("Email Fail:", e));
+
+                    // --- Auto Push Notification on Order Status Change ---
+                    if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+                        (async () => {
+                            try {
+                                const pushClient = await pool.connect();
+                                const subs = await pushClient.query(
+                                    "SELECT * FROM push_subscriptions WHERE is_active = true AND 'orders' = ANY(topics)"
+                                );
+                                pushClient.release();
+
+                                const statusMessages = {
+                                    'processing': { title: '⏳ অর্ডার প্রসেস হচ্ছে', body: `আপনার অর্ডার #${data.orderId} প্রসেস করা হচ্ছে।` },
+                                    'shipped': { title: '🚚 অর্ডার শিপ হয়েছে!', body: `আপনার অর্ডার #${data.orderId} কুরিয়ারে হস্তান্তর করা হয়েছে।` },
+                                    'delivered': { title: '🎉 ডেলিভারি সম্পন্ন!', body: `আপনার অর্ডার #${data.orderId} ডেলিভারি হয়েছে!` },
+                                    'cancelled': { title: '❌ অর্ডার বাতিল', body: `অর্ডার #${data.orderId} বাতিল করা হয়েছে।` }
+                                };
+
+                                const msg = statusMessages[data.status.toLowerCase()] || {
+                                    title: 'অর্ডার আপডেট',
+                                    body: `অর্ডার #${data.orderId} স্ট্যাটাস: ${data.status}`
+                                };
+
+                                const payload = JSON.stringify({
+                                    title: msg.title,
+                                    body: msg.body,
+                                    icon: '/assets/icon-192.png',
+                                    badge: '/assets/icon-192.png',
+                                    url: `/track?token=${updatedOrder.tracking_token || data.orderId}`,
+                                    type: 'order_update',
+                                    tag: `order-${data.orderId}`
+                                });
+
+                                let delivered = 0;
+                                await Promise.allSettled(subs.rows.map(async (sub) => {
+                                    try {
+                                        await webpush.sendNotification({
+                                            endpoint: sub.endpoint,
+                                            keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
+                                        }, payload);
+                                        delivered++;
+                                    } catch (err) {
+                                        if (err.statusCode === 410 || err.statusCode === 404) {
+                                            const cleanupClient = await pool.connect();
+                                            await cleanupClient.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [sub.endpoint]);
+                                            cleanupClient.release();
+                                        }
+                                    }
+                                }));
+                                console.log(`🔔 Push: Order ${data.orderId} status → ${data.status} sent to ${delivered}/${subs.rows.length}`);
+                            } catch (pushErr) {
+                                console.error('🔔 Push Error (order status):', pushErr.message);
+                            }
+                        })();
+                    }
                 }
                 return res.status(200).json({ result: 'success', data: updatedOrder });
             } else {
@@ -1860,6 +1976,207 @@ module.exports = async (req, res) => {
                 await client.query('DELETE FROM blog_posts WHERE id = $1', [id]);
                 client.release();
                 return res.status(200).json({ result: 'success', message: 'Post deleted' });
+            }
+
+            // ═══════════════════════════════════════════════════════════
+            // PUSH NOTIFICATION ENDPOINTS
+            // ═══════════════════════════════════════════════════════════
+
+            // --- SUBSCRIBE PUSH (Public) ---
+            if (query.action === 'subscribePush') {
+                const { subscription, topics } = data;
+                if (!subscription || !subscription.endpoint || !subscription.keys) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Invalid subscription object' });
+                }
+
+                // Rate limit
+                const rateLimitKey = `push_sub_${req.headers['x-forwarded-for'] || 'unknown'}`;
+                if (checkRateLimit && checkRateLimit(rateLimitKey, 10, 60000)) {
+                    client.release();
+                    return res.status(429).json({ result: 'error', message: 'Too many requests' });
+                }
+
+                const validTopics = (topics || ['orders', 'arrivals', 'offers']).filter(
+                    t => ['orders', 'arrivals', 'offers'].includes(t)
+                );
+
+                await client.query(`
+                    INSERT INTO push_subscriptions (endpoint, keys_p256dh, keys_auth, topics, user_agent)
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (endpoint) DO UPDATE SET
+                        keys_p256dh = EXCLUDED.keys_p256dh,
+                        keys_auth = EXCLUDED.keys_auth,
+                        topics = EXCLUDED.topics,
+                        is_active = true,
+                        engagement_score = GREATEST(push_subscriptions.engagement_score, 50)
+                `, [
+                    subscription.endpoint,
+                    subscription.keys.p256dh,
+                    subscription.keys.auth,
+                    validTopics,
+                    (req.headers['user-agent'] || '').substring(0, 255)
+                ]);
+
+                client.release();
+
+                // Send welcome notification async
+                if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+                    const welcomePayload = JSON.stringify({
+                        title: '🎉 স্বাগতম! নোঙর-এর সাথে থাকুন',
+                        body: 'আপনি নোটিফিকেশন চালু করেছেন। অর্ডার আপডেট ও নতুন কালেকশনের খবর পাবেন!',
+                        icon: '/assets/icon-192.png',
+                        badge: '/assets/icon-192.png',
+                        url: '/',
+                        type: 'welcome',
+                        tag: 'welcome'
+                    });
+                    webpush.sendNotification({
+                        endpoint: subscription.endpoint,
+                        keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth }
+                    }, welcomePayload).catch(err => console.error('Welcome push error:', err.message));
+                }
+
+                console.log('🔔 Push: New subscription saved');
+                return res.status(200).json({ result: 'success', message: 'Subscribed successfully' });
+            }
+
+            // --- UNSUBSCRIBE PUSH (Public) ---
+            if (query.action === 'unsubscribePush') {
+                const { endpoint } = data;
+                if (!endpoint) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Endpoint is required' });
+                }
+
+                await client.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [endpoint]);
+                client.release();
+                console.log('🔔 Push: Subscription deactivated');
+                return res.status(200).json({ result: 'success', message: 'Unsubscribed' });
+            }
+
+            // --- UPDATE PUSH TOPICS (Public) ---
+            if (query.action === 'updatePushTopics') {
+                const { endpoint, topics } = data;
+                if (!endpoint || !Array.isArray(topics)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Endpoint and topics array required' });
+                }
+
+                const validTopics = topics.filter(t => ['orders', 'arrivals', 'offers'].includes(t));
+                await client.query('UPDATE push_subscriptions SET topics = $1 WHERE endpoint = $2 AND is_active = true', [validTopics, endpoint]);
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Topics updated' });
+            }
+
+            // --- SEND PUSH NOTIFICATION (Admin Broadcast) ---
+            if (query.action === 'sendPushNotification') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+                    client.release();
+                    return res.status(503).json({ result: 'error', message: 'VAPID keys not configured' });
+                }
+
+                const { title, body: msgBody, imageUrl, actionUrl, topic } = data;
+                if (!title) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Title is required' });
+                }
+
+                // Query active subscribers, optionally filtered by topic
+                let subsQuery = 'SELECT * FROM push_subscriptions WHERE is_active = true AND engagement_score > 20';
+                const subsParams = [];
+                if (topic && topic !== 'all') {
+                    subsQuery += ` AND $1 = ANY(topics)`;
+                    subsParams.push(topic);
+                }
+                const subs = await client.query(subsQuery, subsParams);
+
+                const payload = JSON.stringify({
+                    title: title,
+                    body: msgBody || '',
+                    image: imageUrl || '',
+                    icon: '/assets/icon-192.png',
+                    badge: '/assets/icon-192.png',
+                    url: actionUrl || '/',
+                    type: 'broadcast',
+                    tag: `broadcast-${Date.now()}`
+                });
+
+                let delivered = 0;
+                let failed = 0;
+                await Promise.allSettled(subs.rows.map(async (sub) => {
+                    try {
+                        await webpush.sendNotification({
+                            endpoint: sub.endpoint,
+                            keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
+                        }, payload);
+                        delivered++;
+                        // Update last_sent_at and total_sent
+                        await client.query(
+                            'UPDATE push_subscriptions SET last_sent_at = NOW(), total_sent = total_sent + 1 WHERE id = $1',
+                            [sub.id]
+                        );
+                    } catch (err) {
+                        failed++;
+                        if (err.statusCode === 410 || err.statusCode === 404) {
+                            await client.query('UPDATE push_subscriptions SET is_active = false WHERE id = $1', [sub.id]);
+                        }
+                    }
+                }));
+
+                // Log to notification_log
+                await client.query(`
+                    INSERT INTO notification_log (type, title, body, image_url, action_url, topic, total_sent, total_delivered, sent_by)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                `, ['broadcast', title, msgBody || '', imageUrl || '', actionUrl || '/', topic || 'all', subs.rows.length, delivered, 'admin']);
+
+                client.release();
+                console.log(`🔔 Push Broadcast: ${delivered}/${subs.rows.length} delivered, ${failed} failed`);
+                return res.status(200).json({
+                    result: 'success',
+                    totalSent: subs.rows.length,
+                    delivered,
+                    failed
+                });
+            }
+
+            // --- TRACK PUSH CLICK (Public) ---
+            if (query.action === 'trackPushClick') {
+                const { endpoint, notificationId } = data;
+                if (!endpoint) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Endpoint required' });
+                }
+
+                // Update subscription engagement
+                await client.query(`
+                    UPDATE push_subscriptions 
+                    SET total_clicked = total_clicked + 1, 
+                        last_clicked_at = NOW(),
+                        engagement_score = LEAST(engagement_score + 5, 100)
+                    WHERE endpoint = $1 AND is_active = true
+                `, [endpoint]);
+
+                // Update notification log if notificationId provided
+                if (notificationId) {
+                    await client.query(
+                        'UPDATE notification_log SET total_clicked = total_clicked + 1 WHERE id = $1',
+                        [notificationId]
+                    );
+                }
+
+                client.release();
+                return res.status(200).json({ result: 'success' });
             }
         }
 
