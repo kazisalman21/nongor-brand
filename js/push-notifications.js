@@ -213,6 +213,8 @@ async function unsubscribeFromPush() {
 }
 
 // ─── Premium Opt-in Banner ───────────────────────────────────
+let bannerAutoTimer = null;
+
 function showPushBanner() {
     if (document.getElementById('push-banner')) return;
 
@@ -222,32 +224,48 @@ function showPushBanner() {
     banner.innerHTML = `
         <div class="push-banner-content">
             <button id="push-close-btn" class="push-close-btn" aria-label="Close">&times;</button>
-            <div class="push-banner-header">
-                <div class="push-banner-icon">🔔</div>
-                <div class="push-banner-text">
-                    <strong>নোটিফিকেশন চালু করুন</strong>
-                    <p>অর্ডার আপডেট, নতুন কালেকশন ও অফারের খবর পান</p>
+
+            <!-- Main state: opt-in -->
+            <div id="push-banner-main">
+                <div class="push-banner-header">
+                    <div class="push-banner-icon">🔔</div>
+                    <div class="push-banner-text">
+                        <strong>নোটিফিকেশন চালু করুন</strong>
+                        <p>অর্ডার আপডেট, নতুন কালেকশন ও অফারের খবর পান</p>
+                    </div>
+                </div>
+                <div class="push-topics-selector">
+                    <button class="push-topic-chip active" data-topic="orders">
+                        <span class="push-topic-emoji">📦</span> অর্ডার আপডেট
+                    </button>
+                    <button class="push-topic-chip active" data-topic="arrivals">
+                        <span class="push-topic-emoji">✨</span> নতুন কালেকশন
+                    </button>
+                    <button class="push-topic-chip active" data-topic="offers">
+                        <span class="push-topic-emoji">🏷️</span> অফার
+                    </button>
+                </div>
+                <div class="push-banner-actions">
+                    <button id="push-enable-btn" class="push-btn-enable">
+                        <svg class="push-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        চালু করুন
+                    </button>
+                    <button id="push-dismiss-btn" class="push-btn-dismiss">পরে দেখব</button>
                 </div>
             </div>
-            <div class="push-topics-selector">
-                <button class="push-topic-chip active" data-topic="orders">
-                    <span class="push-topic-emoji">📦</span> অর্ডার আপডেট
-                </button>
-                <button class="push-topic-chip active" data-topic="arrivals">
-                    <span class="push-topic-emoji">✨</span> নতুন কালেকশন
-                </button>
-                <button class="push-topic-chip active" data-topic="offers">
-                    <span class="push-topic-emoji">🏷️</span> অফার
-                </button>
+
+            <!-- Success state (hidden by default) -->
+            <div id="push-banner-success" style="display:none; text-align:center; padding: 0.5rem 0;">
+                <div class="push-success-check">✅</div>
+                <strong style="display:block; font-size:0.9rem; color:#f0e6d3; margin-top:0.4rem;">নোটিফিকেশন চালু হয়েছে!</strong>
+                <p style="font-size:0.72rem; color:rgba(255,255,255,0.5); margin-top:0.2rem;">আপনার অর্ডার ও নতুন কালেকশনের আপডেট পাবেন</p>
             </div>
-            <div class="push-banner-actions">
-                <button id="push-enable-btn" class="push-btn-enable">
-                    <svg class="push-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
-                    চালু করুন
-                </button>
-                <button id="push-dismiss-btn" class="push-btn-dismiss">পরে</button>
+
+            <!-- Progress bar for auto-dismiss -->
+            <div class="push-banner-progress">
+                <div id="push-progress-bar" class="push-banner-progress-bar"></div>
             </div>
         </div>
     `;
@@ -261,50 +279,109 @@ function showPushBanner() {
         });
     });
 
+    // Start auto-dismiss countdown (15s with progress bar)
+    startProgressBar(15);
+
     // Topic chip toggles
     banner.querySelectorAll('.push-topic-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             chip.classList.toggle('active');
+            // Ensure at least one topic stays selected
+            const activeCount = banner.querySelectorAll('.push-topic-chip.active').length;
+            if (activeCount === 0) chip.classList.add('active');
         });
     });
 
-    // Close button
+    // Close × button — permanently dismiss
     document.getElementById('push-close-btn').addEventListener('click', () => {
         localStorage.setItem(PUSH_DISMISSED_KEY, 'true');
+        clearProgressTimer();
         removeBanner();
     });
 
-    // Enable button
+    // Enable button — subscribe then show success
     document.getElementById('push-enable-btn').addEventListener('click', async () => {
         const btn = document.getElementById('push-enable-btn');
         btn.disabled = true;
         btn.innerHTML = '<span class="push-spinner"></span> সংযুক্ত হচ্ছে...';
+        clearProgressTimer();
 
         const selectedTopics = Array.from(banner.querySelectorAll('.push-topic-chip.active'))
             .map(c => c.dataset.topic);
 
         const success = await subscribeToPush(selectedTopics.length > 0 ? selectedTopics : undefined);
+
         if (success) {
-            removeBanner();
+            // Show success state with animation
+            const mainEl = document.getElementById('push-banner-main');
+            const successEl = document.getElementById('push-banner-success');
+            const closeBtn = document.getElementById('push-close-btn');
+
+            if (mainEl) mainEl.style.display = 'none';
+            if (closeBtn) closeBtn.style.display = 'none';
+            if (successEl) {
+                successEl.style.display = 'block';
+                successEl.style.animation = 'pushSuccessFadeIn 0.4s ease-out';
+            }
+
+            // Hide progress bar
+            const progressBar = document.querySelector('.push-banner-progress');
+            if (progressBar) progressBar.style.display = 'none';
+
+            // Auto-remove after 2.5s
+            setTimeout(() => removeBanner(), 2500);
         } else {
             btn.disabled = false;
-            btn.textContent = 'আবার চেষ্টা করুন';
+            btn.innerHTML = `
+                <svg class="push-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                আবার চেষ্টা করুন
+            `;
+            // Restart progress timer
+            startProgressBar(15);
         }
     });
 
-    // Dismiss button
+    // Dismiss button — permanently dismiss
     document.getElementById('push-dismiss-btn').addEventListener('click', () => {
         localStorage.setItem(PUSH_DISMISSED_KEY, 'true');
+        clearProgressTimer();
         removeBanner();
     });
+}
 
-    // Auto-dismiss after 20 seconds
-    setTimeout(() => { removeBanner(); }, 20000);
+function startProgressBar(durationSeconds) {
+    const bar = document.getElementById('push-progress-bar');
+    if (!bar) return;
+
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            bar.style.transition = `width ${durationSeconds}s linear`;
+            bar.style.width = '0%';
+        });
+    });
+
+    clearProgressTimer();
+    bannerAutoTimer = setTimeout(() => {
+        removeBanner();
+    }, durationSeconds * 1000);
+}
+
+function clearProgressTimer() {
+    if (bannerAutoTimer) {
+        clearTimeout(bannerAutoTimer);
+        bannerAutoTimer = null;
+    }
 }
 
 function removeBanner() {
     const banner = document.getElementById('push-banner');
     if (!banner) return;
+    clearProgressTimer();
     banner.classList.remove('push-banner-visible');
     banner.classList.add('push-banner-hiding');
     setTimeout(() => { banner.remove(); }, 400);

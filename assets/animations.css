@@ -1710,6 +1710,60 @@ textarea:focus-visible {
     }
 }
 
+/* ── Progress Bar (Auto-dismiss countdown) ── */
+
+.push-banner-progress {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 0 0 1.25rem 1.25rem;
+    overflow: hidden;
+    margin: 0.5rem -1.5rem -1rem;
+}
+
+.push-banner-progress-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #e07a5f, #c96a4f);
+    border-radius: 0 0 1.25rem 1.25rem;
+    transition: width 15s linear;
+}
+
+/* ── Success State ─────────────────────────── */
+
+.push-success-check {
+    font-size: 2.5rem;
+    animation: pushCheckBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pushCheckBounce {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pushSuccessFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ── Bell Icon (Navbar) ────────────────────── */
 
 .push-bell-container {
