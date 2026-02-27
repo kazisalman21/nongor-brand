@@ -389,62 +389,57 @@ function removeBanner() {
 
 // ─── Notification Center ─────────────────────────────────────
 function createNotificationCenter() {
-    // Bell icon in navbar (insert next to cart)
-    const cartBtn = document.querySelector('.nav-cart');
-    if (!cartBtn || document.getElementById('push-bell-container')) return;
+    const bellContainer = document.getElementById('push-bell-container');
+    const panel = document.getElementById('push-notif-panel');
+    if (!bellContainer || !panel) return;
 
     const isSubscribed = localStorage.getItem(PUSH_STORAGE_KEY) === 'subscribed';
 
-    const bellContainer = document.createElement('div');
-    bellContainer.id = 'push-bell-container';
-    bellContainer.className = `push-bell-container ${isSubscribed ? '' : 'hidden'}`;
-    bellContainer.innerHTML = `
-        <button id="push-bell-btn" class="push-bell-btn" aria-label="Notifications">
-            <svg class="push-bell-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-            </svg>
-            <span id="push-bell-badge" class="push-bell-badge hidden">0</span>
-        </button>
-        <div id="push-notif-panel" class="push-notif-panel hidden">
-            <div class="push-notif-header">
-                <strong>নোটিফিকেশন</strong>
-                <button id="push-notif-settings" class="push-notif-settings" aria-label="Settings">⚙️</button>
+    // Show/hide bell based on subscription status
+    if (isSubscribed) {
+        bellContainer.classList.remove('hidden');
+    } else {
+        bellContainer.classList.add('hidden');
+    }
+
+    // Populate the notification panel HTML
+    panel.innerHTML = `
+        <div class="push-notif-header">
+            <strong>নোটিফিকেশন</strong>
+            <button id="push-notif-settings" class="push-notif-settings" aria-label="Settings">⚙️</button>
+        </div>
+        <div id="push-notif-list" class="push-notif-list"></div>
+        <div id="push-notif-empty" class="push-notif-empty">
+            <span class="push-notif-empty-icon">⚓</span>
+            <p>কোনো নোটিফিকেশন নেই</p>
+        </div>
+        <div id="push-notif-settings-panel" class="push-notif-settings-panel hidden">
+            <div class="push-settings-topics">
+                <label class="push-settings-topic"><input type="checkbox" value="orders" checked> 📦 অর্ডার আপডেট</label>
+                <label class="push-settings-topic"><input type="checkbox" value="arrivals" checked> ✨ নতুন কালেকশন</label>
+                <label class="push-settings-topic"><input type="checkbox" value="offers" checked> 🏷️ অফার</label>
             </div>
-            <div id="push-notif-list" class="push-notif-list"></div>
-            <div id="push-notif-empty" class="push-notif-empty">
-                <span class="push-notif-empty-icon">⚓</span>
-                <p>কোনো নোটিফিকেশন নেই</p>
-            </div>
-            <div id="push-notif-settings-panel" class="push-notif-settings-panel hidden">
-                <div class="push-settings-topics">
-                    <label class="push-settings-topic"><input type="checkbox" value="orders" checked> 📦 অর্ডার আপডেট</label>
-                    <label class="push-settings-topic"><input type="checkbox" value="arrivals" checked> ✨ নতুন কালেকশন</label>
-                    <label class="push-settings-topic"><input type="checkbox" value="offers" checked> 🏷️ অফার</label>
-                </div>
-                <button id="push-save-topics" class="push-save-topics">সেভ করুন</button>
-                <button id="push-unsubscribe-btn" class="push-unsubscribe-btn">নোটিফিকেশন বন্ধ করুন</button>
-            </div>
+            <button id="push-save-topics" class="push-save-topics">সেভ করুন</button>
+            <button id="push-unsubscribe-btn" class="push-unsubscribe-btn">নোটিফিকেশন বন্ধ করুন</button>
         </div>
     `;
 
-    cartBtn.parentNode.insertBefore(bellContainer, cartBtn);
-
     // Toggle notification panel
-    document.getElementById('push-bell-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const panel = document.getElementById('push-notif-panel');
-        panel.classList.toggle('hidden');
-        if (!panel.classList.contains('hidden')) {
-            renderNotifications();
-            markAllRead();
-        }
-    });
+    const bellBtn = document.getElementById('push-bell-btn');
+    if (bellBtn) {
+        bellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                renderNotifications();
+                markAllRead();
+            }
+        });
+    }
 
     // Close panel on outside click
     document.addEventListener('click', (e) => {
-        const panel = document.getElementById('push-notif-panel');
-        const container = document.getElementById('push-bell-container');
-        if (panel && container && !container.contains(e.target)) {
+        if (bellContainer && !bellContainer.contains(e.target)) {
             panel.classList.add('hidden');
         }
     });
@@ -482,7 +477,7 @@ function createNotificationCenter() {
     // Unsubscribe
     document.getElementById('push-unsubscribe-btn').addEventListener('click', async () => {
         await unsubscribeFromPush();
-        document.getElementById('push-notif-panel').classList.add('hidden');
+        panel.classList.add('hidden');
     });
 
     updateBellBadge();
