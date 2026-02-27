@@ -796,7 +796,7 @@ module.exports = async (req, res) => {
                 }
 
                 res.setHeader('Content-Type', 'text/csv');
-                res.setHeader('Content-Disposition', 'attachment; filename="orders-export.csv`');
+                res.setHeader('Content-Disposition', 'attachment; filename="orders-export.csv"');
                 return res.status(200).send(csvRows.join('\n'));
             }
 
@@ -1423,9 +1423,7 @@ module.exports = async (req, res) => {
                 const isMatch = await bcrypt.compare(cleanCurrent, adminUser.password_hash);
                 if (!isMatch) {
                     client.release();
-                    return res.status(401).json({
-                        result: 'error', message: 'Invalid current password'
-                    });
+                    return res.status(401).json({ result: 'error', message: 'Invalid current password' });
                 }
 
                 // 4. Update Password (SYNC BOTH TABLES)
@@ -1448,7 +1446,7 @@ module.exports = async (req, res) => {
                     SET password_hash = crypt($1, gen_salt('bf', 10)), 
                         updated_at = NOW() 
                     WHERE res_role = 'admin'
-                        `, [newPassword]);
+                `, [newPassword]);
 
                 // 5. Invalidate Session (Minimal: Login again)
                 // We destroy the *current* session. 
@@ -1460,7 +1458,7 @@ module.exports = async (req, res) => {
 
                 client.release();
 
-                console.log(`🔐 Admin password changed.Session invalidated.`);
+                console.log(`🔐 Admin password changed. Session invalidated.`);
 
                 return res.status(200).json({
                     result: 'success',
@@ -1477,11 +1475,11 @@ module.exports = async (req, res) => {
                 const orderIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
                 const orderRateLimit = checkRateLimit('order', orderIp);
                 if (!orderRateLimit.allowed) {
-                    console.warn(`⚠️ Order Rate Limit Exceeded for IP: ${orderIp} `);
+                    console.warn(`⚠️ Order Rate Limit Exceeded for IP: ${orderIp}`);
                     client.release();
                     return res.status(429).json({
                         result: 'error',
-                        message: `Too many orders.Please try again in ${orderRateLimit.retryAfter} seconds.`
+                        message: `Too many orders. Please try again in ${orderRateLimit.retryAfter} seconds.`
                     });
                 }
 
@@ -1532,7 +1530,7 @@ module.exports = async (req, res) => {
                             const price = parseFloat(product.price);
 
                             if (available < item.quantity) {
-                                throw new Error(`Insufficient stock for Product ID ${item.id}.Available: ${available}, Requested: ${item.quantity} `);
+                                throw new Error(`Insufficient stock for Product ID ${item.id}. Available: ${available}, Requested: ${item.quantity}`);
                             }
 
                             // DEDUCT STOCK
@@ -1621,11 +1619,11 @@ module.exports = async (req, res) => {
                 const trackingToken = crypto.randomBytes(32).toString('hex');
 
                 const insertQuery = `
-                INSERT INTO orders
-                        (order_id, customer_name, phone, address, product_name, product_id, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
-                    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-                    RETURNING *
-                        `;
+                INSERT INTO orders 
+                (order_id, customer_name, phone, address, product_name, product_id, total_price, status, delivery_status, payment_status, trx_id, payment_method, delivery_date, size, quantity, sender_number, customer_email, tracking_token, coupon_code, discount_amount)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+                RETURNING *
+            `;
 
                 // Extract primary product ID (from first item)
                 // If strictly single product per order in 'orders' table design, this matches.
@@ -1660,9 +1658,9 @@ module.exports = async (req, res) => {
                 // 3. Insert Order Items (New Table)
                 for (const item of orderItemsToInsert) {
                     await client.query(
-                        `INSERT INTO order_items
-                        (order_id, product_id, qty, unit_price, size, line_total, size_type, size_label, measurement_unit, measurements, measurement_notes)
-                    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                        `INSERT INTO order_items 
+                    (order_id, product_id, qty, unit_price, size, line_total, size_type, size_label, measurement_unit, measurements, measurement_notes) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
                         [
                             generatedOrderId,
                             item.product_id,
@@ -1736,7 +1734,7 @@ module.exports = async (req, res) => {
                 }
 
                 await client.query(
-                    `INSERT INTO order_events(order_id, event_type, description, created_by) VALUES($1, 'note', $2, $3)`,
+                    `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, 'note', $2, $3)`,
                     [orderId, note, 'admin']
                 );
 
@@ -1759,12 +1757,12 @@ module.exports = async (req, res) => {
 
                 const updateQuery = `
                     UPDATE products 
-                    SET name = $1, price = $2, image = $3, images = $4, description = $5,
-                        category_slug = $6, category_name = $7, is_featured = $8,
-                        is_active = $9, stock_quantity = $10, updated_at = CURRENT_TIMESTAMP
+                    SET name = $1, price = $2, image = $3, images = $4, description = $5, 
+                    category_slug = $6, category_name = $7, is_featured = $8, 
+                    is_active = $9, stock_quantity = $10, updated_at = CURRENT_TIMESTAMP
                     WHERE id = $11
                     RETURNING *
-                        `;
+                `;
                 const values = [
                     data.name,
                     data.price,
@@ -1812,21 +1810,21 @@ module.exports = async (req, res) => {
                 if (data.type === 'delivery') {
                     const queryResult = await client.query('UPDATE orders SET delivery_status = $1, status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
                     updatedOrder = queryResult.rows[0];
-                    description = `Order status changed to ${data.status} `;
+                    description = `Order status changed to ${data.status}`;
                 } else if (data.type === 'payment') {
                     const queryResult = await client.query('UPDATE orders SET payment_status = $1 WHERE order_id = $2 RETURNING *', [data.status, data.orderId]);
                     updatedOrder = queryResult.rows[0];
-                    description = `Payment status updated to ${data.status} `;
+                    description = `Payment status updated to ${data.status}`;
                 } else {
                     const queryResult = await client.query('UPDATE orders SET status = $1, delivery_status = $2 WHERE order_id = $3 RETURNING *', [data.status, data.status, data.orderId]);
                     updatedOrder = queryResult.rows[0];
-                    description = `Status updated to ${data.status} `;
+                    description = `Status updated to ${data.status}`;
                 }
 
                 if (updatedOrder) {
                     // Log Event
                     await client.query(
-                        `INSERT INTO order_events(order_id, event_type, description, created_by) VALUES($1, $2, $3, $4)`,
+                        `INSERT INTO order_events (order_id, event_type, description, created_by) VALUES ($1, $2, $3, $4)`,
                         [data.orderId, eventType, description, 'admin']
                     );
                 }
@@ -1837,398 +1835,398 @@ module.exports = async (req, res) => {
                     // Trigger Status Email Async
                     // Only for main status updates, skipping payment-only for now unless desired
                     if (data.type !== 'payment') {
-                        sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error(`Email Fail: ", e));
+                        sendStatusUpdateEmail(updatedOrder, data.status).catch(e => console.error("Email Fail:", e));
 
-                    // --- Auto Push Notification on Order Status Change ---
-                    if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-                        (async () => {
-                            try {
-                                const pushClient = await pool.connect();
-                                const subs = await pushClient.query(
-                                    "SELECT * FROM push_subscriptions WHERE is_active = true AND 'orders' = ANY(topics)"
-                                );
-                                pushClient.release();
+                        // --- Auto Push Notification on Order Status Change ---
+                        if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+                            (async () => {
+                                try {
+                                    const pushClient = await pool.connect();
+                                    const subs = await pushClient.query(
+                                        "SELECT * FROM push_subscriptions WHERE is_active = true AND 'orders' = ANY(topics)"
+                                    );
+                                    pushClient.release();
 
-                                const statusMessages = {
-                                    'processing': { title: '⏳ অর্ডার প্রসেস হচ্ছে', body: `আপনার অর্ডার #${ data.orderId } প্রসেস করা হচ্ছে।` },
-                                    'shipped': { title: '🚚 অর্ডার শিপ হয়েছে!', body: `আপনার অর্ডার #${ data.orderId } কুরিয়ারে হস্তান্তর করা হয়েছে।` },
-                                    'delivered': { title: '🎉 ডেলিভারি সম্পন্ন!', body: `আপনার অর্ডার #${ data.orderId } ডেলিভারি হয়েছে!` },
-                                    'cancelled': { title: '❌ অর্ডার বাতিল', body: `অর্ডার #${ data.orderId } বাতিল করা হয়েছে।` }
-                                };
+                                    const statusMessages = {
+                                        'processing': { title: '⏳ অর্ডার প্রসেস হচ্ছে', body: `আপনার অর্ডার #${data.orderId} প্রসেস করা হচ্ছে।` },
+                                        'shipped': { title: '🚚 অর্ডার শিপ হয়েছে!', body: `আপনার অর্ডার #${data.orderId} কুরিয়ারে হস্তান্তর করা হয়েছে।` },
+                                        'delivered': { title: '🎉 ডেলিভারি সম্পন্ন!', body: `আপনার অর্ডার #${data.orderId} ডেলিভারি হয়েছে!` },
+                                        'cancelled': { title: '❌ অর্ডার বাতিল', body: `অর্ডার #${data.orderId} বাতিল করা হয়েছে।` }
+                                    };
 
-                                const msg = statusMessages[data.status.toLowerCase()] || {
-                                    title: 'অর্ডার আপডেট',
-                                    body: `অর্ডার #${ data.orderId } স্ট্যাটাস: ${ data.status }`
-                                };
+                                    const msg = statusMessages[data.status.toLowerCase()] || {
+                                        title: 'অর্ডার আপডেট',
+                                        body: `অর্ডার #${data.orderId} স্ট্যাটাস: ${data.status}`
+                                    };
 
-                                const payload = JSON.stringify({
-                                    title: msg.title,
-                                    body: msg.body,
-                                    icon: '/assets/icon-192.png',
-                                    badge: '/assets/icon-192.png',
-                                    url: `/ track ? token = ${ updatedOrder.tracking_token || data.orderId }`,
-                                    type: 'order_update',
-                                    tag: `order - ${ data.orderId }`
-                                });
+                                    const payload = JSON.stringify({
+                                        title: msg.title,
+                                        body: msg.body,
+                                        icon: '/assets/icon-192.png',
+                                        badge: '/assets/icon-192.png',
+                                        url: `/track?token=${updatedOrder.tracking_token || data.orderId}`,
+                                        type: 'order_update',
+                                        tag: `order-${data.orderId}`
+                                    });
 
-                                let delivered = 0;
-                                await Promise.allSettled(subs.rows.map(async (sub) => {
-                                    try {
-                                        await webpush.sendNotification({
-                                            endpoint: sub.endpoint,
-                                            keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
-                                        }, payload);
-                                        delivered++;
-                                    } catch (err) {
-                                        if (err.statusCode === 410 || err.statusCode === 404) {
-                                            const cleanupClient = await pool.connect();
-                                            await cleanupClient.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [sub.endpoint]);
-                                            cleanupClient.release();
+                                    let delivered = 0;
+                                    await Promise.allSettled(subs.rows.map(async (sub) => {
+                                        try {
+                                            await webpush.sendNotification({
+                                                endpoint: sub.endpoint,
+                                                keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
+                                            }, payload);
+                                            delivered++;
+                                        } catch (err) {
+                                            if (err.statusCode === 410 || err.statusCode === 404) {
+                                                const cleanupClient = await pool.connect();
+                                                await cleanupClient.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [sub.endpoint]);
+                                                cleanupClient.release();
+                                            }
                                         }
-                                    }
-                                }));
-                                console.log(`🔔 Push: Order ${ data.orderId } status → ${ data.status } sent to ${ delivered } / ${ subs.rows.length }`);
-                            } catch (pushErr) {
-                                console.error('🔔 Push Error (order status):', pushErr.message);
-                            }
-                        })();
+                                    }));
+                                    console.log(`🔔 Push: Order ${data.orderId} status → ${data.status} sent to ${delivered}/${subs.rows.length}`);
+                                } catch (pushErr) {
+                                    console.error('🔔 Push Error (order status):', pushErr.message);
+                                }
+                            })();
+                        }
                     }
+                    return res.status(200).json({ result: 'success', data: updatedOrder });
+                } else {
+                    return res.status(404).json({ result: 'error', message: 'Order not found' });
                 }
-                return res.status(200).json({ result: 'success', data: updatedOrder });
-            } else {
-                return res.status(404).json({ result: 'error', message: 'Order not found' });
             }
         }
-    }
 
 
 
         // --- 4. DELETE REQUESTS ---
         if (method === 'DELETE') {
-        const auth = await verifySession(req, client);
-        if (!auth.valid) {
-            client.release();
-            return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
-        }
-        if (auth.user.role !== 'admin') {
-            client.release();
-            return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
-        }
-
-        // --- DELETE COUPON ---
-        if (query.action === 'deleteCoupon') {
-            const couponId = parseInt(query.id);
-            if (!couponId || isNaN(couponId)) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Valid Coupon ID required' });
-            }
-
-            await client.query('DELETE FROM coupons WHERE id = $1', [couponId]);
-            client.release();
-            return res.status(200).json({ result: 'success', message: 'Coupon deleted' });
-        }
-
-        // --- DELETE PRODUCT ---
-        if (query.action === 'deleteProduct') {
-            const productId = parseInt(query.id);
-            if (!productId || isNaN(productId)) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Valid Product ID required' });
-            }
-
-            // Soft delete by setting is_active to false
-            const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
-            client.release();
-
-            // Invalidate cache
-            invalidateProductCache();
-
-            if (result.rows.length > 0) {
-                return res.status(200).json({ result: 'success', message: 'Product deleted' });
-            } else {
-                return res.status(404).json({ result: 'error', message: 'Product not found' });
-            }
-        }
-    }
-
-    // --- BLOG POST ROUTES (inside main handler) ---
-    if (method === 'POST' || method === 'PUT') {
-        const blogAction = body.action;
-
-        // --- Create blog post ---
-        if (blogAction === 'createPost') {
-            const { title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published } = body;
-            if (!title || !slug || !content) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Title, slug, and content are required' });
-            }
-            const result = await client.query(
-                `INSERT INTO blog_posts(title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published)
-                     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                     RETURNING id, slug`,
-                [title, slug, excerpt || '', content, cover_image || '', author || 'নোঙর টিম', tags || [], meta_title || title, meta_description || excerpt || '', is_published || false]
-            );
-            client.release();
-            return res.status(201).json({ result: 'success', data: result.rows[0] });
-        }
-
-        // --- Update blog post ---
-        if (blogAction === 'updatePost') {
-            const { id, title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published } = body;
-            if (!id) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Post ID is required' });
-            }
-            const result = await client.query(
-                `UPDATE blog_posts SET 
-                        title = COALESCE($2, title), slug = COALESCE($3, slug), excerpt = COALESCE($4, excerpt),
-                            content = COALESCE($5, content), cover_image = COALESCE($6, cover_image), author = COALESCE($7, author),
-                            tags = COALESCE($8, tags), meta_title = COALESCE($9, meta_title), meta_description = COALESCE($10, meta_description),
-                            is_published = COALESCE($11, is_published), updated_at = CURRENT_TIMESTAMP
-                    WHERE id = $1 RETURNING id, slug`,
-                [id, title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published]
-            );
-            if (result.rows.length === 0) {
-                client.release();
-                return res.status(404).json({ result: 'error', message: 'Post not found' });
-            }
-            client.release();
-            return res.status(200).json({ result: 'success', data: result.rows[0] });
-        }
-
-        // --- Delete blog post ---
-        if (blogAction === 'deletePost') {
-            const auth = await verifySession(req, client);
-            if (!auth.valid || auth.user.role !== 'admin') {
-                client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
-            }
-            const { id } = body;
-            if (!id) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Post ID is required' });
-            }
-            await client.query('DELETE FROM blog_posts WHERE id = $1', [id]);
-            client.release();
-            return res.status(200).json({ result: 'success' });
-        }
-
-        // ═══════════════════════════════════════════════════════════
-        // PUSH NOTIFICATION ENDPOINTS
-        // ═══════════════════════════════════════════════════════════
-
-        // --- SUBSCRIBE PUSH (Public) ---
-        if (query.action === 'subscribePush') {
-            const { subscription, topics } = data;
-            if (!subscription || !subscription.endpoint || !subscription.keys) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Invalid subscription object' });
-            }
-
-            // Rate limit
-            const rateLimitKey = `push_sub_${ req.headers['x-forwarded-for'] || 'unknown' }`;
-            if (checkRateLimit && checkRateLimit(rateLimitKey, 10, 60000)) {
-                client.release();
-                return res.status(429).json({ result: 'error', message: 'Too many requests' });
-            }
-
-            const validTopics = (topics || ['orders', 'arrivals', 'offers']).filter(
-                t => ['orders', 'arrivals', 'offers'].includes(t)
-            );
-
-            await client.query(`
-                    INSERT INTO push_subscriptions(endpoint, keys_p256dh, keys_auth, topics, user_agent)
-                    VALUES($1, $2, $3, $4, $5)
-                    ON CONFLICT(endpoint) DO UPDATE SET
-                        keys_p256dh = EXCLUDED.keys_p256dh,
-                            keys_auth = EXCLUDED.keys_auth,
-                            topics = EXCLUDED.topics,
-                            is_active = true,
-                            engagement_score = GREATEST(push_subscriptions.engagement_score, 50)
-                                `, [
-                subscription.endpoint,
-                subscription.keys.p256dh,
-                subscription.keys.auth,
-                validTopics,
-                (req.headers['user-agent'] || '').substring(0, 255)
-            ]);
-
-            client.release();
-
-            // Send welcome notification async
-            if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-                const welcomePayload = JSON.stringify({
-                    title: '🎉 স্বাগতম! নোঙর-এর সাথে থাকুন',
-                    body: 'আপনি নোটিফিকেশন চালু করেছেন। অর্ডার আপডেট ও নতুন কালেকশনের খবর পাবেন!',
-                    icon: '/assets/icon-192.png',
-                    badge: '/assets/icon-192.png',
-                    url: '/',
-                    type: 'welcome',
-                    tag: 'welcome'
-                });
-                webpush.sendNotification({
-                    endpoint: subscription.endpoint,
-                    keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth }
-                }, welcomePayload).catch(err => console.error('Welcome push error:', err.message));
-            }
-
-            console.log('🔔 Push: New subscription saved');
-            return res.status(200).json({ result: 'success', message: 'Subscribed successfully' });
-        }
-
-        // --- UNSUBSCRIBE PUSH (Public) ---
-        if (query.action === 'unsubscribePush') {
-            const { endpoint } = data;
-            if (!endpoint) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Endpoint is required' });
-            }
-
-            await client.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [endpoint]);
-            client.release();
-            console.log('🔔 Push: Subscription deactivated');
-            return res.status(200).json({ result: 'success', message: 'Unsubscribed' });
-        }
-
-        // --- UPDATE PUSH TOPICS (Public) ---
-        if (query.action === 'updatePushTopics') {
-            const { endpoint, topics } = data;
-            if (!endpoint || !Array.isArray(topics)) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Endpoint and topics array required' });
-            }
-
-            const validTopics = topics.filter(t => ['orders', 'arrivals', 'offers'].includes(t));
-            await client.query('UPDATE push_subscriptions SET topics = $1 WHERE endpoint = $2 AND is_active = true', [validTopics, endpoint]);
-            client.release();
-            return res.status(200).json({ result: 'success', message: 'Topics updated' });
-        }
-
-        // --- SEND PUSH NOTIFICATION (Admin Broadcast) ---
-        if (query.action === 'sendPushNotification') {
             const auth = await verifySession(req, client);
             if (!auth.valid) {
                 client.release();
-                return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                return res.status(401).json({ result: 'error', message: 'Forbidden: ' + auth.error });
             }
             if (auth.user.role !== 'admin') {
                 client.release();
-                return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                return res.status(403).json({ result: 'error', message: 'Forbidden: Admin access required' });
             }
 
-            if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-                client.release();
-                return res.status(503).json({ result: 'error', message: 'VAPID keys not configured' });
-            }
-
-            const { title, body: msgBody, imageUrl, actionUrl, topic } = data;
-            if (!title) {
-                client.release();
-                return res.status(400).json({ result: 'error', message: 'Title is required' });
-            }
-
-            // Query active subscribers, optionally filtered by topic
-            let subsQuery = 'SELECT * FROM push_subscriptions WHERE is_active = true AND engagement_score > 20';
-            const subsParams = [];
-            if (topic && topic !== 'all') {
-                subsQuery += ` AND $1 = ANY(topics)`;
-                subsParams.push(topic);
-            }
-            const subs = await client.query(subsQuery, subsParams);
-
-            const payload = JSON.stringify({
-                title: title,
-                body: msgBody || '',
-                image: imageUrl || '',
-                icon: '/assets/icon-192.png',
-                badge: '/assets/icon-192.png',
-                url: actionUrl || '/',
-                type: 'broadcast',
-                tag: `broadcast - ${ Date.now() }`
-            });
-
-            let delivered = 0;
-            let failed = 0;
-            await Promise.allSettled(subs.rows.map(async (sub) => {
-                try {
-                    await webpush.sendNotification({
-                        endpoint: sub.endpoint,
-                        keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
-                    }, payload);
-                    delivered++;
-                    // Update last_sent_at and total_sent
-                    await client.query(
-                        'UPDATE push_subscriptions SET last_sent_at = NOW(), total_sent = total_sent + 1 WHERE id = $1',
-                        [sub.id]
-                    );
-                } catch (err) {
-                    failed++;
-                    if (err.statusCode === 410 || err.statusCode === 404) {
-                        await client.query('UPDATE push_subscriptions SET is_active = false WHERE id = $1', [sub.id]);
-                    }
+            // --- DELETE COUPON ---
+            if (query.action === 'deleteCoupon') {
+                const couponId = parseInt(query.id);
+                if (!couponId || isNaN(couponId)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Valid Coupon ID required' });
                 }
-            }));
 
-            // Log to notification_log
-            await client.query(`
-                    INSERT INTO notification_log(type, title, body, image_url, action_url, topic, total_sent, total_delivered, sent_by)
-                    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                                `, ['broadcast', title, msgBody || '', imageUrl || '', actionUrl || '/', topic || 'all', subs.rows.length, delivered, 'admin']);
-
-            client.release();
-            console.log(`🔔 Push Broadcast: ${ delivered } / ${ subs.rows.length } delivered, ${ failed } failed`);
-            return res.status(200).json({
-                result: 'success',
-                totalSent: subs.rows.length,
-                delivered,
-                failed
-            });
-        }
-
-        // --- TRACK PUSH CLICK (Public) ---
-        if (query.action === 'trackPushClick') {
-            const { endpoint, notificationId } = data;
-            if (!endpoint) {
+                await client.query('DELETE FROM coupons WHERE id = $1', [couponId]);
                 client.release();
-                return res.status(400).json({ result: 'error', message: 'Endpoint required' });
+                return res.status(200).json({ result: 'success', message: 'Coupon deleted' });
             }
 
-            // Update subscription engagement
-            await client.query(`
-                    UPDATE push_subscriptions 
-                    SET total_clicked = total_clicked + 1,
-                            last_clicked_at = NOW(),
-                            engagement_score = LEAST(engagement_score + 5, 100)
-                    WHERE endpoint = $1 AND is_active = true
-                            `, [endpoint]);
+            // --- DELETE PRODUCT ---
+            if (query.action === 'deleteProduct') {
+                const productId = parseInt(query.id);
+                if (!productId || isNaN(productId)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Valid Product ID required' });
+                }
 
-            // Update notification log if notificationId provided
-            if (notificationId) {
-                await client.query(
-                    'UPDATE notification_log SET total_clicked = total_clicked + 1 WHERE id = $1',
-                    [notificationId]
-                );
+                // Soft delete by setting is_active to false
+                const result = await client.query('UPDATE products SET is_active = false WHERE id = $1 RETURNING *', [productId]);
+                client.release();
+
+                // Invalidate cache
+                invalidateProductCache();
+
+                if (result.rows.length > 0) {
+                    return res.status(200).json({ result: 'success', message: 'Product deleted' });
+                } else {
+                    return res.status(404).json({ result: 'error', message: 'Product not found' });
+                }
             }
-
-            client.release();
-            return res.status(200).json({ result: 'success' });
         }
-    }
 
-    client.release();
-    client = null;
-    return res.status(405).json({ error: 'Method Not Allowed' });
+        // --- BLOG POST ROUTES (inside main handler) ---
+        if (method === 'POST' || method === 'PUT') {
+            const blogAction = body.action;
 
-} catch (error) {
-    console.error("API Error:", error);
-    if (client) {
-        try { await client.query('ROLLBACK'); } catch (e) { } // Rollback any active transaction
-        try { client.release(); } catch (e) { }
+            // --- Create blog post ---
+            if (blogAction === 'createPost') {
+                const { title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published } = body;
+                if (!title || !slug || !content) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Title, slug, and content are required' });
+                }
+                const result = await client.query(
+                    `INSERT INTO blog_posts (title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                     RETURNING id, slug`,
+                    [title, slug, excerpt || '', content, cover_image || '', author || 'নোঙর টিম', tags || [], meta_title || title, meta_description || excerpt || '', is_published || false]
+                );
+                client.release();
+                return res.status(201).json({ result: 'success', data: result.rows[0] });
+            }
+
+            // --- Update blog post ---
+            if (blogAction === 'updatePost') {
+                const { id, title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published } = body;
+                if (!id) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Post ID is required' });
+                }
+                const result = await client.query(
+                    `UPDATE blog_posts SET 
+                        title = COALESCE($2, title), slug = COALESCE($3, slug), excerpt = COALESCE($4, excerpt),
+                        content = COALESCE($5, content), cover_image = COALESCE($6, cover_image), author = COALESCE($7, author),
+                        tags = COALESCE($8, tags), meta_title = COALESCE($9, meta_title), meta_description = COALESCE($10, meta_description),
+                        is_published = COALESCE($11, is_published), updated_at = CURRENT_TIMESTAMP
+                    WHERE id = $1 RETURNING id, slug`,
+                    [id, title, slug, excerpt, content, cover_image, author, tags, meta_title, meta_description, is_published]
+                );
+                if (result.rows.length === 0) {
+                    client.release();
+                    return res.status(404).json({ result: 'error', message: 'Post not found' });
+                }
+                client.release();
+                return res.status(200).json({ result: 'success', data: result.rows[0] });
+            }
+
+            // --- Delete blog post ---
+            if (blogAction === 'deletePost') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid || auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+                const { id } = body;
+                if (!id) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Post ID is required' });
+                }
+                await client.query('DELETE FROM blog_posts WHERE id = $1', [id]);
+                client.release();
+                return res.status(200).json({ result: 'success' });
+            }
+
+            // ═══════════════════════════════════════════════════════════
+            // PUSH NOTIFICATION ENDPOINTS
+            // ═══════════════════════════════════════════════════════════
+
+            // --- SUBSCRIBE PUSH (Public) ---
+            if (query.action === 'subscribePush') {
+                const { subscription, topics } = data;
+                if (!subscription || !subscription.endpoint || !subscription.keys) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Invalid subscription object' });
+                }
+
+                // Rate limit
+                const rateLimitKey = `push_sub_${req.headers['x-forwarded-for'] || 'unknown'}`;
+                if (checkRateLimit && checkRateLimit(rateLimitKey, 10, 60000)) {
+                    client.release();
+                    return res.status(429).json({ result: 'error', message: 'Too many requests' });
+                }
+
+                const validTopics = (topics || ['orders', 'arrivals', 'offers']).filter(
+                    t => ['orders', 'arrivals', 'offers'].includes(t)
+                );
+
+                await client.query(`
+                    INSERT INTO push_subscriptions (endpoint, keys_p256dh, keys_auth, topics, user_agent)
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (endpoint) DO UPDATE SET
+                        keys_p256dh = EXCLUDED.keys_p256dh,
+                        keys_auth = EXCLUDED.keys_auth,
+                        topics = EXCLUDED.topics,
+                        is_active = true,
+                        engagement_score = GREATEST(push_subscriptions.engagement_score, 50)
+                `, [
+                    subscription.endpoint,
+                    subscription.keys.p256dh,
+                    subscription.keys.auth,
+                    validTopics,
+                    (req.headers['user-agent'] || '').substring(0, 255)
+                ]);
+
+                client.release();
+
+                // Send welcome notification async
+                if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+                    const welcomePayload = JSON.stringify({
+                        title: '🎉 স্বাগতম! নোঙর-এর সাথে থাকুন',
+                        body: 'আপনি নোটিফিকেশন চালু করেছেন। অর্ডার আপডেট ও নতুন কালেকশনের খবর পাবেন!',
+                        icon: '/assets/icon-192.png',
+                        badge: '/assets/icon-192.png',
+                        url: '/',
+                        type: 'welcome',
+                        tag: 'welcome'
+                    });
+                    webpush.sendNotification({
+                        endpoint: subscription.endpoint,
+                        keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth }
+                    }, welcomePayload).catch(err => console.error('Welcome push error:', err.message));
+                }
+
+                console.log('🔔 Push: New subscription saved');
+                return res.status(200).json({ result: 'success', message: 'Subscribed successfully' });
+            }
+
+            // --- UNSUBSCRIBE PUSH (Public) ---
+            if (query.action === 'unsubscribePush') {
+                const { endpoint } = data;
+                if (!endpoint) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Endpoint is required' });
+                }
+
+                await client.query('UPDATE push_subscriptions SET is_active = false WHERE endpoint = $1', [endpoint]);
+                client.release();
+                console.log('🔔 Push: Subscription deactivated');
+                return res.status(200).json({ result: 'success', message: 'Unsubscribed' });
+            }
+
+            // --- UPDATE PUSH TOPICS (Public) ---
+            if (query.action === 'updatePushTopics') {
+                const { endpoint, topics } = data;
+                if (!endpoint || !Array.isArray(topics)) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Endpoint and topics array required' });
+                }
+
+                const validTopics = topics.filter(t => ['orders', 'arrivals', 'offers'].includes(t));
+                await client.query('UPDATE push_subscriptions SET topics = $1 WHERE endpoint = $2 AND is_active = true', [validTopics, endpoint]);
+                client.release();
+                return res.status(200).json({ result: 'success', message: 'Topics updated' });
+            }
+
+            // --- SEND PUSH NOTIFICATION (Admin Broadcast) ---
+            if (query.action === 'sendPushNotification') {
+                const auth = await verifySession(req, client);
+                if (!auth.valid) {
+                    client.release();
+                    return res.status(401).json({ result: 'error', message: 'Unauthorized' });
+                }
+                if (auth.user.role !== 'admin') {
+                    client.release();
+                    return res.status(403).json({ result: 'error', message: 'Forbidden' });
+                }
+
+                if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+                    client.release();
+                    return res.status(503).json({ result: 'error', message: 'VAPID keys not configured' });
+                }
+
+                const { title, body: msgBody, imageUrl, actionUrl, topic } = data;
+                if (!title) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Title is required' });
+                }
+
+                // Query active subscribers, optionally filtered by topic
+                let subsQuery = 'SELECT * FROM push_subscriptions WHERE is_active = true AND engagement_score > 20';
+                const subsParams = [];
+                if (topic && topic !== 'all') {
+                    subsQuery += ` AND $1 = ANY(topics)`;
+                    subsParams.push(topic);
+                }
+                const subs = await client.query(subsQuery, subsParams);
+
+                const payload = JSON.stringify({
+                    title: title,
+                    body: msgBody || '',
+                    image: imageUrl || '',
+                    icon: '/assets/icon-192.png',
+                    badge: '/assets/icon-192.png',
+                    url: actionUrl || '/',
+                    type: 'broadcast',
+                    tag: `broadcast-${Date.now()}`
+                });
+
+                let delivered = 0;
+                let failed = 0;
+                await Promise.allSettled(subs.rows.map(async (sub) => {
+                    try {
+                        await webpush.sendNotification({
+                            endpoint: sub.endpoint,
+                            keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth }
+                        }, payload);
+                        delivered++;
+                        // Update last_sent_at and total_sent
+                        await client.query(
+                            'UPDATE push_subscriptions SET last_sent_at = NOW(), total_sent = total_sent + 1 WHERE id = $1',
+                            [sub.id]
+                        );
+                    } catch (err) {
+                        failed++;
+                        if (err.statusCode === 410 || err.statusCode === 404) {
+                            await client.query('UPDATE push_subscriptions SET is_active = false WHERE id = $1', [sub.id]);
+                        }
+                    }
+                }));
+
+                // Log to notification_log
+                await client.query(`
+                    INSERT INTO notification_log (type, title, body, image_url, action_url, topic, total_sent, total_delivered, sent_by)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                `, ['broadcast', title, msgBody || '', imageUrl || '', actionUrl || '/', topic || 'all', subs.rows.length, delivered, 'admin']);
+
+                client.release();
+                console.log(`🔔 Push Broadcast: ${delivered}/${subs.rows.length} delivered, ${failed} failed`);
+                return res.status(200).json({
+                    result: 'success',
+                    totalSent: subs.rows.length,
+                    delivered,
+                    failed
+                });
+            }
+
+            // --- TRACK PUSH CLICK (Public) ---
+            if (query.action === 'trackPushClick') {
+                const { endpoint, notificationId } = data;
+                if (!endpoint) {
+                    client.release();
+                    return res.status(400).json({ result: 'error', message: 'Endpoint required' });
+                }
+
+                // Update subscription engagement
+                await client.query(`
+                    UPDATE push_subscriptions 
+                    SET total_clicked = total_clicked + 1, 
+                        last_clicked_at = NOW(),
+                        engagement_score = LEAST(engagement_score + 5, 100)
+                    WHERE endpoint = $1 AND is_active = true
+                `, [endpoint]);
+
+                // Update notification log if notificationId provided
+                if (notificationId) {
+                    await client.query(
+                        'UPDATE notification_log SET total_clicked = total_clicked + 1 WHERE id = $1',
+                        [notificationId]
+                    );
+                }
+
+                client.release();
+                return res.status(200).json({ result: 'success' });
+            }
+        }
+
+        client.release();
+        client = null;
+        return res.status(405).json({ error: 'Method Not Allowed' });
+
+    } catch (error) {
+        console.error("API Error:", error);
+        if (client) {
+            try { await client.query('ROLLBACK'); } catch (e) { } // Rollback any active transaction
+            try { client.release(); } catch (e) { }
+        }
+        console.error('Stack:', error.stack);
+        return res.status(500).json({
+            result: 'error',
+            message: 'Internal Server Error'
+        });
     }
-    console.error('Stack:', error.stack);
-    return res.status(500).json({
-        result: 'error',
-        message: 'Internal Server Error'
-    });
-}
 };
