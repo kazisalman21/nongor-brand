@@ -1181,11 +1181,17 @@ module.exports = async (req, res) => {
                 const payload = await tokenRes.json();
 
                 if (payload.error_description) {
+                    console.error('Google token verification failed:', payload.error_description);
                     return res.status(401).json({ result: 'error', message: 'Invalid Google token.' });
                 }
 
                 const googleClientId = process.env.GOOGLE_CLIENT_ID;
+                if (!googleClientId) {
+                    console.error('GOOGLE_CLIENT_ID env var not set!');
+                    return res.status(500).json({ result: 'error', message: 'Server misconfiguration: Google Client ID not set.' });
+                }
                 if (payload.aud !== googleClientId) {
+                    console.error('Token audience mismatch:', payload.aud, '!==', googleClientId);
                     return res.status(401).json({ result: 'error', message: 'Token audience mismatch.' });
                 }
 
@@ -1194,7 +1200,7 @@ module.exports = async (req, res) => {
                 const googleName = payload.name || googleEmail;
                 const googleAvatar = payload.picture || '';
 
-                // Find admin by google_id or email
+                // Find admin by google_id or email in admin_users
                 let adminUser = null;
                 const byGoogle = await client.query('SELECT * FROM admin_users WHERE google_id = $1 AND status = $2', [googleId, 'active']);
                 if (byGoogle.rows.length > 0) {
@@ -1204,8 +1210,10 @@ module.exports = async (req, res) => {
                     if (byEmail.rows.length > 0) {
                         adminUser = byEmail.rows[0];
                         // Link Google ID to existing admin
-                        await client.query('UPDATE admin_users SET google_id = $1, avatar_url = $2, display_name = COALESCE(NULLIF(display_name, \'\'), $3) WHERE id = $4',
-                            [googleId, googleAvatar, googleName, adminUser.id]);
+                        await client.query(
+                            `UPDATE admin_users SET google_id = $1, avatar_url = $2, display_name = COALESCE(NULLIF(display_name, ''), $3) WHERE id = $4`,
+                            [googleId, googleAvatar, googleName, adminUser.id]
+                        );
                     }
                 }
 
@@ -1216,32 +1224,50 @@ module.exports = async (req, res) => {
                 // Update last login and avatar
                 await client.query('UPDATE admin_users SET last_login = NOW(), avatar_url = $1 WHERE id = $2', [googleAvatar, adminUser.id]);
 
-                // Create session via auth schema
-                const sessionRes = await client.query(
-                    `SELECT * FROM ${AUTH_SCHEMA}.create_session($1::TEXT, $2::TEXT, $3::TEXT)`,
-                    [adminUser.email || adminUser.username, req.ip || '0.0.0.0', req.headers['user-agent'] || 'unknown']
-                );
-
-                if (sessionRes.rows.length > 0) {
-                    return res.status(200).json({
-                        result: 'success',
-                        message: 'Google login successful',
-                        sessionToken: sessionRes.rows[0].session_token || sessionRes.rows[0].token,
-                        user: {
-                            id: adminUser.id,
-                            username: adminUser.username,
-                            email: adminUser.email,
-                            role: adminUser.role,
-                            display_name: adminUser.display_name || googleName,
-                            avatar_url: googleAvatar
-                        }
-                    });
+                // Find or create user in auth schema (same as normal login)
+                let authUserId = null;
+                const authUser = await client.query(`SELECT id FROM ${AUTH_SCHEMA}.users WHERE email = $1 LIMIT 1`, [adminUser.email]);
+                if (authUser.rows.length > 0) {
+                    authUserId = authUser.rows[0].id;
                 } else {
-                    return res.status(500).json({ result: 'error', message: 'Failed to create session.' });
+                    // Create auth user for Google-only admin using create_user function
+                    const randomPass = crypto.randomBytes(32).toString('hex');
+                    const createResult = await client.query(
+                        `SELECT ${AUTH_SCHEMA}.create_user($1::VARCHAR, $2::TEXT, $3::VARCHAR, $4::VARCHAR)`,
+                        [adminUser.email, randomPass, 'admin', adminUser.display_name || googleName]
+                    );
+                    authUserId = createResult.rows[0].create_user;
                 }
+
+                // Create session (same pattern as normal login)
+                const newSessionToken = crypto.randomBytes(32).toString('hex');
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+                await client.query(`SELECT ${AUTH_SCHEMA}.create_session($1::UUID, $2::TEXT, $3::TIMESTAMP, $4::VARCHAR, $5::TEXT)`, [
+                    authUserId,
+                    newSessionToken,
+                    expiresAt.toISOString(),
+                    ip,
+                    userAgent
+                ]);
+
+                return res.status(200).json({
+                    result: 'success',
+                    message: 'Google login successful',
+                    sessionToken: newSessionToken,
+                    user: {
+                        id: adminUser.id,
+                        username: adminUser.username,
+                        email: adminUser.email,
+                        role: adminUser.role,
+                        display_name: adminUser.display_name || googleName,
+                        avatar_url: googleAvatar
+                    },
+                    expiresAt: expiresAt.toISOString()
+                });
             } catch (err) {
                 console.error('Google Login Error:', err);
-                return res.status(500).json({ result: 'error', message: 'Google login failed.' });
+                return res.status(500).json({ result: 'error', message: 'Google login failed: ' + err.message });
             }
         }
 
