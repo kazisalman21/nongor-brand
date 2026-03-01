@@ -2460,6 +2460,20 @@
             filter: drop-shadow(0 0 4px rgba(126, 58, 242, 0.3));
         }
 
+        /* --- Loading Overlay Responsive Base --- */
+        .loading-overlay {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-direction: column !important;
+        }
+
+        .spinner-container {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
         /* =============================================
            PASSWORD EYE ICON — UNIVERSAL ALIGNMENT
            ============================================= */
@@ -2511,6 +2525,23 @@
             /* Hide top tab bar (use bottom nav instead) */
             #main-tabs {
                 display: none !important;
+            }
+
+            /* Loading overlay: mobile sizing */
+            .loading-overlay .spinner-container {
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+            .loading-overlay .spinner-ring {
+                width: 60px !important;
+                height: 60px !important;
+                border-width: 3px !important;
+            }
+
+            .loading-overlay .loading-text {
+                font-size: 0.75rem !important;
+                margin-top: 0.75rem !important;
             }
 
             /* Bottom nav: premium glassmorphic */
@@ -2723,9 +2754,25 @@
             }
 
             /* Hide emoji icons on tablet to save space */
-            #main-tabs button span.text-base,
-            #main-tabs button span:first-child {
+            #main-tabs .tab-emoji {
                 display: none !important;
+            }
+
+            /* Loading overlay: tablet sizing */
+            .loading-overlay .spinner-container {
+                width: 70px !important;
+                height: 70px !important;
+            }
+
+            .loading-overlay .spinner-ring {
+                width: 70px !important;
+                height: 70px !important;
+                border-width: 3.5px !important;
+            }
+
+            .loading-overlay .loading-text {
+                font-size: 0.82rem !important;
+                margin-top: 1rem !important;
             }
 
             /* Stat cards: 3-column */
@@ -3284,34 +3331,34 @@
         <main class="flex-grow w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
             <!-- Tab Navigation -->
-            <div class="flex gap-4 mb-6 border-b border-gray-200">
+            <div id="main-tabs" class="flex gap-4 mb-6 border-b border-gray-200">
                 <button onclick="switchTab('orders')" id="tab-orders-main"
                     class="px-6 py-3 font-semibold text-brand-accent border-b-2 border-brand-accent transition-colors">
-                    📦 Orders
+                    <span class="tab-emoji">📦 </span>Orders
                 </button>
                 <button onclick="switchTab('products')" id="tab-products-main"
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
-                    🛍️ Products
+                    <span class="tab-emoji">🛍️ </span>Products
                 </button>
                 <button onclick="switchTab('coupons')" id="tab-coupons-main"
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
-                    🎫 Coupons
+                    <span class="tab-emoji">🎫 </span>Coupons
                 </button>
                 <button onclick="switchTab('settings')" id="tab-settings-main"
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
-                    ⚙️ Settings
+                    <span class="tab-emoji">⚙️ </span>Settings
                 </button>
                 <button onclick="switchTab('reviews')" id="tab-reviews-main"
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
-                    ⭐ Reviews
+                    <span class="tab-emoji">⭐ </span>Reviews
                 </button>
                 <button onclick="switchTab('blog')" id="tab-blog-main"
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
-                    📝 Blog
+                    <span class="tab-emoji">📝 </span>Blog
                 </button>
                 <button onclick="switchTab('push')" id="tab-push-main"
                     class="px-6 py-3 font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">
-                    🔔 Push
+                    <span class="tab-emoji">🔔 </span>Push
                 </button>
             </div>
 
