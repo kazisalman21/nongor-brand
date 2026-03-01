@@ -2461,66 +2461,137 @@
         }
 
         /* =============================================
-           RESPONSIVE FIXES — MOBILE & TABLET
+           PASSWORD EYE ICON — UNIVERSAL ALIGNMENT
+           ============================================= */
+        #change-password-form .relative button[onclick*="togglePasswordVisibility"] {
+            position: absolute !important;
+            right: 12px !important;
+            top: auto !important;
+            bottom: 0 !important;
+            height: 48px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            width: 36px !important;
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            z-index: 2 !important;
+        }
+
+        #change-password-form .relative button[onclick*="togglePasswordVisibility"] svg {
+            width: 18px !important;
+            height: 18px !important;
+        }
+
+        /* =============================================
+           3-TIER RESPONSIVE DESIGN SYSTEM
+           =============================================
+           Mobile:  ≤640px  (Phones)
+           Tablet:  641px–1024px (iPad, Android tablets)
+           Desktop: ≥1025px (Laptops, PCs, MacBooks)
            ============================================= */
 
-        /* --- Mobile (<=768px) --- */
-        @media (max-width: 768px) {
+        /* ─────────────────────────────────────────────
+           📱 TIER 1: MOBILE (≤640px) — Phones
+           ───────────────────────────────────────────── */
+        @media (max-width: 640px) {
 
-            /* Fix navbar overflow */
+            /* Navbar: compact, no wrap */
             #admin-header {
-                padding: 0.5rem 0.75rem !important;
+                padding: 0.4rem 0.6rem !important;
             }
 
             #admin-header>div {
                 flex-wrap: nowrap !important;
+                gap: 0.25rem !important;
             }
 
-            /* Fix tab navigation scrolling */
+            /* Hide top tab bar (use bottom nav instead) */
             #main-tabs {
+                display: none !important;
+            }
+
+            /* Bottom nav: premium glassmorphic */
+            #mobile-bottom-nav {
+                background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.99)) !important;
+                backdrop-filter: blur(24px) saturate(200%);
+                -webkit-backdrop-filter: blur(24px) saturate(200%);
+                border-top: 1px solid rgba(126, 58, 242, 0.15) !important;
+                box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.25) !important;
+                height: 68px !important;
+            }
+
+            .mobile-tab-btn {
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                font-size: 9px !important;
+                gap: 2px !important;
+            }
+
+            .mobile-tab-btn svg {
+                width: 22px !important;
+                height: 22px !important;
+            }
+
+            .mobile-tab-btn.active {
+                color: #a855f7 !important;
+                transform: translateY(-3px);
+            }
+
+            .mobile-tab-btn.active::after {
+                background: #a855f7 !important;
+                width: 24px !important;
+            }
+
+            /* Stat cards: 2-column compact grid */
+            #admin-content>div>div:first-child .grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+
+            #admin-content>div>div:first-child .grid>div {
+                padding: 0.75rem !important;
+                border-radius: 14px !important;
+            }
+
+            #admin-content>div>div:first-child .grid>div .text-3xl,
+            #admin-content>div>div:first-child .grid>div .text-2xl {
+                font-size: 1.4rem !important;
+            }
+
+            #admin-content>div>div:first-child .grid>div .text-xs {
+                font-size: 0.6rem !important;
+            }
+
+            /* Table: compact, horizontal scroll */
+            table {
+                font-size: 0.68rem !important;
+                display: block !important;
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-                padding: 0 0.25rem !important;
-            }
-
-            #main-tabs::-webkit-scrollbar {
-                display: none;
-            }
-
-            #main-tabs button {
                 white-space: nowrap;
-                font-size: 0.75rem !important;
-                padding: 0.5rem 0.75rem !important;
-                min-width: auto !important;
-            }
-
-            #main-tabs button span {
-                display: none;
-                /* hide emoji icons on mobile tabs */
-            }
-
-            /* Stat cards stack properly */
-            #admin-content>div>div:first-child .grid {
-                grid-template-columns: 1fr !important;
-                gap: 0.75rem !important;
-            }
-
-            /* Table responsive */
-            table {
-                font-size: 0.72rem !important;
             }
 
             table thead th {
-                font-size: 0.6rem !important;
-                padding: 0.5rem 0.35rem !important;
+                font-size: 0.55rem !important;
+                padding: 0.4rem 0.3rem !important;
+                letter-spacing: 0.03em !important;
             }
 
             table tbody td {
-                padding: 0.5rem 0.35rem !important;
+                padding: 0.5rem 0.3rem !important;
             }
 
-            /* Settings layout fix for mobile */
+            /* Hide less important columns on phone */
+            table thead th:nth-child(5),
+            table tbody td:nth-child(5),
+            table thead th:nth-child(7),
+            table tbody td:nth-child(7) {
+                display: none !important;
+            }
+
+            /* Settings: horizontal pill chips */
             #settings-section>div.flex {
                 flex-direction: column !important;
             }
@@ -2529,71 +2600,251 @@
                 width: 100% !important;
             }
 
-            /* Push stats cards */
+            /* Push stats: 2 columns */
             #push-section .grid {
                 grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
             }
 
-            /* Floating orbs smaller on mobile */
+            /* Section headers smaller */
+            h2.text-xl,
+            h2.text-2xl {
+                font-size: 1.05rem !important;
+            }
+
+            p.text-sm.text-gray-500,
+            p.text-sm.text-gray-400 {
+                font-size: 0.7rem !important;
+            }
+
+            /* Content area spacing */
+            #admin-content {
+                padding: 0.5rem !important;
+                padding-bottom: 80px !important;
+            }
+
+            /* Forms: touch friendly */
+            input,
+            select,
+            textarea {
+                font-size: 16px !important;
+                /* prevent iOS zoom */
+                padding: 0.7rem !important;
+            }
+
+            /* Buttons: larger touch targets */
+            .bg-purple-600,
+            .bg-purple-700 {
+                padding: 0.65rem 1.2rem !important;
+                font-size: 0.82rem !important;
+                border-radius: 12px !important;
+            }
+
+            /* Floating orbs: subtle on phone */
             #admin-content::before {
-                width: 200px;
-                height: 200px;
-                opacity: 0.15;
-            }
-
-            #admin-content::after {
-                width: 150px;
-                height: 150px;
+                width: 180px;
+                height: 180px;
                 opacity: 0.1;
             }
 
-            /* Mobile bottom tab bar */
-            #mobile-bottom-nav {
-                background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98)) !important;
-                backdrop-filter: blur(20px) saturate(180%);
-                -webkit-backdrop-filter: blur(20px) saturate(180%);
-                border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-                box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.2) !important;
+            #admin-content::after {
+                width: 120px;
+                height: 120px;
+                opacity: 0.08;
             }
 
-            .mobile-tab-btn {
-                transition: all 0.2s ease !important;
+            /* No 3D hover on mobile (performance) */
+            #admin-content>div>div:first-child .grid>div:hover {
+                transform: none !important;
             }
 
-            .mobile-tab-btn.active {
-                transform: translateY(-2px);
+            table tbody tr:hover {
+                transform: none !important;
             }
 
-            /* Section headers */
-            h2.text-xl,
-            h2.text-2xl {
-                font-size: 1.15rem !important;
+            table tbody tr:hover td:first-child img {
+                transform: none !important;
+            }
+
+            /* Password eye icon: phone */
+            #change-password-form .relative button[onclick*="togglePasswordVisibility"] {
+                right: 8px !important;
+                height: 44px !important;
+                width: 32px !important;
+            }
+
+            #change-password-form .relative button[onclick*="togglePasswordVisibility"] svg {
+                width: 16px !important;
+                height: 16px !important;
             }
         }
 
-        /* --- Tablet (769px - 1024px) --- */
-        @media (min-width: 769px) and (max-width: 1024px) {
+        /* ─────────────────────────────────────────────
+           📱 TIER 2: TABLET (641px–1024px)
+           ───────────────────────────────────────────── */
+        @media (min-width: 641px) and (max-width: 1024px) {
+
+            /* Navbar: medium density */
+            #admin-header {
+                padding: 0.5rem 1rem !important;
+            }
+
+            /* Top tabs: scrollable, medium size */
+            #main-tabs {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+
+            #main-tabs::-webkit-scrollbar {
+                display: none;
+            }
+
+            #main-tabs button {
+                white-space: nowrap;
+                font-size: 0.8rem !important;
+                padding: 0.6rem 0.85rem !important;
+            }
+
+            /* Stat cards: 3-column */
+            #admin-content>div>div:first-child .grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 0.75rem !important;
+            }
+
+            #admin-content>div>div:first-child .grid>div {
+                padding: 1rem !important;
+            }
+
+            /* Table: medium density */
+            table {
+                font-size: 0.78rem !important;
+            }
+
+            table thead th {
+                font-size: 0.65rem !important;
+                padding: 0.6rem 0.5rem !important;
+            }
+
+            table tbody td {
+                padding: 0.6rem 0.5rem !important;
+            }
+
+            /* Settings: horizontal tabs (not sidebar) */
+            #settings-section>div.flex {
+                flex-direction: column !important;
+            }
+
+            #settings-section .lg\:w-56 {
+                width: 100% !important;
+            }
+
+            /* Push stats: 3 or 5 columns */
+            #push-section .grid {
+                grid-template-columns: repeat(5, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+
+            /* Content area */
+            #admin-content {
+                padding: 1rem !important;
+            }
+
+            /* Floating orbs: medium */
+            #admin-content::before {
+                width: 280px;
+                height: 280px;
+                opacity: 0.18;
+            }
+
+            #admin-content::after {
+                width: 220px;
+                height: 220px;
+                opacity: 0.12;
+            }
+
+            /* Mild hover effects */
+            #admin-content>div>div:first-child .grid>div:hover {
+                transform: translateY(-4px) !important;
+            }
+
+            table tbody tr:hover {
+                transform: translateX(2px) !important;
+            }
+
+            /* Password eye icon: tablet */
+            #change-password-form .relative button[onclick*="togglePasswordVisibility"] {
+                right: 10px !important;
+                height: 46px !important;
+                width: 34px !important;
+            }
+        }
+
+        /* ─────────────────────────────────────────────
+           💻 TIER 3: DESKTOP / LAPTOP (≥1025px)
+           ───────────────────────────────────────────── */
+        @media (min-width: 1025px) {
+
+            /* Content area: spacious */
+            #admin-content>div {
+                position: relative;
+                z-index: 1;
+            }
+
+            /* Stat cards: full 3D tilt enabled */
             #admin-content>div>div:first-child .grid {
                 grid-template-columns: repeat(3, 1fr) !important;
             }
 
-            #main-tabs button {
-                font-size: 0.82rem !important;
-                padding: 0.6rem 0.9rem !important;
+            /* Table: full density, all hover effects */
+            table thead th {
+                padding: 0.75rem 0.6rem !important;
             }
 
+            table tbody td {
+                padding: 0.75rem 0.6rem !important;
+            }
+
+            /* Settings: vertical sidebar */
+            #settings-section>div.flex {
+                flex-direction: row !important;
+            }
+
+            #settings-section .lg\:w-56 {
+                width: 14rem !important;
+            }
+
+            /* Push stats: 5-column row */
             #push-section .grid {
-                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-columns: repeat(5, 1fr) !important;
             }
-        }
 
-        /* --- Desktop enhancements (>1024px) --- */
-        @media (min-width: 1025px) {
+            /* Full 3D hover effects */
+            #admin-content>div>div:first-child .grid>div:hover {
+                transform: translateY(-6px) rotateX(2deg) rotateY(-2deg) !important;
+                box-shadow: 0 20px 40px rgba(126, 58, 242, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+            }
 
-            /* Add subtle page-level hover to content area */
-            #admin-content>div {
-                position: relative;
-                z-index: 1;
+            table tbody tr:hover {
+                transform: translateX(4px) !important;
+                box-shadow: -4px 0 0 0 #7e3af2, 0 2px 12px rgba(126, 58, 242, 0.06) !important;
+            }
+
+            table tbody tr:hover td:first-child img {
+                transform: scale(1.08) rotateY(-5deg) !important;
+                box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.15) !important;
+            }
+
+            /* Password eye icon: desktop */
+            #change-password-form .relative button[onclick*="togglePasswordVisibility"] {
+                right: 14px !important;
+                height: 50px !important;
+                width: 38px !important;
+            }
+
+            #change-password-form .relative button[onclick*="togglePasswordVisibility"] svg {
+                width: 20px !important;
+                height: 20px !important;
             }
         }
     </style>
