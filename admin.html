@@ -2684,6 +2684,24 @@
            ───────────────────────────────────────────── */
         @media (min-width: 641px) and (max-width: 1024px) {
 
+            /* CRITICAL: Hide mobile-only elements on tablet */
+            #mobile-sidebar-overlay,
+            #mobile-sidebar,
+            #mobile-menu-btn,
+            #mobile-bottom-bar,
+            .mobile-sidebar-overlay,
+            .mobile-sidebar-drawer,
+            .mobile-bottom-bar {
+                display: none !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+
+            /* Ensure top tabs are visible on tablet */
+            #main-tabs {
+                display: flex !important;
+            }
+
             /* Navbar: medium density */
             #admin-header {
                 padding: 0.5rem 1rem !important;
