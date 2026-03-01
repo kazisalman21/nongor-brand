@@ -218,6 +218,21 @@ let bannerAutoTimer = null;
 function showPushBanner() {
     if (document.getElementById('push-banner')) return;
 
+    // Don't show banner if permission is already granted or denied
+    if ('Notification' in window && Notification.permission === 'granted') {
+        // Permission already granted — auto-subscribe silently instead of showing banner
+        subscribeToPush().then(success => {
+            if (success) {
+                localStorage.removeItem(PUSH_DISMISSED_KEY);
+                console.log('[Push] Auto-subscribed (permission was already granted)');
+            }
+        });
+        return;
+    }
+    if ('Notification' in window && Notification.permission === 'denied') {
+        return;
+    }
+
     const banner = document.createElement('div');
     banner.id = 'push-banner';
     banner.className = 'push-banner';
@@ -667,4 +682,22 @@ export function initPushNotifications() {
     setTimeout(() => {
         showPushBanner();
     }, 8000);
+
+    // Listen for visibility changes — detect when user grants permission via browser settings
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && 'Notification' in window) {
+            if (Notification.permission === 'granted' && localStorage.getItem(PUSH_STORAGE_KEY) !== 'subscribed') {
+                // User granted permission externally — auto-subscribe and remove banner
+                removeBanner();
+                subscribeToPush().then(success => {
+                    if (success) {
+                        localStorage.removeItem(PUSH_DISMISSED_KEY);
+                        console.log('[Push] Auto-subscribed after external permission grant');
+                    }
+                });
+            } else if (Notification.permission === 'denied') {
+                removeBanner();
+            }
+        }
+    });
 }
