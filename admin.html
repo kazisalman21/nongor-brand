@@ -1994,6 +1994,589 @@
                 transform: translateY(0);
             }
         }
+
+        /* =============================================
+           PREMIUM UI POLISH — GLASSMORPHISM & 3D FX
+           ============================================= */
+
+        /* --- Premium Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.03);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #7e3af2, #a855f7);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #6d28d9, #9333ea);
+        }
+
+        /* --- Floating Background Orbs --- */
+        #admin-content::before,
+        #admin-content::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(100px);
+            opacity: 0.25;
+            animation: orbFloat 20s ease-in-out infinite alternate;
+        }
+
+        #admin-content::before {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(126, 58, 242, 0.3), transparent 70%);
+            top: -100px;
+            right: -100px;
+        }
+
+        #admin-content::after {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2), transparent 70%);
+            bottom: -80px;
+            left: -80px;
+            animation-delay: -10s;
+        }
+
+        @keyframes orbFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(30px, -40px) scale(1.1);
+            }
+        }
+
+        /* --- Glassmorphic Navbar --- */
+        #admin-header {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.95)) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.05) inset !important;
+        }
+
+        /* --- Premium Tab Navigation --- */
+        #main-tabs {
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        #main-tabs button {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 8px 8px 0 0;
+        }
+
+        #main-tabs button:hover {
+            background: rgba(126, 58, 242, 0.06);
+            transform: translateY(-1px);
+        }
+
+        #main-tabs button.text-purple-600::after,
+        #main-tabs button[style*="color: rgb(124, 58, 237)"]::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: linear-gradient(90deg, #7e3af2, #a855f7, #7e3af2);
+            background-size: 200% 100%;
+            border-radius: 3px 3px 0 0;
+            animation: tabGlow 2s ease infinite;
+        }
+
+        @keyframes tabGlow {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        /* --- 3D Tilt Effect on Stat Cards --- */
+        .perspective-card {
+            perspective: 800px;
+        }
+
+        #admin-content>div>div:first-child .grid>div,
+        .stat-card-3d {
+            transition: transform 0.4s cubic-bezier(0.03, 0.98, 0.52, 0.99), box-shadow 0.4s ease !important;
+            transform-style: preserve-3d;
+            will-change: transform;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            background: rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        #admin-content>div>div:first-child .grid>div:hover,
+        .stat-card-3d:hover {
+            transform: translateY(-6px) rotateX(2deg) rotateY(-2deg) !important;
+            box-shadow: 0 20px 40px rgba(126, 58, 242, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+            border-color: rgba(126, 58, 242, 0.2) !important;
+        }
+
+        /* --- Shimmer Effect on Stat Numbers --- */
+        #admin-content>div>div:first-child .grid>div .text-3xl,
+        #admin-content>div>div:first-child .grid>div .text-2xl {
+            background: linear-gradient(90deg, #1e293b, #7e3af2, #1e293b);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmerText 3s ease infinite;
+        }
+
+        @keyframes shimmerText {
+            0% {
+                background-position: -200% center;
+            }
+
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        /* --- Premium Table Styles --- */
+        table thead tr,
+        .table-header-glass {
+            background: linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(226, 232, 240, 0.7)) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        table thead th {
+            font-weight: 600 !important;
+            letter-spacing: 0.05em;
+            color: #475569 !important;
+            text-transform: uppercase;
+            font-size: 0.7rem !important;
+        }
+
+        table tbody tr {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+        }
+
+        table tbody tr:hover {
+            background: rgba(126, 58, 242, 0.03) !important;
+            transform: translateX(4px);
+            box-shadow: -4px 0 0 0 #7e3af2, 0 2px 12px rgba(126, 58, 242, 0.06);
+        }
+
+        /* --- Status Badge Glow --- */
+        .bg-yellow-100,
+        [class*="bg-yellow"] {
+            animation: pulseGlowYellow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlowYellow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 8px 2px rgba(234, 179, 8, 0.15);
+            }
+        }
+
+        /* --- Premium Buttons --- */
+        .bg-purple-600,
+        .bg-purple-700 {
+            background: linear-gradient(135deg, #7e3af2, #9333ea) !important;
+            box-shadow: 0 4px 15px rgba(126, 58, 242, 0.3) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-purple-600:hover,
+        .bg-purple-700:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(126, 58, 242, 0.4) !important;
+        }
+
+        .bg-purple-600::before,
+        .bg-purple-700::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+            transform: scale(0);
+            transition: transform 0.5s ease;
+            border-radius: 50%;
+        }
+
+        .bg-purple-600:hover::before,
+        .bg-purple-700:hover::before {
+            transform: scale(1);
+        }
+
+        /* --- Content Cards Glass Effect --- */
+        #orders-section>div:last-child,
+        #products-section>div:last-child,
+        #reviews-section>div,
+        #blog-section>div,
+        #coupons-section>div,
+        #push-section>div,
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 255, 255, 0.8) inset !important;
+            transition: box-shadow 0.3s ease, transform 0.3s ease !important;
+        }
+
+        #orders-section>div:last-child:hover,
+        #products-section>div:last-child:hover,
+        .glass-card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.9) inset !important;
+        }
+
+        /* --- Settings Sidebar Premium --- */
+        #settings-sidebar button,
+        .settings-sidebar-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 12px !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #settings-sidebar button:hover,
+        .settings-sidebar-item:hover {
+            background: rgba(126, 58, 242, 0.06) !important;
+            transform: translateX(4px);
+        }
+
+        #settings-sidebar button.bg-purple-50,
+        #settings-sidebar button[class*="bg-purple"],
+        .settings-sidebar-item.active {
+            background: linear-gradient(135deg, rgba(126, 58, 242, 0.1), rgba(168, 85, 247, 0.08)) !important;
+            box-shadow: 0 2px 12px rgba(126, 58, 242, 0.1);
+            border-left: 3px solid #7e3af2 !important;
+        }
+
+        /* --- Animated Gradient Border on Profile Card --- */
+        #settings-section .bg-gradient-to-r {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #settings-section .bg-gradient-to-r::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(126, 58, 242, 0.2), transparent, rgba(168, 85, 247, 0.2));
+            animation: gradientRotate 4s linear infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientRotate {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* --- Form Input Focus Glow --- */
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #7e3af2 !important;
+            box-shadow: 0 0 0 3px rgba(126, 58, 242, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+            outline: none !important;
+            transition: all 0.2s ease !important;
+        }
+
+        /* --- Empty State Animation --- */
+        .text-gray-400 svg,
+        .text-gray-500 svg {
+            animation: gentleBounce 3s ease-in-out infinite;
+        }
+
+        @keyframes gentleBounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* --- Smooth Tab Content Transition --- */
+        #orders-section,
+        #products-section,
+        #coupons-section,
+        #settings-section,
+        #reviews-section,
+        #blog-section,
+        #push-section {
+            animation: contentFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes contentFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Push Stats Cards --- */
+        #push-section .grid>div {
+            transition: all 0.3s ease !important;
+            border: 1px solid rgba(0, 0, 0, 0.04) !important;
+        }
+
+        #push-section .grid>div:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+            border-color: rgba(126, 58, 242, 0.15) !important;
+        }
+
+        /* --- Product Image 3D Tilt --- */
+        table tbody tr td:first-child img {
+            transition: all 0.4s cubic-bezier(0.03, 0.98, 0.52, 0.99) !important;
+            border-radius: 10px !important;
+        }
+
+        table tbody tr:hover td:first-child img {
+            transform: scale(1.08) rotateY(-5deg) !important;
+            box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* --- Action Buttons Micro-animation --- */
+        table tbody tr td button,
+        table tbody tr td a {
+            transition: all 0.2s ease !important;
+        }
+
+        table tbody tr td button:hover,
+        table tbody tr td a:hover {
+            transform: scale(1.15) !important;
+        }
+
+        /* --- Order ID Link Glow --- */
+        table tbody tr td a[class*="text-purple"],
+        table tbody tr td a[class*="text-indigo"] {
+            transition: all 0.2s ease !important;
+            text-decoration: none !important;
+        }
+
+        table tbody tr td a[class*="text-purple"]:hover,
+        table tbody tr td a[class*="text-indigo"]:hover {
+            text-shadow: 0 0 12px rgba(126, 58, 242, 0.3);
+        }
+
+        /* --- Premium Modal Backdrop --- */
+        .fixed.inset-0.bg-black {
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+        }
+
+        /* --- Animated Loading Spinner Enhancement --- */
+        .animate-spin {
+            filter: drop-shadow(0 0 4px rgba(126, 58, 242, 0.3));
+        }
+
+        /* =============================================
+           RESPONSIVE FIXES — MOBILE & TABLET
+           ============================================= */
+
+        /* --- Mobile (<=768px) --- */
+        @media (max-width: 768px) {
+
+            /* Fix navbar overflow */
+            #admin-header {
+                padding: 0.5rem 0.75rem !important;
+            }
+
+            #admin-header>div {
+                flex-wrap: nowrap !important;
+            }
+
+            /* Fix tab navigation scrolling */
+            #main-tabs {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding: 0 0.25rem !important;
+            }
+
+            #main-tabs::-webkit-scrollbar {
+                display: none;
+            }
+
+            #main-tabs button {
+                white-space: nowrap;
+                font-size: 0.75rem !important;
+                padding: 0.5rem 0.75rem !important;
+                min-width: auto !important;
+            }
+
+            #main-tabs button span {
+                display: none;
+                /* hide emoji icons on mobile tabs */
+            }
+
+            /* Stat cards stack properly */
+            #admin-content>div>div:first-child .grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+
+            /* Table responsive */
+            table {
+                font-size: 0.72rem !important;
+            }
+
+            table thead th {
+                font-size: 0.6rem !important;
+                padding: 0.5rem 0.35rem !important;
+            }
+
+            table tbody td {
+                padding: 0.5rem 0.35rem !important;
+            }
+
+            /* Settings sidebar horizontal scroll on mobile */
+            #settings-sidebar {
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+                gap: 0.25rem !important;
+                padding: 0.5rem !important;
+                width: 100% !important;
+                min-width: 100% !important;
+            }
+
+            #settings-sidebar button {
+                white-space: nowrap !important;
+                font-size: 0.75rem !important;
+                padding: 0.5rem 0.75rem !important;
+                min-width: max-content !important;
+                border-left: none !important;
+                border-bottom: 2px solid transparent !important;
+            }
+
+            #settings-sidebar button.bg-purple-50,
+            #settings-sidebar button[class*="bg-purple"] {
+                border-left: none !important;
+                border-bottom: 2px solid #7e3af2 !important;
+            }
+
+            /* Settings layout fix for mobile */
+            #settings-section>div.flex {
+                flex-direction: column !important;
+            }
+
+            /* Push stats cards */
+            #push-section .grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            /* Floating orbs smaller on mobile */
+            #admin-content::before {
+                width: 200px;
+                height: 200px;
+                opacity: 0.15;
+            }
+
+            #admin-content::after {
+                width: 150px;
+                height: 150px;
+                opacity: 0.1;
+            }
+
+            /* Mobile bottom tab bar */
+            #mobile-bottom-nav {
+                background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98)) !important;
+                backdrop-filter: blur(20px) saturate(180%);
+                -webkit-backdrop-filter: blur(20px) saturate(180%);
+                border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+                box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            .mobile-tab-btn {
+                transition: all 0.2s ease !important;
+            }
+
+            .mobile-tab-btn.active {
+                transform: translateY(-2px);
+            }
+
+            /* Section headers */
+            h2.text-xl,
+            h2.text-2xl {
+                font-size: 1.15rem !important;
+            }
+        }
+
+        /* --- Tablet (769px - 1024px) --- */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #admin-content>div>div:first-child .grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+
+            #main-tabs button {
+                font-size: 0.82rem !important;
+                padding: 0.6rem 0.9rem !important;
+            }
+
+            #push-section .grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+        }
+
+        /* --- Desktop enhancements (>1024px) --- */
+        @media (min-width: 1025px) {
+
+            /* Add subtle page-level hover to content area */
+            #admin-content>div {
+                position: relative;
+                z-index: 1;
+            }
+        }
     </style>
 </head>
 
@@ -4094,6 +4677,38 @@
         function initPremiumUI() {
             createParticles();
             initCardTilt();
+            initDashboardTilt();
+        }
+
+        // Dashboard stat cards 3D tilt
+        function initDashboardTilt() {
+            // Wait for dashboard to render
+            const observer = new MutationObserver(() => {
+                const statCards = document.querySelectorAll('#admin-content > div > div:first-child .grid > div');
+                if (statCards.length > 0) {
+                    statCards.forEach(card => {
+                        if (card.dataset.tiltBound) return;
+                        card.dataset.tiltBound = 'true';
+                        card.addEventListener('mousemove', (e) => {
+                            if (window.innerWidth < 1024) return;
+                            const rect = card.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            const centerX = rect.width / 2;
+                            const centerY = rect.height / 2;
+                            const rotateX = (centerY - y) / 12;
+                            const rotateY = (x - centerX) / 12;
+                            card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+                        });
+                        card.addEventListener('mouseleave', () => {
+                            card.style.transform = '';
+                        });
+                    });
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            // Auto-disconnect after 10s
+            setTimeout(() => observer.disconnect(), 10000);
         }
 
         // 1. Particle System
