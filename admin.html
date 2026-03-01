@@ -5498,7 +5498,14 @@
         }
 
         async function removeAdmin(adminId, name) {
-            if (!confirm(`Remove admin "${name}"? They won't be able to login anymore.`)) return;
+            const confirmed = await showConfirmModal({
+                title: 'Remove Admin?',
+                message: `"${name}" will lose access and won't be able to login anymore.`,
+                icon: '🚫',
+                confirmText: 'Remove Admin',
+                type: 'danger'
+            });
+            if (!confirmed) return;
             try {
                 const sessionToken = localStorage.getItem('nongor_session_token');
                 const res = await fetch('/api/auth', {
@@ -6400,6 +6407,87 @@
             }, 3000);
         }
 
+        /* ═══════════════════════════════════════════
+           PREMIUM CONFIRMATION MODAL
+           ═══════════════════════════════════════════ */
+        function showConfirmModal({ title = 'Are you sure?', message = '', icon = '⚠️', confirmText = 'Confirm', cancelText = 'Cancel', type = 'danger' }) {
+            return new Promise((resolve) => {
+                // Remove any existing modal
+                const existing = document.getElementById('premium-confirm-modal');
+                if (existing) existing.remove();
+
+                const gradients = {
+                    danger: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    info: 'linear-gradient(135deg, #7e3af2, #9333ea)',
+                };
+                const glows = {
+                    danger: 'rgba(239,68,68,0.3)',
+                    warning: 'rgba(245,158,11,0.3)',
+                    info: 'rgba(126,58,242,0.3)',
+                };
+                const iconBgs = {
+                    danger: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.1))',
+                    warning: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.1))',
+                    info: 'linear-gradient(135deg, rgba(126,58,242,0.15), rgba(147,51,234,0.1))',
+                };
+
+                const modal = document.createElement('div');
+                modal.id = 'premium-confirm-modal';
+                modal.style.cssText = `position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;`;
+                modal.innerHTML = `
+                    <div id="pcm-overlay" style="position:absolute;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity 0.3s ease;"></div>
+                    <div id="pcm-card" style="position:relative;width:100%;max-width:420px;background:linear-gradient(145deg,#ffffff,#f8fafc);border-radius:1.25rem;box-shadow:0 25px 60px rgba(0,0,0,0.15),0 0 0 1px rgba(0,0,0,0.05);overflow:hidden;transform:scale(0.9) translateY(20px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);">
+                        <div style="padding:2rem 2rem 0;">
+                            <div style="width:64px;height:64px;border-radius:1rem;display:flex;align-items:center;justify-content:center;font-size:1.75rem;margin:0 auto 1.25rem;background:${iconBgs[type]};box-shadow:0 8px 24px ${glows[type]};">${icon}</div>
+                            <h3 style="text-align:center;font-size:1.2rem;font-weight:700;color:#1e293b;margin-bottom:0.5rem;letter-spacing:-0.01em;">${title}</h3>
+                            <p style="text-align:center;font-size:0.875rem;color:#64748b;line-height:1.6;margin-bottom:0;">${message}</p>
+                        </div>
+                        <div style="padding:1.5rem 2rem 2rem;display:flex;gap:0.75rem;margin-top:0.5rem;">
+                            <button id="pcm-cancel" style="flex:1;padding:0.75rem 1rem;border-radius:0.75rem;font-size:0.875rem;font-weight:600;color:#64748b;background:transparent;border:1.5px solid #e2e8f0;cursor:pointer;transition:all 0.2s ease;">${cancelText}</button>
+                            <button id="pcm-confirm" style="flex:1;padding:0.75rem 1rem;border-radius:0.75rem;font-size:0.875rem;font-weight:600;color:white;background:${gradients[type]};border:none;cursor:pointer;transition:all 0.2s ease;box-shadow:0 4px 14px ${glows[type]};">${confirmText}</button>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+
+                // Animate in
+                requestAnimationFrame(() => {
+                    document.getElementById('pcm-overlay').style.opacity = '1';
+                    const card = document.getElementById('pcm-card');
+                    card.style.transform = 'scale(1) translateY(0)';
+                    card.style.opacity = '1';
+                });
+
+                function closeModal(result) {
+                    const overlay = document.getElementById('pcm-overlay');
+                    const card = document.getElementById('pcm-card');
+                    if (overlay) overlay.style.opacity = '0';
+                    if (card) {
+                        card.style.transform = 'scale(0.9) translateY(20px)';
+                        card.style.opacity = '0';
+                    }
+                    setTimeout(() => {
+                        modal.remove();
+                        resolve(result);
+                    }, 300);
+                }
+
+                // Hover effects
+                const cancelBtn = document.getElementById('pcm-cancel');
+                const confirmBtn = document.getElementById('pcm-confirm');
+                cancelBtn.onmouseenter = () => { cancelBtn.style.background = '#f1f5f9'; cancelBtn.style.borderColor = '#cbd5e1'; };
+                cancelBtn.onmouseleave = () => { cancelBtn.style.background = 'transparent'; cancelBtn.style.borderColor = '#e2e8f0'; };
+                confirmBtn.onmouseenter = () => { confirmBtn.style.filter = 'brightness(1.1)'; confirmBtn.style.transform = 'translateY(-1px)'; };
+                confirmBtn.onmouseleave = () => { confirmBtn.style.filter = 'none'; confirmBtn.style.transform = 'none'; };
+
+                cancelBtn.onclick = () => closeModal(false);
+                confirmBtn.onclick = () => closeModal(true);
+                document.getElementById('pcm-overlay').onclick = () => closeModal(false);
+            });
+        }
+
         // ==========================================
         // PRODUCT MANAGEMENT FUNCTIONS
         // ==========================================
@@ -6644,7 +6732,14 @@
 
         // Delete Product
         async function deleteProduct(productId) {
-            if (!confirm('Are you sure you want to delete this product?')) return;
+            const confirmed = await showConfirmModal({
+                title: 'Delete Product?',
+                message: 'This product will be permanently removed from your store. This action cannot be undone.',
+                icon: '🗑️',
+                confirmText: 'Delete Product',
+                type: 'danger'
+            });
+            if (!confirmed) return;
 
             try {
                 const response = await authenticatedFetch(`${API_URL}?action=deleteProduct&id=${productId}`, {
@@ -8754,7 +8849,14 @@
                 return;
             }
 
-            if (!confirm(`Send "${title}" to ${topic === 'all' ? 'all subscribers' : topic + ' subscribers'}?`)) return;
+            const confirmed = await showConfirmModal({
+                title: 'Send Notification?',
+                message: `"${title}" will be sent to ${topic === 'all' ? 'all subscribers' : topic + ' subscribers'}. This cannot be undone.`,
+                icon: '🔔',
+                confirmText: 'Send Now',
+                type: 'warning'
+            });
+            if (!confirmed) return;
 
             sendBtn.disabled = true;
             sendBtn.textContent = 'Sending...';
