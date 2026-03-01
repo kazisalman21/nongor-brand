@@ -2715,47 +2715,65 @@
            ───────────────────────────────────────────── */
         @media (min-width: 641px) and (max-width: 1024px) {
 
-            /* CRITICAL: Hide mobile-only elements on tablet */
+            /* Hide sidebar/overlay/hamburger (keep hidden) */
             #mobile-sidebar-overlay,
             #mobile-sidebar,
             #mobile-menu-btn,
-            #mobile-bottom-bar,
             .mobile-sidebar-overlay,
-            .mobile-sidebar-drawer,
-            .mobile-bottom-bar {
+            .mobile-sidebar-drawer {
                 display: none !important;
                 visibility: hidden !important;
                 pointer-events: none !important;
             }
 
-            /* Ensure top tabs are visible on tablet */
+            /* Hide top tabs — use bottom nav on tablet */
             #main-tabs {
-                display: flex !important;
-                overflow-x: visible !important;
-                flex-wrap: nowrap !important;
-                justify-content: space-between !important;
-                gap: 0 !important;
-                padding: 0 0.25rem !important;
-                scrollbar-width: none;
-            }
-
-            #main-tabs::-webkit-scrollbar {
-                display: none;
-            }
-
-            #main-tabs button {
-                white-space: nowrap;
-                font-size: 0.72rem !important;
-                padding: 0.5rem 0.5rem !important;
-                flex: 1 1 0 !important;
-                text-align: center !important;
-                justify-content: center !important;
-                min-width: 0 !important;
-            }
-
-            /* Hide emoji icons on tablet to save space */
-            #main-tabs .tab-emoji {
                 display: none !important;
+            }
+
+            /* Show bottom nav bar on tablet with premium tablet styling */
+            #mobile-bottom-bar,
+            .mobile-bottom-bar {
+                display: flex !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 50 !important;
+                background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98)) !important;
+                backdrop-filter: blur(24px) saturate(200%) !important;
+                -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+                border-top: 1px solid rgba(126, 58, 242, 0.15) !important;
+                box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.2) !important;
+                height: 72px !important;
+                padding-bottom: env(safe-area-inset-bottom) !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+            }
+
+            /* Tablet bottom nav buttons — bigger than mobile */
+            .mobile-tab-btn {
+                font-size: 11px !important;
+                gap: 3px !important;
+                flex: 1 !important;
+                max-width: 120px !important;
+            }
+
+            .mobile-tab-btn svg {
+                width: 26px !important;
+                height: 26px !important;
+            }
+
+            .mobile-tab-btn.active {
+                color: #a855f7 !important;
+                transform: translateY(-2px);
+            }
+
+            .mobile-tab-btn.active::after {
+                background: #a855f7 !important;
+                width: 32px !important;
             }
 
             /* Loading overlay: tablet sizing */
@@ -2808,15 +2826,16 @@
                 width: 100% !important;
             }
 
-            /* Push stats: 3 or 5 columns */
+            /* Push stats: 5 columns */
             #push-section .grid {
                 grid-template-columns: repeat(5, 1fr) !important;
                 gap: 0.5rem !important;
             }
 
-            /* Content area */
+            /* Content area with bottom padding for nav bar */
             #admin-content {
                 padding: 1rem !important;
+                padding-bottom: 85px !important;
             }
 
             /* Floating orbs: medium */
